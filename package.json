@@ -1,0 +1,33 @@
+{
+  "name": "grainjs",
+  "version": "0.0.1",
+  "description": "JS library from Grist Labs",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha -R list --harmony test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gristlabs/grainjs.git"
+  },
+  "keywords": [
+    "grist",
+    "gristlabs",
+    "javascript"
+  ],
+  "author": "Grist Labs",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/gristlabs/grainjs/issues"
+  },
+  "homepage": "https://github.com/gristlabs/grainjs#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "jsdom": "^9.4.1",
+    "mocha": "^3.0.1",
+    "sinon": "^1.17.5"
+  }
+}

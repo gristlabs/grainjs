@@ -29,5 +29,8 @@
     "jsdom": "^9.4.1",
     "mocha": "^3.0.1",
     "sinon": "^1.17.5"
+  },
+  "dependencies": {
+    "lodash": "^4.15.0"
   }
 }

@@ -8,7 +8,7 @@ const G = browserGlobals.use('document', 'window', 'DocumentFragment');
 
 const assert = require('assert');
 const jsdom = require('jsdom');
-//const sinon = require('sinon');
+const sinon = require('sinon');
 
 describe('dom', function() {
   var jsdomDoc;
@@ -113,6 +113,54 @@ describe('dom', function() {
       assert.equal(elem.childNodes[1].data, "world");
       assert.equal(elem.childNodes[2].data, "jazz");
       assert.equal(elem.childNodes[3].data, "hands");
+    });
+  });
+
+  describe("dom.dispose", function() {
+    it("should call disposers on elem and descendants", function() {
+      var spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
+      let div, span, b, u;
+      div = dom('div', dom.onDispose(spy1),
+        span = dom('span', dom.onDispose(spy2),
+          b = dom('b', 'hello'),
+          u = dom('u', 'world', dom.onDispose(spy3))));
+
+      dom.dispose(div);
+      sinon.assert.calledOnce(spy1);
+      sinon.assert.calledWithExactly(spy1, div);
+      sinon.assert.calledOnce(spy2);
+      sinon.assert.calledWithExactly(spy2, span);
+      sinon.assert.calledOnce(spy3);
+      sinon.assert.calledWithExactly(spy3, u);
+      assert(spy3.calledBefore(spy2));
+      assert(spy2.calledBefore(spy1));
+    });
+
+    it("should call multiple disposers on a single element", function() {
+      var spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
+      let div, span;
+      div = dom('div', dom.onDispose(spy1),
+        span = dom('span', dom.onDispose(spy2), dom.onDispose(spy3)));
+
+      dom.dispose(div);
+      sinon.assert.calledOnce(spy1);
+      sinon.assert.calledWithExactly(spy1, div);
+      sinon.assert.calledOnce(spy2);
+      sinon.assert.calledWithExactly(spy2, span);
+      sinon.assert.calledOnce(spy3);
+      sinon.assert.calledWithExactly(spy3, span);
+      assert(spy3.calledBefore(spy2));
+      assert(spy2.calledBefore(spy1));
+    });
+  });
+
+  describe("dom.svg", function() {
+    it("should create svg elements", function() {
+      let elem = dom.svg('svg#foo.bar.baz');
+      assert.equal(elem.tagName, 'svg');
+      assert.equal(elem.namespaceURI, 'http://www.w3.org/2000/svg');
+      assert.equal(elem.id, 'foo');
+      assert.deepEqual(elem.classList, ['bar', 'baz']);
     });
   });
 

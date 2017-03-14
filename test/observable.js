@@ -2,11 +2,10 @@
 
 /* global describe, it */
 
-var observable = require('../lib/observable.js');
+const observable = require('../lib/observable.js');
 
-var _ = require('lodash');
-var assert = require('assert');
-var sinon = require('sinon');
+const assert = require('assert');
+const sinon = require('sinon');
 
 describe('observable', function() {
 
@@ -22,10 +21,6 @@ describe('observable', function() {
     obs2.set("test2");
     assert.strictEqual(obs1.get(), 17);
     assert.strictEqual(obs2.get(), "test2");
-
-    // Test that .use() returns the value as well.
-    assert.strictEqual(obs1.use(_.noop), 17);
-    assert.strictEqual(obs2.use(_.noop), "test2");
 
     // After an observable is disposed, it should discard its reference to the value.
     obs1.dispose();

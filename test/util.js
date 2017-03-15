@@ -10,6 +10,34 @@ const sinon = require('sinon');
 const timeit = require('./testutil.js').timeit;
 
 describe('util', function() {
+  describe('map', () => {
+    it('should map correctly', () => {
+      assert.deepEqual(util.map([1,2,3], n => n*2), [2,4,6]);
+      assert.deepEqual(util.map([], n => n*2), []);
+      assert.deepEqual(util.map(_.range(1000), n => n*2), _.range(0, 2000, 2));
+    });
+
+    [0, 5, 100].forEach(count => {
+      describe(`Timing map with ${count} elements`, function() {
+        let values = _.range(count);
+        let output;
+
+        timeit('Array.map', () => {
+          output = values.map(val => val + 10);
+        }, 500);
+
+        timeit('util.map', () => {
+          output = util.map(values, val => val + 10);
+        }, 500, { compareToPrevious: true });
+
+        afterEach(() => {
+          assert.deepEqual(output, _.range(10, count + 10));
+        });
+      });
+    });
+  });
+
+
   describe('bind', () => {
     it('should bind args correctly', () => {
       let spy = sinon.spy();

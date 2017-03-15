@@ -1,12 +1,15 @@
 "use strict";
 
-/* global describe, it */
+/* global describe, before, it */
 
 const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
 
+const _ = require('lodash');
 const assert = require('assert');
 const sinon = require('sinon');
+const ko = require('knockout');
+const timeit = require('./testutil.js').timeit;
 
 describe('computed', function() {
 
@@ -17,7 +20,7 @@ describe('computed', function() {
         z = observable("z"),
         w = observable("w");
     let spy = sinon.spy();
-    let comp = computed(x, y, (x, y, use) => { spy(); return x + y + use(z) + use(w); });
+    let comp = computed(x, y, (use, x, y) => { spy(); return x + y + use(z) + use(w); });
 
     // Ensure it has correct value right after creation.
     assert.strictEqual(comp.get(), "xyzw");
@@ -80,8 +83,8 @@ describe('computed', function() {
 
   it('should support writing when writable', function() {
     let x = observable("Test");
-    let comp1 = computed(x, (x, c) => x.toUpperCase());
-    let comp2 = computed(x, (x, c) => x.toUpperCase(), {
+    let comp1 = computed(x, (use, x) => x.toUpperCase());
+    let comp2 = computed(x, (use, x) => x.toUpperCase(), {
       write: val => x.set(val.toLowerCase())
     });
 
@@ -104,11 +107,11 @@ describe('computed', function() {
   it('should support options.read argument', function() {
     let x1 = observable("Test");
     let x2 = observable("Test");
-    let comp1 = computed(x1, (x1, c) => x1.toUpperCase(), {
+    let comp1 = computed(x1, (use, x1) => x1.toUpperCase(), {
       write: v => x1.set(v.toLowerCase())
     });
     let comp2 = computed(x2, {
-      read: (x2, c) => x2.toUpperCase(),
+      read: (use, x2) => x2.toUpperCase(),
       write: v => x2.set(v.toLowerCase())
     });
 
@@ -131,16 +134,16 @@ describe('computed', function() {
     // its (eventual) dependencies to ensure that order of declaration isn't the only factor.
     let arr = observable([]);
     let spy1 = sinon.spy(val => val);
-    let comp1 = computed(arr, (arr, use) => spy1(arr.map(el => use(el)).join(":")));
+    let comp1 = computed(arr, (use, arr) => spy1(arr.map(el => use(el)).join(":")));
 
     let x = observable("x");
-    let a = computed(x, x => x + "a");
-    let b = computed(x, x => x + "b");
-    let c = computed(x, x => x + "c");
+    let a = computed(x, (use, x) => x + "a");
+    let b = computed(x, (use, x) => x + "b");
+    let c = computed(x, (use, x) => x + "c");
 
     // comp2 simply depends on three dependencies which will all change together.
     let spy2 = sinon.spy(val => val);
-    let comp2 = computed(a, b, c, (a, b, c) => spy2([a,b,c].join(":")));
+    let comp2 = computed(a, b, c, (use, a, b, c) => spy2([a,b,c].join(":")));
     // TODO: might it be ok to simplify so, and perhaps get rid of static subs?
     // May want performance benchmark to compare performance.
     //let comp2 = computed(use => spy2([use(a),use(b),use(c)].join(":")));
@@ -156,7 +159,8 @@ describe('computed', function() {
     // recomputation of comp.
     x.set("y");
     assert.strictEqual(comp1.get(), "ya:yb:yc");
-    // TODO: This does not yet happen!
+    // TODO: This does not yet happen! Note that knockout does NOT do that, and it should be an
+    // important distinction mentioned in the computed()'s documentation.
     //assert.deepEqual(spy1.returnValues, ["", "xa:xb:xc", "ya:yb:yc"]);
     assert.strictEqual(comp2.get(), "ya:yb:yc");
     // TODO: This does not yet happen!
@@ -180,4 +184,85 @@ describe('computed', function() {
     this.skip();
   });
 
+
+  //----------------------------------------------------------------------
+  // Timing tests.
+  //----------------------------------------------------------------------
+
+  [2, 20].forEach(depCount => {
+    describe(`Timing computed with ${depCount} dependencies`, function() {
+      // We create a knockout computed, and our own, using dynamic dependencies (as in knockout)
+      // as well as using constructor dependencies.
+
+      let koDeps, grDeps1, grDeps2;
+      let koComputed, grComputed1, grComputed2;
+
+      before(function() {
+        koDeps = _.range(depCount).map(i => ko.observable(i));
+        grDeps1 = _.range(depCount).map(i => observable(i));
+        grDeps2 = _.range(depCount).map(i => observable(i));
+
+        koComputed = ko.computed(() => koDeps.reduce((sum, d) => sum + d(), 0));
+
+        // grComputed1 uses dynamic dependencies (created using use() callback).
+        grComputed1 = computed(use => grDeps1.reduce((sum, d) => sum + use(d), 0));
+
+        // grComputed2 uses static dependencies, specified when the computed is constructed.
+        grComputed2 = computed(...grDeps2, (use, ...vals) => vals.reduce((sum, v) => sum + v, 0));
+      });
+
+      it('should produce expected values', () => {
+        let expValue = depCount * (depCount - 1) / 2;
+        assert.strictEqual(koComputed(), expValue);
+        assert.strictEqual(grComputed1.get(), expValue);
+        assert.strictEqual(grComputed2.get(), expValue);
+
+        koDeps[0](1000);
+        grDeps1[0].set(2000);
+        grDeps2[0].set(3000);
+        assert.strictEqual(koComputed(), expValue + 1000);
+        assert.strictEqual(grComputed1.get(), expValue + 2000);
+        assert.strictEqual(grComputed2.get(), expValue + 3000);
+
+        koDeps[0](0);
+        grDeps1[0].set(0);
+        grDeps2[0].set(0);
+        assert.strictEqual(koComputed(), expValue);
+        assert.strictEqual(grComputed1.get(), expValue);
+        assert.strictEqual(grComputed2.get(), expValue);
+      });
+
+
+      timeit("construct ko.computed", () => {
+        let c = ko.computed(() => koDeps.reduce((sum, d) => sum + d(), 0));
+        c.dispose();
+      }, 500);
+
+      timeit("construct computed", () => {
+        let c = computed(use => grDeps1.reduce((sum, d) => sum + use(d), 0));
+        c.dispose();
+      }, 500, { compareToPrevious: true });
+
+      timeit("construct computed with static deps", () => {
+        let c = computed(...grDeps2, (use, ...vals) => vals.reduce((sum, v) => sum + v, 0));
+        c.dispose();
+      }, 500, { compareToPrevious: true });
+
+
+      timeit("evaluate ko.computed", () => {
+        koDeps[0](1000);
+        koDeps[0](0);
+      }, 500);
+
+      timeit("evaluate computed", () => {
+        grDeps1[0].set(2000);
+        grDeps1[0].set(0);
+      }, 500, { compareToPrevious: true });
+
+      timeit("evaluate computed with static deps", () => {
+        grDeps2[0].set(3000);
+        grDeps2[0].set(0);
+      }, 500, { compareToPrevious: true });
+    });
+  });
 });

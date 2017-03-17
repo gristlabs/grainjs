@@ -32,6 +32,7 @@
     "sinon": "^1.17.5"
   },
   "dependencies": {
+    "fastpriorityqueue": "^0.2.3",
     "lodash": "^4.15.0"
   }
 }

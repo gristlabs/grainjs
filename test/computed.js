@@ -144,44 +144,64 @@ describe('computed', function() {
     // comp2 simply depends on three dependencies which will all change together.
     let spy2 = sinon.spy(val => val);
     let comp2 = computed(a, b, c, (use, a, b, c) => spy2([a,b,c].join(":")));
-    // TODO: might it be ok to simplify so, and perhaps get rid of static subs?
-    // May want performance benchmark to compare performance.
-    //let comp2 = computed(use => spy2([use(a),use(b),use(c)].join(":")));
+
+    // comp3 is similar but uses dynamic subscriptions.
+    let spy3 = sinon.spy(val => val);
+    let comp3 = computed(use => spy3([use(a),use(b),use(c)].join(":")));
 
     arr.set([a, b, c]);
 
     assert.strictEqual(comp1.get(), "xa:xb:xc");
     assert.strictEqual(comp2.get(), "xa:xb:xc");
+    assert.strictEqual(comp3.get(), "xa:xb:xc");
     assert.deepEqual(spy1.returnValues, ["", "xa:xb:xc"]);
     assert.deepEqual(spy2.returnValues, ["xa:xb:xc"]);
+    assert.deepEqual(spy3.returnValues, ["xa:xb:xc"]);
 
     // Change x, which triggers three dependent observables to change, and should cause a single
     // recomputation of comp.
     x.set("y");
     assert.strictEqual(comp1.get(), "ya:yb:yc");
-    // TODO: This does not yet happen! Note that knockout does NOT do that, and it should be an
-    // important distinction mentioned in the computed()'s documentation.
-    //assert.deepEqual(spy1.returnValues, ["", "xa:xb:xc", "ya:yb:yc"]);
+    assert.deepEqual(spy1.returnValues, ["", "xa:xb:xc", "ya:yb:yc"]);
     assert.strictEqual(comp2.get(), "ya:yb:yc");
-    // TODO: This does not yet happen!
-    //assert.deepEqual(spy2.returnValues, ["xa:xb:xc", "ya:yb:yc"]);
-    this.skip();
+    assert.deepEqual(spy2.returnValues, ["xa:xb:xc", "ya:yb:yc"]);
+    assert.strictEqual(comp3.get(), "ya:yb:yc");
+    assert.deepEqual(spy3.returnValues, ["xa:xb:xc", "ya:yb:yc"]);
   });
 
-  it('should not cause infinite loops', function() {
+  it('should not cause infinite loops with circular dependencies', function() {
     // Create two observables that depend on each other.
-    let x = observable("x");
+    let x = observable("x"), t = observable("t");
     let y = computed(use => (use(x) || use(z)).toUpperCase());
-    let z = computed(use => use(y) + "z");
+    let z = computed(use => use(y) + use(t));
 
     assert.strictEqual(y.get(), "X");
-    assert.strictEqual(z.get(), "Xz");
+    assert.strictEqual(z.get(), "Xt");
 
-    // TODO: This does not yet work!
-    //x.set("");
-    //assert.strictEqual(y.get(), "XZ");
-    //assert.strictEqual(z.get(), "XZz");
-    this.skip();
+    x.set("");
+    assert.strictEqual(y.get(), "XT");
+    assert.strictEqual(z.get(), "XTt");
+    // Note that although y depends on z, it does not get updated more than once.
+
+    // Another change to x: y picks up z's new value, but again is only updated once.
+    x.set(false);
+    assert.strictEqual(y.get(), "XTT");
+    assert.strictEqual(z.get(), "XTTt");
+
+    // Cause a change to z: z is updated first, and y second, neither is updated more than once.
+    t.set("u");
+    assert.strictEqual(z.get(), "XTTu");
+    assert.strictEqual(y.get(), "XTTU");
+
+    // Set x: y is updated first again, and z second, and y no longer depends on z.
+    x.set("a");
+    assert.strictEqual(y.get(), "A");
+    assert.strictEqual(z.get(), "Au");
+
+    // Check that y no longer depends on z.
+    t.set('s');
+    assert.strictEqual(z.get(), "As");
+    assert.strictEqual(y.get(), "A");   // Unchanged.
   });
 
 

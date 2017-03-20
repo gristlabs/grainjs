@@ -10,47 +10,23 @@ const sinon = require('sinon');
 const timeit = require('./testutil.js').timeit;
 
 describe('util', function() {
-  describe('map', () => {
-    it('should map correctly', () => {
-      assert.deepEqual(util.map([1,2,3], n => n*2), [2,4,6]);
-      assert.deepEqual(util.map([], n => n*2), []);
-      assert.deepEqual(util.map(_.range(1000), n => n*2), _.range(0, 2000, 2));
-    });
-
-    [0, 5, 100].forEach(count => {
-      describe(`Timing map with ${count} elements`, function() {
-        let values = _.range(count);
-        let output;
-
-        timeit('Array.map', () => {
-          output = values.map(val => val + 10);
-        }, 500);
-
-        timeit('util.map', () => {
-          output = util.map(values, val => val + 10);
-        }, 500, { compareToPrevious: true });
-
-        afterEach(() => {
-          assert.deepEqual(output, _.range(10, count + 10));
-        });
-      });
-    });
-  });
-
 
   describe('bind', () => {
     it('should bind args correctly', () => {
-      let spy = sinon.spy();
-      let boundB = util.bindB(spy, [1,2,3]);
-      let boundUB = util.bindUB(spy, [1,2,3]);
-      let boundBU = util.bindBU(spy, [1,2,3]);
-      boundB("a", "b");    // no arguments are used
-      boundUB("a", "b");    // only the first arg is used
-      boundBU("a", "b");    // only the first arg is used
-      assert.strictEqual(spy.callCount, 3);
-      assert.deepEqual(spy.args[0], [1, 2, 3]);
-      assert.deepEqual(spy.args[1], ["a", 1, 2, 3]);
-      assert.deepEqual(spy.args[2], [1, 2, 3, "a"]);
+      for (let n = 0; n < 50; n++) {
+        let spy = sinon.spy();
+        let values = _.range(n);
+        let boundB = util.bindB(spy, values);
+        let boundUB = util.bindUB(spy, values);
+        let boundBU = util.bindBU(spy, values);
+        boundB("a", "b");
+        boundUB("a", "b");
+        boundBU("a", "b");
+        assert.strictEqual(spy.callCount, 3);
+        assert.deepEqual(spy.args[0], values);
+        assert.deepEqual(spy.args[1], ["a"].concat(values));
+        assert.deepEqual(spy.args[2], [].concat(values, "a"));
+      }
     });
   });
 
@@ -61,7 +37,7 @@ describe('util', function() {
   };
 
   ["bindB", "bindUB", "bindBU"].forEach(method => {
-    [0,4,8].forEach(argCount => {
+    [0,4,9].forEach(argCount => {
       describe(`Timing ${method} with ${argCount} args`, function() {
         let boundFuncPlain, boundFuncOpt, seenArgCount;
         let boundArgs;

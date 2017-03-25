@@ -204,6 +204,34 @@ describe('computed', function() {
     assert.strictEqual(y.get(), "A");   // Unchanged.
   });
 
+  it('should respect bundleChanges', function() {
+    let x = observable("x0"), y = observable("y0");
+    let spy1 = sinon.spy(val => val);
+    let spy2 = sinon.spy(val => val);
+    let z1 = computed(use => spy1(use(x) + use(y)));
+    let z2 = computed(x, y, (use, x, y) => spy2(x + y));
+
+    // First check that separate updates to x and y cause two updates to the computeds.
+    spy1.reset(); spy2.reset();
+    x.set("x1");
+    y.set("y1");
+    assert.strictEqual(z1.get(), "x1y1");
+    assert.strictEqual(z2.get(), "x1y1");
+    assert.deepEqual(spy1.returnValues, ["x1y0", "x1y1"]);
+    assert.deepEqual(spy2.returnValues, ["x1y0", "x1y1"]);
+
+    // Now check that with bundleChanges, there is a single update.
+    spy1.reset(); spy2.reset();
+    computed.bundleChanges(() => {
+      x.set("x2");
+      y.set("y2");
+    });
+    assert.strictEqual(z1.get(), "x2y2");
+    assert.strictEqual(z2.get(), "x2y2");
+    assert.deepEqual(spy1.returnValues, ["x2y2"]);
+    assert.deepEqual(spy2.returnValues, ["x2y2"]);
+  });
+
 
   //----------------------------------------------------------------------
   // Timing tests.

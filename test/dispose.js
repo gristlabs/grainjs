@@ -2,10 +2,11 @@
 
 /* global describe, it */
 
-var dispose = require('../lib/dispose.js');
+const dispose = require('../lib/dispose.js');
+const { consoleCapture } = require('./testutil.js');
 
-var assert = require('chai').assert;
-var sinon = require('sinon');
+const assert = require('chai').assert;
+const sinon = require('sinon');
 
 describe('dispose', function() {
 
@@ -108,7 +109,7 @@ describe('dispose', function() {
       class FooWiped extends dispose.Disposable(Object) {
         constructor() {
           super();
-          this.autoDisposeWipe();
+          this.wipeOnDispose();
           this.bar = this.autoDispose(bar2);
         }
       }
@@ -120,7 +121,7 @@ describe('dispose', function() {
       assert(foo1.isDisposed());
       assert(foo2.isDisposed());
       assert.strictEqual(foo1.bar, bar1);
-      assert.equal(foo2.bar, null);
+      assert.strictEqual(foo2.bar, null);
       assert.equal(bar1.dispose.callCount, 1);
       assert.equal(bar2.dispose.callCount, 1);
     });
@@ -142,60 +143,74 @@ describe('dispose', function() {
     }
 
     it("should dispose partially constructed objects", function() {
-      var foo;
-      // If we throw right away, no surprises, nothing gets called.
-      assert.throws(function() { foo = Foo.create(0); }, /test-error/);
-      assert.strictEqual(foo, undefined);
-      assert.equal(bar.dispose.callCount, 0);
-      assert.equal(baz.dispose.callCount, 0);
+      consoleCapture(['error'], messages => {
+        var foo;
+        // If we throw right away, no surprises, nothing gets called.
+        assert.throws(function() { foo = Foo.create(0); }, /test-error/);
+        assert.strictEqual(foo, undefined);
+        assert.equal(bar.dispose.callCount, 0);
+        assert.equal(baz.dispose.callCount, 0);
 
-      // If we constructed one object, that one object should have gotten disposed.
-      assert.throws(function() { foo = Foo.create(1); }, /test-error/);
-      assert.strictEqual(foo, undefined);
-      assert.equal(bar.dispose.callCount, 1);
-      assert.equal(baz.dispose.callCount, 0);
-      bar.dispose.reset();
+        // If we constructed one object, that one object should have gotten disposed.
+        assert.throws(function() { foo = Foo.create(1); }, /test-error/);
+        assert.strictEqual(foo, undefined);
+        assert.equal(bar.dispose.callCount, 1);
+        assert.equal(baz.dispose.callCount, 0);
+        bar.dispose.reset();
 
-      // If we constructed two objects, both should have gotten disposed.
-      assert.throws(function() { foo = Foo.create(2); }, /test-error/);
-      assert.strictEqual(foo, undefined);
-      assert.equal(bar.dispose.callCount, 1);
-      assert.equal(baz.dispose.callCount, 1);
-      assert(baz.dispose.calledBefore(bar.dispose));
-      bar.dispose.reset();
-      baz.dispose.reset();
+        // If we constructed two objects, both should have gotten disposed.
+        assert.throws(function() { foo = Foo.create(2); }, /test-error/);
+        assert.strictEqual(foo, undefined);
+        assert.equal(bar.dispose.callCount, 1);
+        assert.equal(baz.dispose.callCount, 1);
+        assert(baz.dispose.calledBefore(bar.dispose));
+        bar.dispose.reset();
+        baz.dispose.reset();
 
-      // If we don't throw, then nothing should get disposed until we call .dispose().
-      assert.doesNotThrow(function() { foo = Foo.create(3); });
-      assert(!foo.isDisposed());
-      assert.equal(bar.dispose.callCount, 0);
-      assert.equal(baz.dispose.callCount, 0);
-      foo.dispose();
-      assert(foo.isDisposed());
-      assert.equal(bar.dispose.callCount, 1);
-      assert.equal(baz.dispose.callCount, 1);
-      assert(baz.dispose.calledBefore(bar.dispose));
-      bar.dispose.reset();
-      baz.dispose.reset();
+        // If we don't throw, then nothing should get disposed until we call .dispose().
+        assert.doesNotThrow(function() { foo = Foo.create(3); });
+        assert(!foo.isDisposed());
+        assert.equal(bar.dispose.callCount, 0);
+        assert.equal(baz.dispose.callCount, 0);
+        foo.dispose();
+        assert(foo.isDisposed());
+        assert.equal(bar.dispose.callCount, 1);
+        assert.equal(baz.dispose.callCount, 1);
+        assert(baz.dispose.calledBefore(bar.dispose));
+        bar.dispose.reset();
+        baz.dispose.reset();
+
+        assert.deepEqual(messages, [
+          "error: Error constructing Foo: Error: test-error",
+          "error: Error constructing Foo: Error: test-error",
+          "error: Error constructing Foo: Error: test-error",
+        ]);
+      });
     });
 
     it("should dispose on propagated errors", function() {
-      var bar2 = new Bar();
-      class Foo2 extends dispose.Disposable(Object) {
-        constructor() {
-          super();
-          this.bar2 = this.autoDispose(bar2);
-          this.foo = this.autoDispose(Foo.create(1));
+      consoleCapture(['error'], messages => {
+        var bar2 = new Bar();
+        class Foo2 extends dispose.Disposable(Object) {
+          constructor() {
+            super();
+            this.bar2 = this.autoDispose(bar2);
+            this.foo = this.autoDispose(Foo.create(1));
+          }
         }
-      }
-      var foo2;
-      assert.throws(function() { foo2 = Foo2.create(); }, /test-error/);
-      assert.strictEqual(foo2, undefined);
-      assert.equal(bar.dispose.callCount, 1);
-      assert.equal(baz.dispose.callCount, 0);
-      assert.equal(bar2.dispose.callCount, 1);
-      bar.dispose.reset();
-      baz.dispose.reset();
+        var foo2;
+        assert.throws(function() { foo2 = Foo2.create(); }, /test-error/);
+        assert.strictEqual(foo2, undefined);
+        assert.equal(bar.dispose.callCount, 1);
+        assert.equal(baz.dispose.callCount, 0);
+        assert.equal(bar2.dispose.callCount, 1);
+        bar.dispose.reset();
+        baz.dispose.reset();
+
+        assert.deepEqual(messages, [
+          "error: Error constructing Foo: Error: test-error"
+        ]);
+      });
     });
   });
 });

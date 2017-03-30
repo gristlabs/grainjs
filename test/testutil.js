@@ -3,6 +3,7 @@
 /* global it */
 
 const _ = require('lodash');
+const sinon = require('sinon');
 
 const perCallUsec = Symbol('perCallUsec');
 
@@ -69,3 +70,45 @@ function timeit(desc, func, optMsec, options) {
   });
 }
 exports.timeit = timeit;
+
+
+/**
+ * Capture console output in the enclosed function. Usage:
+ *
+ *    return consoleCapture(['log', 'warn'], messages => {
+ *      ...
+ *      assert.deepEqual(messages, [...]);
+ *    });
+ *
+ * @param {String} optMethodNames: If given, an array of console's method names to capture.
+ *    The method name is always prefixed to the captured messages as "method: ". If omitted,
+ *    equivalent to just ['log'].
+ *
+ * Note that captured messages are an approximation of what console would output: only %s and %d
+ * get interpolated in the format string.
+ */
+function consoleCapture(optMethodNames, bodyFunc) {
+  let methodNames = (bodyFunc === undefined ? ['log'] : optMethodNames);
+  let func = (bodyFunc === undefined ? optMethodNames : bodyFunc);
+  let messages = [];
+  methodNames.forEach(m => sinon.stub(console, m, (...args) => _capture(messages, m, ...args)));
+  try {
+    return func(messages);
+  } finally {
+    methodNames.forEach(m => console[m].restore());
+  }
+}
+exports.consoleCapture = consoleCapture;
+
+function _capture(messages, methodName, format, ...args) {
+  // Format the message, nice and simple.
+  let i = 0;
+  if (typeof format == 'string') {
+    format = format.replace(/\%s|\%d/g, () => args[i++]);
+  }
+  let message = methodName + ': ' + format;
+  for ( ; i < args.length; i++) {
+    message += ' ' + args[i];
+  }
+  messages.push(message);
+}

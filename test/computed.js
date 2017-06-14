@@ -274,10 +274,87 @@ describe('computed', function() {
     assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [10,0,1,8,9]);
   });
 
-  it.skip('should work for complex dependency graphs', function() {
+  it('should work for complex dependency graphs', function() {
     // Create a non-trivial dependency graph: an array of computeds, with each depending on the
     // previous one, and all depending on a shared computed, which in turn depends on a single
     // source. And also multiple destination which depend on all the computes in the array.
+    let aObs = observable("a");
+    let aComp = computed(aObs, (use, a) => a.toUpperCase());
+    let arrObs = _.range(4).map(i => observable(i));
+    let arrComp = [];
+    _.range(4).forEach(i => {
+      // computeds returning value of the form ":A0", "(A0):A1", etc.
+      arrComp[i] = computed(use =>
+        (i > 0 ? "(" + use(arrComp[i-1]) + "):" : ':') + use(aComp) + use(arrObs[i]));
+    });
+    let totObs = [
+      computed(use => _.minBy(arrComp.map(c => use(c)), 'length')),
+      computed(use => _.maxBy(arrComp.map(c => use(c)), 'length')),
+      computed(use => arrComp.map(c => use(c)).join(" ")),
+    ];
+
+    // Spy on the recompute() method of all computeds.
+    let allComp = [].concat(aComp, arrComp, totObs);
+    allComp.forEach(c => sinon.spy(c, "recompute"));
+
+    let allObs = [].concat(aObs, aComp, arrObs, arrComp, totObs);
+
+    // Verify the initial values.
+    assert.deepEqual(allObs.map(x => x.get()),
+      [ 'a', 'A', /* arrObs */ 0, 1, 2, 3,
+        /* arrComp */ ':A0', '(:A0):A1', '((:A0):A1):A2', '(((:A0):A1):A2):A3',
+        /* totObs */ ':A0', '(((:A0):A1):A2):A3', ':A0 (:A0):A1 ((:A0):A1):A2 (((:A0):A1):A2):A3',
+      ]);
+    assert.deepEqual(allObs.map(x => x._priority),
+      [ 0, 1, /* arrObs */ 0, 0, 0, 0,
+        /* arrComp */ 2, 3, 4, 5,
+        /* totObs */ 6, 6, 6 ]);
+    assert.deepEqual(allComp.map(x => x.recompute.callCount),
+      [ 0, 0, 0, 0, 0, 0, 0, 0 ]);
+
+    // Change aObs, on which everything depends.
+    aObs.set('u');
+    assert.deepEqual(allObs.map(x => x.get()),
+      [ 'u', 'U', /* arrObs */ 0, 1, 2, 3,
+        /* arrComp */ ':U0', '(:U0):U1', '((:U0):U1):U2', '(((:U0):U1):U2):U3',
+        /* totObs */ ':U0', '(((:U0):U1):U2):U3', ':U0 (:U0):U1 ((:U0):U1):U2 (((:U0):U1):U2):U3',
+      ]);
+    assert.deepEqual(allObs.map(x => x._priority),
+      [ 0, 1, /* arrObs */ 0, 0, 0, 0,
+        /* arrComp */ 2, 3, 4, 5,
+        /* totObs */ 6, 6, 6 ]);
+    assert.deepEqual(allComp.map(x => x.recompute.callCount),
+      [ 1, 1, 1, 1, 1, 1, 1, 1 ]);
+
+    // Change an observable in the middle of arrObs. A subset of values should get recomputed.
+    arrObs[2].set(5);
+    assert.deepEqual(allObs.map(x => x.get()),
+      [ 'u', 'U', /* arrObs */ 0, 1, 5, 3,
+        /* arrComp */ ':U0', '(:U0):U1', '((:U0):U1):U5', '(((:U0):U1):U5):U3',
+        /* totObs */ ':U0', '(((:U0):U1):U5):U3', ':U0 (:U0):U1 ((:U0):U1):U5 (((:U0):U1):U5):U3',
+      ]);
+    assert.deepEqual(allObs.map(x => x._priority),
+      [ 0, 1, /* arrObs */ 0, 0, 0, 0,
+        /* arrComp */ 2, 3, 4, 5,
+        /* totObs */ 6, 6, 6 ]);
+    assert.deepEqual(allComp.map(x => x.recompute.callCount),
+      [ 1, 1, 1, 2, 2, 2, 2, 2 ]);
+
+    // Check here also that if we dispose a computed, it no longer updates.
+    arrComp[3].dispose();
+    arrComp.pop();
+    arrObs[2].set(2);
+    assert.deepEqual(allObs.map(x => x.get()),
+      [ 'u', 'U', /* arrObs */ 0, 1, 2, 3,
+        /* arrComp */ ':U0', '(:U0):U1', '((:U0):U1):U2', undefined,
+        /* totObs */ ':U0', '((:U0):U1):U2', ':U0 (:U0):U1 ((:U0):U1):U2',
+      ]);
+    assert.deepEqual(allObs.map(x => x._priority),
+      [ 0, 1, /* arrObs */ 0, 0, 0, 0,
+        /* arrComp */ 2, 3, 4, /* disposed */5,
+        /* totObs */ 5, 5, 5 ]);
+    assert.deepEqual(allComp.map(x => x.recompute.callCount),
+      [ 1, 1, 1, 3, /* not called */2, 3, 3, 3 ]);
   });
 
 

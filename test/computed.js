@@ -232,6 +232,54 @@ describe('computed', function() {
     assert.deepEqual(spy2.returnValues, ["x2y2"]);
   });
 
+  it('should not update internal _priority unnecessarily', function() {
+    // Create a computed with static and dynamic dependencies.
+    let a = observable("a"), b = observable("b");
+    let b2 = computed(b, (use, b) => b.toUpperCase());
+    let c = computed(use => use(a) + (use(a).endsWith('.') ? '' : '+' + use(b2)));
+    let d = computed(use => use(c).toUpperCase());
+    assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['a', 'b', 'B', 'a+B', 'A+B']);
+
+    // Check that _priorities are sensibly set.
+    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [0,0,1,2,3]);
+
+    // Check that on normal recompute, _priorities don't change.
+    a.set('x');
+    b.set('y');
+    assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['x', 'y', 'Y', 'x+Y', 'X+Y']);
+    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [0,0,1,2,3]);
+
+    // Check that when recompute changes dynamic dependencies, priorities may change,
+    // and when a dependency's priority changes, dependents may change too.
+    a.set('xx.');
+    assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['xx.', 'y', 'Y', 'xx.', 'XX.']);
+    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [0,0,1,1,2]);
+
+    a.set('z');
+    assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['z', 'y', 'Y', 'z+Y', 'Z+Y']);
+    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [0,0,1,2,3]);
+
+    // Check that in an infinite loop/circular situation, _priorities stay stable.
+    // We override a to depend on d, and c will depend on the new a once it's recomputed.
+    a = computed(use => 'a' + use(d));
+    assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['aZ+Y', 'y', 'Y', 'z+Y', 'Z+Y']);
+    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [4,0,1,2,3]);
+    b.set('b');
+    assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['aAZ+Y+B', 'b', 'B', 'aZ+Y+B', 'AZ+Y+B']);
+    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [7,0,1,5,6]);
+    b.set('u');
+    // NOTE: It would be better if such an update didn't cause all circular priorities to
+    // increase, but this isn't critical and doesn't seem worth increasing complexity for it.
+    assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['aAAZ+Y+B+U', 'u', 'U', 'aAZ+Y+B+U', 'AAZ+Y+B+U']);
+    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [10,0,1,8,9]);
+  });
+
+  it.skip('should work for complex dependency graphs', function() {
+    // Create a non-trivial dependency graph: an array of computeds, with each depending on the
+    // previous one, and all depending on a shared computed, which in turn depends on a single
+    // source. And also multiple destination which depend on all the computes in the array.
+  });
+
 
   //----------------------------------------------------------------------
   // Timing tests.

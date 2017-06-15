@@ -4,6 +4,7 @@
 
 const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
+const _computed_queue = require('../lib/_computed_queue.js');
 
 const _ = require('lodash');
 const assert = require('assert');
@@ -222,7 +223,7 @@ describe('computed', function() {
 
     // Now check that with bundleChanges, there is a single update.
     spy1.reset(); spy2.reset();
-    computed.bundleChanges(() => {
+    observable.bundleChanges(() => {
       x.set("x2");
       y.set("y2");
     });
@@ -231,6 +232,8 @@ describe('computed', function() {
     assert.deepEqual(spy1.returnValues, ["x2y2"]);
     assert.deepEqual(spy2.returnValues, ["x2y2"]);
   });
+
+  let _priority = _computed_queue._getPriority;
 
   it('should not update internal _priority unnecessarily', function() {
     // Create a computed with static and dynamic dependencies.
@@ -241,62 +244,60 @@ describe('computed', function() {
     assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['a', 'b', 'B', 'a+B', 'A+B']);
 
     // Check that _priorities are sensibly set.
-    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [0,0,1,2,3]);
+    assert.deepEqual([a,b,b2,c,d].map(x => _priority(x)), [0,0,1,2,3]);
 
     // Check that on normal recompute, _priorities don't change.
     a.set('x');
     b.set('y');
     assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['x', 'y', 'Y', 'x+Y', 'X+Y']);
-    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [0,0,1,2,3]);
+    assert.deepEqual([a,b,b2,c,d].map(x => _priority(x)), [0,0,1,2,3]);
 
     // Check that when recompute changes dynamic dependencies, priorities may change,
     // and when a dependency's priority changes, dependents may change too.
     a.set('xx.');
     assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['xx.', 'y', 'Y', 'xx.', 'XX.']);
-    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [0,0,1,1,2]);
+    assert.deepEqual([a,b,b2,c,d].map(x => _priority(x)), [0,0,1,1,2]);
 
     a.set('z');
     assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['z', 'y', 'Y', 'z+Y', 'Z+Y']);
-    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [0,0,1,2,3]);
+    assert.deepEqual([a,b,b2,c,d].map(x => _priority(x)), [0,0,1,2,3]);
 
     // Check that in an infinite loop/circular situation, _priorities stay stable.
     // We override a to depend on d, and c will depend on the new a once it's recomputed.
     a = computed(use => 'a' + use(d));
     assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['aZ+Y', 'y', 'Y', 'z+Y', 'Z+Y']);
-    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [4,0,1,2,3]);
+    assert.deepEqual([a,b,b2,c,d].map(x => _priority(x)), [4,0,1,2,3]);
     b.set('b');
     assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['aAZ+Y+B', 'b', 'B', 'aZ+Y+B', 'AZ+Y+B']);
-    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [7,0,1,5,6]);
+    assert.deepEqual([a,b,b2,c,d].map(x => _priority(x)), [7,0,1,5,6]);
     b.set('u');
     // NOTE: It would be better if such an update didn't cause all circular priorities to
     // increase, but this isn't critical and doesn't seem worth increasing complexity for it.
     assert.deepEqual([a,b,b2,c,d].map(x => x.get()), ['aAAZ+Y+B+U', 'u', 'U', 'aAZ+Y+B+U', 'AAZ+Y+B+U']);
-    assert.deepEqual([a,b,b2,c,d].map(x => x._priority), [10,0,1,8,9]);
+    assert.deepEqual([a,b,b2,c,d].map(x => _priority(x)), [10,0,1,8,9]);
   });
 
   it('should work for complex dependency graphs', function() {
     // Create a non-trivial dependency graph: an array of computeds, with each depending on the
     // previous one, and all depending on a shared computed, which in turn depends on a single
     // source. And also multiple destination which depend on all the computes in the array.
+    let aSpy, arrSpy = [], totSpy = [];
     let aObs = observable("a");
-    let aComp = computed(aObs, (use, a) => a.toUpperCase());
+    let aComp = computed(aObs, aSpy = sinon.spy((use, a) => a.toUpperCase()));
     let arrObs = _.range(4).map(i => observable(i));
     let arrComp = [];
     _.range(4).forEach(i => {
       // computeds returning value of the form ":A0", "(A0):A1", etc.
-      arrComp[i] = computed(use =>
-        (i > 0 ? "(" + use(arrComp[i-1]) + "):" : ':') + use(aComp) + use(arrObs[i]));
+      arrComp[i] = computed(arrSpy[i] = sinon.spy(use =>
+        (i > 0 ? "(" + use(arrComp[i-1]) + "):" : ':') + use(aComp) + use(arrObs[i])));
     });
     let totObs = [
-      computed(use => _.minBy(arrComp.map(c => use(c)), 'length')),
-      computed(use => _.maxBy(arrComp.map(c => use(c)), 'length')),
-      computed(use => arrComp.map(c => use(c)).join(" ")),
+      computed(totSpy[0] = sinon.spy(use => _.minBy(arrComp.map(c => use(c)), 'length'))),
+      computed(totSpy[1] = sinon.spy(use => _.maxBy(arrComp.map(c => use(c)), 'length'))),
+      computed(totSpy[2] = sinon.spy(use => arrComp.map(c => use(c)).join(" "))),
     ];
 
-    // Spy on the recompute() method of all computeds.
-    let allComp = [].concat(aComp, arrComp, totObs);
-    allComp.forEach(c => sinon.spy(c, "recompute"));
-
+    let allSpies = [].concat(aSpy, arrSpy, totSpy);
     let allObs = [].concat(aObs, aComp, arrObs, arrComp, totObs);
 
     // Verify the initial values.
@@ -305,12 +306,12 @@ describe('computed', function() {
         /* arrComp */ ':A0', '(:A0):A1', '((:A0):A1):A2', '(((:A0):A1):A2):A3',
         /* totObs */ ':A0', '(((:A0):A1):A2):A3', ':A0 (:A0):A1 ((:A0):A1):A2 (((:A0):A1):A2):A3',
       ]);
-    assert.deepEqual(allObs.map(x => x._priority),
+    assert.deepEqual(allObs.map(x => _priority(x)),
       [ 0, 1, /* arrObs */ 0, 0, 0, 0,
         /* arrComp */ 2, 3, 4, 5,
         /* totObs */ 6, 6, 6 ]);
-    assert.deepEqual(allComp.map(x => x.recompute.callCount),
-      [ 0, 0, 0, 0, 0, 0, 0, 0 ]);
+    assert.deepEqual(allSpies.map(x => x.callCount),
+      [ 1, 1, 1, 1, 1, 1, 1, 1 ]);
 
     // Change aObs, on which everything depends.
     aObs.set('u');
@@ -319,12 +320,12 @@ describe('computed', function() {
         /* arrComp */ ':U0', '(:U0):U1', '((:U0):U1):U2', '(((:U0):U1):U2):U3',
         /* totObs */ ':U0', '(((:U0):U1):U2):U3', ':U0 (:U0):U1 ((:U0):U1):U2 (((:U0):U1):U2):U3',
       ]);
-    assert.deepEqual(allObs.map(x => x._priority),
+    assert.deepEqual(allObs.map(x => _priority(x)),
       [ 0, 1, /* arrObs */ 0, 0, 0, 0,
         /* arrComp */ 2, 3, 4, 5,
         /* totObs */ 6, 6, 6 ]);
-    assert.deepEqual(allComp.map(x => x.recompute.callCount),
-      [ 1, 1, 1, 1, 1, 1, 1, 1 ]);
+    assert.deepEqual(allSpies.map(x => x.callCount),
+      [ 2, 2, 2, 2, 2, 2, 2, 2 ]);
 
     // Change an observable in the middle of arrObs. A subset of values should get recomputed.
     arrObs[2].set(5);
@@ -333,12 +334,12 @@ describe('computed', function() {
         /* arrComp */ ':U0', '(:U0):U1', '((:U0):U1):U5', '(((:U0):U1):U5):U3',
         /* totObs */ ':U0', '(((:U0):U1):U5):U3', ':U0 (:U0):U1 ((:U0):U1):U5 (((:U0):U1):U5):U3',
       ]);
-    assert.deepEqual(allObs.map(x => x._priority),
+    assert.deepEqual(allObs.map(x => _priority(x)),
       [ 0, 1, /* arrObs */ 0, 0, 0, 0,
         /* arrComp */ 2, 3, 4, 5,
         /* totObs */ 6, 6, 6 ]);
-    assert.deepEqual(allComp.map(x => x.recompute.callCount),
-      [ 1, 1, 1, 2, 2, 2, 2, 2 ]);
+    assert.deepEqual(allSpies.map(x => x.callCount),
+      [ 2, 2, 2, 3, 3, 3, 3, 3 ]);
 
     // Check here also that if we dispose a computed, it no longer updates.
     arrComp[3].dispose();
@@ -349,12 +350,12 @@ describe('computed', function() {
         /* arrComp */ ':U0', '(:U0):U1', '((:U0):U1):U2', undefined,
         /* totObs */ ':U0', '((:U0):U1):U2', ':U0 (:U0):U1 ((:U0):U1):U2',
       ]);
-    assert.deepEqual(allObs.map(x => x._priority),
+    assert.deepEqual(allObs.map(x => _priority(x)),
       [ 0, 1, /* arrObs */ 0, 0, 0, 0,
         /* arrComp */ 2, 3, 4, /* disposed */5,
         /* totObs */ 5, 5, 5 ]);
-    assert.deepEqual(allComp.map(x => x.recompute.callCount),
-      [ 1, 1, 1, 3, /* not called */2, 3, 3, 3 ]);
+    assert.deepEqual(allSpies.map(x => x.callCount),
+      [ 2, 2, 2, 4, /* not called */3, 4, 4, 4 ]);
   });
 
 

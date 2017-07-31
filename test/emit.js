@@ -121,7 +121,16 @@ describe('emitter.Emitter', function() {
     sinon.assert.notCalled(spy2);
     assertResetSingleCall(spy3, obj, "hello", 1, obj);
 
+    assert.strictEqual(emitter.isDisposed(), false);
+    assert.strictEqual(lis1.isDisposed(), false);
+    assert.strictEqual(lis2.isDisposed(), true);
+    assert.strictEqual(lis3.isDisposed(), false);
+
     emitter.dispose();
+    assert.strictEqual(emitter.isDisposed(), true);
+    assert.strictEqual(lis1.isDisposed(), true);
+    assert.strictEqual(lis2.isDisposed(), true);
+    assert.strictEqual(lis3.isDisposed(), true);
     assert.throws(() => emitter.emit("foo"), /null/);
     lis1.dispose();
     lis3.dispose();
@@ -133,6 +142,8 @@ describe('emitter.Emitter', function() {
     assert.strictEqual(emitter.hasListeners(), false);
     let spy1 = sinon.spy(), spy2 = sinon.spy();
     let spyChange = sinon.spy();
+
+    // Set the change callback, and see how it reacts to listeners getting added and removed.
     emitter.setChangeCB(spyChange);
     let lis1 = emitter.addListener(spy1);
     assertResetSingleCall(spyChange, undefined, true);
@@ -146,7 +157,6 @@ describe('emitter.Emitter', function() {
     assert.strictEqual(emitter.hasListeners(), true);
 
     emitter.emit(1,2,3);
-    assert(spy1.calledBefore(spy2));
     assertResetSingleCall(spy1, undefined, 1,2,3);
     sinon.assert.notCalled(spy2);
 
@@ -154,6 +164,16 @@ describe('emitter.Emitter', function() {
     lis1.dispose();
     assertResetSingleCall(spyChange, undefined, false);
     assert.strictEqual(emitter.hasListeners(), false);
+
+    // Check that we can unset the change callback too.
+    emitter.setChangeCB(null);
+    lis1 = emitter.addListener(spy1);
+    sinon.assert.notCalled(spyChange);
+    assert.strictEqual(emitter.hasListeners(), true);
+    lis1.dispose();
+    sinon.assert.notCalled(spyChange);
+    assert.strictEqual(emitter.hasListeners(), false);
+
   });
 
   // What follows are timing tests, for different lengths of listener queues, to help decide on

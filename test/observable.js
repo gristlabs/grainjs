@@ -92,7 +92,7 @@ describe('observable', function() {
     sinon.assert.calledTwice(spy3);
   });
 
-  it("should call callbacks set with addListenerChangeCB", function() {
+  it("should call callbacks set with setListenerChangeCB", function() {
     let obs = observable("test1");
     let spy1 = sinon.spy(), spy2 = sinon.spy(), spyChange = sinon.spy();
 
@@ -123,5 +123,11 @@ describe('observable', function() {
     lis2.dispose();
     assertResetSingleCall(spyChange, undefined, false);
     assert.strictEqual(obs.hasListeners(), false);
+
+    // Check that it can be unset.
+    obs.setListenerChangeCB(null);
+    lis1 = obs.addListener(spy1);
+    sinon.assert.notCalled(spyChange);
+    assert.strictEqual(obs.hasListeners(), true);
   });
 });

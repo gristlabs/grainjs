@@ -105,6 +105,57 @@ describe('emitter.Emitter', function() {
     assertResetSingleCall(spy3, undefined, "test4", cbMarkCalled);
   });
 
+  it("should allow disposing listeners after emitter", function() {
+    let emitter = new emit.Emitter();
+    let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
+    let obj = {};
+    let lis1 = emitter.addListener(spy1);
+    let lis2 = emitter.addListener(spy2, obj);
+    let lis3 = emitter.addListener(spy3, obj);
+
+    lis2.dispose();
+    emitter.emit("hello", 1, obj);
+
+    assert(spy1.calledBefore(spy2));
+    assertResetSingleCall(spy1, undefined, "hello", 1, obj);
+    sinon.assert.notCalled(spy2);
+    assertResetSingleCall(spy3, obj, "hello", 1, obj);
+
+    emitter.dispose();
+    assert.throws(() => emitter.emit("foo"), /null/);
+    lis1.dispose();
+    lis3.dispose();
+    assert.throws(() => emitter.emit("foo"), /null/);
+  });
+
+  it("should support setChangeCB and hasListeners", function() {
+    let emitter = new emit.Emitter();
+    assert.strictEqual(emitter.hasListeners(), false);
+    let spy1 = sinon.spy(), spy2 = sinon.spy();
+    let spyChange = sinon.spy();
+    emitter.setChangeCB(spyChange);
+    let lis1 = emitter.addListener(spy1);
+    assertResetSingleCall(spyChange, undefined, true);
+    assert.strictEqual(emitter.hasListeners(), true);
+    let lis2 = emitter.addListener(spy2);
+    assertResetSingleCall(spyChange, undefined, true);
+    assert.strictEqual(emitter.hasListeners(), true);
+
+    lis2.dispose();
+    assertResetSingleCall(spyChange, undefined, true);
+    assert.strictEqual(emitter.hasListeners(), true);
+
+    emitter.emit(1,2,3);
+    assert(spy1.calledBefore(spy2));
+    assertResetSingleCall(spy1, undefined, 1,2,3);
+    sinon.assert.notCalled(spy2);
+
+    assert.strictEqual(emitter.hasListeners(), true);
+    lis1.dispose();
+    assertResetSingleCall(spyChange, undefined, false);
+    assert.strictEqual(emitter.hasListeners(), false);
+  });
+
   // What follows are timing tests, for different lengths of listener queues, to help decide on
   // the implementation.
   [1, 5, 20].forEach(listenerQueueSize => {
@@ -112,12 +163,14 @@ describe('emitter.Emitter', function() {
       let noop = () => {};
       let emitter, listeners = [], n = 0;
 
-      before(function() {
+      function setup() {
         emitter = new emit.Emitter();
         for (let i = 0; i < listenerQueueSize; i++) {
           listeners.push(emitter.addListener(noop));
         }
-      });
+      }
+
+      before(setup);
 
       timeit("add/remove", () => {
         // Remove the oldest listener, add a new one, and increment the index: this way we
@@ -138,6 +191,11 @@ describe('emitter.Emitter', function() {
         n = (n + 1) % listenerQueueSize;
         emitter.emit("test");
       }, 500);
+
+      timeit("create/dispose-emitter", () => {
+        emitter.dispose();
+        setup();
+      });
     });
   });
 });

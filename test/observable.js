@@ -9,6 +9,13 @@ const sinon = require('sinon');
 
 describe('observable', function() {
 
+  function assertResetSingleCall(spy, context, ...args) {
+    sinon.assert.calledOnce(spy);
+    sinon.assert.calledOn(spy, context);
+    sinon.assert.calledWithExactly(spy, ...args);
+    spy.reset();
+  }
+
   it("should maintain a value", function() {
     // Test that initial value is set as expected, and can be retrieved.
     let obs1 = observable();
@@ -33,10 +40,10 @@ describe('observable', function() {
     let obs = observable("test1");
     let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
 
-    let lis1 = obs.onChange.addListener(spy1);
+    let lis1 = obs.addListener(spy1);
     sinon.assert.notCalled(spy1);
 
-    // If the value doesn't change, the onChange listener shouldn't get called.
+    // If the value doesn't change, the listener shouldn't get called.
     obs.set("test1");
     sinon.assert.notCalled(spy1);
 
@@ -47,8 +54,8 @@ describe('observable', function() {
     spy1.reset();
 
     // When there are multiple listeners, all should get called.
-    obs.onChange.addListener(spy2);
-    obs.onChange.addListener(spy3);
+    obs.addListener(spy2);
+    obs.addListener(spy3);
     sinon.assert.notCalled(spy1);
     sinon.assert.notCalled(spy2);
     sinon.assert.notCalled(spy3);
@@ -62,7 +69,7 @@ describe('observable', function() {
     assert(spy1.calledBefore(spy2));
     assert(spy2.calledBefore(spy3));
 
-    // Another test that no-change update does not call onChange listeners.
+    // Another test that no-change update does not call listeners.
     obs.set("test2");
     sinon.assert.calledOnce(spy1);
     sinon.assert.calledOnce(spy2);
@@ -83,5 +90,38 @@ describe('observable', function() {
     sinon.assert.calledOnce(spy1);
     sinon.assert.calledTwice(spy2);
     sinon.assert.calledTwice(spy3);
+  });
+
+  it("should call callbacks set with addListenerChangeCB", function() {
+    let obs = observable("test1");
+    let spy1 = sinon.spy(), spy2 = sinon.spy(), spyChange = sinon.spy();
+
+    assert.strictEqual(obs.hasListeners(), false);
+
+    // Test that hasListeners() works on its own.
+    let lis1 = obs.addListener(spy1);
+    assert.strictEqual(obs.hasListeners(), true);
+    lis1.dispose();
+    assert.strictEqual(obs.hasListeners(), false);
+    sinon.assert.notCalled(spy1);
+
+    // Test setListenerChangeCB.
+    obs.setListenerChangeCB(spyChange);
+
+    lis1 = obs.addListener(spy1);
+    assertResetSingleCall(spyChange, undefined, true);
+    assert.strictEqual(obs.hasListeners(), true);
+
+    let lis2 = obs.addListener(spy2);
+    assertResetSingleCall(spyChange, undefined, true);
+    assert.strictEqual(obs.hasListeners(), true);
+
+    lis1.dispose();
+    assertResetSingleCall(spyChange, undefined, true);
+    assert.strictEqual(obs.hasListeners(), true);
+
+    lis2.dispose();
+    assertResetSingleCall(spyChange, undefined, false);
+    assert.strictEqual(obs.hasListeners(), false);
   });
 });

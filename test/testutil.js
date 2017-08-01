@@ -7,6 +7,18 @@ const sinon = require('sinon');
 
 const perCallUsec = Symbol('perCallUsec');
 
+
+/**
+ * Assert that the given spy was called once with a certain context and arguments, and resets it.
+ */
+function assertResetSingleCall(spy, context, ...args) {
+  sinon.assert.calledOnce(spy);
+  sinon.assert.calledOn(spy, context);
+  sinon.assert.calledWithExactly(spy, ...args);
+  spy.reset();
+}
+exports.assertResetSingleCall = assertResetSingleCall;
+
 /**
  * Times a single call of func in microseconds, wrapping it in an `it(desc, ...)` call, with
  * timing info appended to the test's title. The test takes between msec/2 and msec to run.

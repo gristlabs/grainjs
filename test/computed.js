@@ -7,7 +7,7 @@ const computed = require('../lib/computed.js');
 const _computed_queue = require('../lib/_computed_queue.js');
 
 const _ = require('lodash');
-const assert = require('assert');
+const assert = require('chai').assert;
 const sinon = require('sinon');
 const ko = require('knockout');
 const timeit = require('./testutil.js').timeit;

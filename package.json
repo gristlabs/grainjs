@@ -29,7 +29,7 @@
     "babel-core": "^6.25.0",
     "babili": "^0.1.4",
     "browserify": "^14.4.0",
-    "chai": "^3.5.0",
+    "chai": "^4.1.0",
     "jsdom": "^9.4.1",
     "knockout": "^3.4.2",
     "mocha": "^3.0.1",

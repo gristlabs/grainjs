@@ -5,7 +5,7 @@
 const util = require('../lib/util.js');
 
 const _ = require('lodash');
-const assert = require('assert');
+const assert = require('chai').assert;
 const sinon = require('sinon');
 const timeit = require('./testutil.js').timeit;
 

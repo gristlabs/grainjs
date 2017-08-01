@@ -6,7 +6,7 @@ const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
 const subscribe = require('../lib/subscribe.js');
 
-const assert = require('assert');
+const assert = require('chai').assert;
 const sinon = require('sinon');
 
 describe('subscribe', function() {

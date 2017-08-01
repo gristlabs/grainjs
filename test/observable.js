@@ -3,18 +3,12 @@
 /* global describe, it */
 
 const observable = require('../lib/observable.js');
+const { assertResetSingleCall } = require('./testutil.js');
 
 const assert = require('assert');
 const sinon = require('sinon');
 
 describe('observable', function() {
-
-  function assertResetSingleCall(spy, context, ...args) {
-    sinon.assert.calledOnce(spy);
-    sinon.assert.calledOn(spy, context);
-    sinon.assert.calledWithExactly(spy, ...args);
-    spy.reset();
-  }
 
   it("should maintain a value", function() {
     // Test that initial value is set as expected, and can be retrieved.

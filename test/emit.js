@@ -2,27 +2,21 @@
 
 /* global describe, before, it */
 
-var emit = require('../lib/emit.js');
+const emit = require('../lib/emit.js');
+const { assertResetSingleCall } = require('./testutil.js');
 
-var assert = require('assert');
-var sinon = require('sinon');
-var timeit = require('./testutil.js').timeit;
+const assert = require('chai').assert;
+const sinon = require('sinon');
+const timeit = require('./testutil.js').timeit;
 
 describe('emitter.Emitter', function() {
 
-  function assertResetSingleCall(spy, context, ...args) {
-    sinon.assert.calledOnce(spy);
-    sinon.assert.calledOn(spy, context);
-    sinon.assert.calledWithExactly(spy, ...args);
-    spy.reset();
-  }
-
   it("should call subscribed listeners", function() {
-    var emitter = new emit.Emitter();
-    var obj = {};
-    var spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
-    var lis1 = emitter.addListener(spy1);
-    var lis2 = emitter.addListener(spy2, obj);
+    let emitter = new emit.Emitter();
+    let obj = {};
+    let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
+    let lis1 = emitter.addListener(spy1);
+    let lis2 = emitter.addListener(spy2, obj);
 
     emitter.emit("hello", 1, obj);
 
@@ -31,7 +25,7 @@ describe('emitter.Emitter', function() {
     assertResetSingleCall(spy2, obj, "hello", 1, obj);
     sinon.assert.notCalled(spy3);
 
-    var lis3 = emitter.addListener(spy3);
+    let lis3 = emitter.addListener(spy3);
     emitter.emit("test");
 
     assert(spy1.calledBefore(spy2));
@@ -57,19 +51,19 @@ describe('emitter.Emitter', function() {
   });
 
   it("should be correct on subscriptions/unsubscriptions during emit call", function() {
-    var spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
+    let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
 
     // This callback expect "cb" as second argument and calls it. It will do our bidding from
     // inside emit() calll.
-    var doCall = (arg, cb) => { cb(); };
+    let doCall = (arg, cb) => { cb(); };
 
-    var emitter = new emit.Emitter();
-    var lis1 = emitter.addListener(spy1);
+    let emitter = new emit.Emitter();
+    let lis1 = emitter.addListener(spy1);
     emitter.addListener(doCall);
 
     // Add a listener from inside another listener.
-    var lis2;
-    var cbAddLis2 = () => { lis2 = emitter.addListener(spy2); };
+    let lis2;
+    let cbAddLis2 = () => { lis2 = emitter.addListener(spy2); };
     emitter.emit("test", cbAddLis2);
     assertResetSingleCall(spy1, undefined, "test", cbAddLis2);
     // It might be better NOT to call a listener for the same event that caused it to be added,
@@ -77,7 +71,7 @@ describe('emitter.Emitter', function() {
     assertResetSingleCall(spy2, undefined, "test", cbAddLis2);
 
     // Make sure listeners are there, called in expected order.
-    var cbNoop = () => {};
+    let cbNoop = () => {};
     emitter.emit("test2", cbNoop);
     assert(spy1.calledBefore(spy2));
     assertResetSingleCall(spy1, undefined, "test2", cbNoop);
@@ -88,7 +82,7 @@ describe('emitter.Emitter', function() {
 
     // Now, remove both listeners from inside a listener. The effect of removal is seen
     // immediately in that subsequent listeners don't get called if they got removed.
-    var cbRemLis = () => { lis1.dispose(); lis2.dispose(); };
+    let cbRemLis = () => { lis1.dispose(); lis2.dispose(); };
     emitter.emit("test3", cbRemLis);
     assert(spy1.calledBefore(spy3));
     assertResetSingleCall(spy1, undefined, "test3", cbRemLis);
@@ -96,8 +90,8 @@ describe('emitter.Emitter', function() {
     assertResetSingleCall(spy3, undefined, "test3", cbRemLis);
 
     // Make sure both listeners are gone.
-    var called = false;
-    var cbMarkCalled = () => { called = true; };
+    let called = false;
+    let cbMarkCalled = () => { called = true; };
     emitter.emit("test4", cbMarkCalled);
     sinon.assert.notCalled(spy1);
     assert(called);       // Make sure our `doCall` listener is still there.

@@ -6,7 +6,7 @@ const dom = require('../lib/dom.js');
 const browserGlobals = require('../lib/browserGlobals.js');
 const G = browserGlobals.use('document', 'window', 'DocumentFragment');
 
-const assert = require('assert');
+const assert = require('chai').assert;
 const jsdom = require('jsdom');
 const sinon = require('sinon');
 
@@ -160,7 +160,7 @@ describe('dom', function() {
       assert.equal(elem.tagName, 'svg');
       assert.equal(elem.namespaceURI, 'http://www.w3.org/2000/svg');
       assert.equal(elem.id, 'foo');
-      assert.deepEqual(elem.classList, ['bar', 'baz']);
+      assert.deepEqual(Array.from(elem.classList), ['bar', 'baz']);
     });
   });
 

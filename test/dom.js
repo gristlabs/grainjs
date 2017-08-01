@@ -3,7 +3,10 @@
 /* global describe, before, after, it */
 
 const dom = require('../lib/dom.js');
+const observable = require('../lib/observable.js');
+const computed = require('../lib/computed.js');
 const browserGlobals = require('../lib/browserGlobals.js');
+const { assertResetSingleCall } = require('./testutil.js');
 const G = browserGlobals.use('document', 'window', 'DocumentFragment');
 
 const assert = require('chai').assert;
@@ -11,7 +14,7 @@ const jsdom = require('jsdom');
 const sinon = require('sinon');
 
 describe('dom', function() {
-  var jsdomDoc;
+  let jsdomDoc;
 
   before(function() {
     jsdomDoc = jsdom.jsdom("<!doctype html><html><body>" +
@@ -26,7 +29,7 @@ describe('dom', function() {
 
   describe("construction", function() {
     it("should create elements with the right tag name, class and ID", function() {
-      var elem = dom('div', "Hello world");
+      let elem = dom('div', "Hello world");
       assert.equal(elem.tagName, "DIV");
       assert(!elem.className);
       assert(!elem.id);
@@ -40,13 +43,13 @@ describe('dom', function() {
     });
 
     it("should set attributes", function() {
-      var elem = dom('a', { title: "foo", id: "bar" });
+      let elem = dom('a', { title: "foo", id: "bar" });
       assert.equal(elem.title, "foo");
       assert.equal(elem.id, "bar");
     });
 
     it("should set children", function() {
-      var elem = dom('div',
+      let elem = dom('div',
                      "foo", dom('a#a'),
                      [dom('a#b'), "bar", dom('a#c')],
                      dom.frag(dom('a#d'), "baz", dom('a#e')));
@@ -62,8 +65,8 @@ describe('dom', function() {
     });
 
     it('should flatten nested arrays and arrays returned from functions', function() {
-      var values = ['apple', 'orange', ['banana', 'mango']];
-      var elem = dom('ul',
+      let values = ['apple', 'orange', ['banana', 'mango']];
+      let elem = dom('ul',
         values.map(value => dom('li', value)),
         [
           dom('li', 'pear'),
@@ -85,7 +88,7 @@ describe('dom', function() {
     });
 
     it("should append append values returned from functions except undefined", function() {
-      var elem = dom('div',
+      let elem = dom('div',
         function(divElem) {
           divElem.classList.add('yogurt');
           return dom('div', 'sneakers');
@@ -103,7 +106,7 @@ describe('dom', function() {
     });
 
     it('should not append nulls', function() {
-      var elem = dom('div',
+      let elem = dom('div',
         [ "hello", null, "world", null, "jazz" ],
         'hands', null
       );
@@ -118,7 +121,7 @@ describe('dom', function() {
 
   describe("dom.dispose", function() {
     it("should call disposers on elem and descendants", function() {
-      var spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
+      let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
       let div, span, b, u;
       div = dom('div', dom.onDispose(spy1),
         span = dom('span', dom.onDispose(spy2),
@@ -137,7 +140,7 @@ describe('dom', function() {
     });
 
     it("should call multiple disposers on a single element", function() {
-      var spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
+      let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
       let div, span;
       div = dom('div', dom.onDispose(spy1),
         span = dom('span', dom.onDispose(spy2), dom.onDispose(spy3)));
@@ -166,21 +169,21 @@ describe('dom', function() {
 
   describe("dom.frag", function() {
     it("should create DocumentFragments", function() {
-      var elem1 = dom.frag("hello", "world");
+      let elem1 = dom.frag("hello", "world");
       assert(elem1 instanceof G.DocumentFragment);
       assert.equal(elem1.childNodes.length, 2);
       assert.equal(elem1.childNodes[0].data, "hello");
       assert.equal(elem1.childNodes[1].data, "world");
 
       // Same, but using an array.
-      var elem2 = dom.frag(["hello", "world"]);
+      let elem2 = dom.frag(["hello", "world"]);
       assert(elem2 instanceof G.DocumentFragment);
       assert.equal(elem2.childNodes.length, 2);
       assert.equal(elem2.childNodes[0].data, "hello");
       assert.equal(elem2.childNodes[1].data, "world");
 
       // A more complicated structure.
-      var elem3 = dom.frag(dom("div"), [dom("span"), "hello"], "world");
+      let elem3 = dom.frag(dom("div"), [dom("span"), "hello"], "world");
       assert.equal(elem3.childNodes.length, 4);
       assert.equal(elem3.childNodes[0].tagName, "DIV");
       assert.equal(elem3.childNodes[1].tagName, "SPAN");
@@ -189,8 +192,99 @@ describe('dom', function() {
     });
   });
 
-  describe("dom.methods", function() {
-    it("should all be tested, but lets leave it for when they support observables");
-  });
+  describe("simple methods", function() {
+    it("should update dynamically", function() {
+      let obs = observable('bar');
+      let width = observable(17);
+      let child1, child2;
+      let elem = dom('div',
+                     dom.attr('a1', 'foo'),
+                     dom.attr('a2', obs),
+                     dom.attr('a3', use => "a3" + use(obs)),
+                     dom.boolAttr('b1', obs),
+                     dom.prop('value', use => "prop" + use(obs) + use(width)),
+                     dom.text(obs),
+                     dom.style('width', use => use(width) + 'px'),
+                     dom.toggleClass('isbar', use => use(obs) === 'bar'),
+                     dom.cssClass(use => 'class' + use(obs)),
+                     child1 = dom('span', dom.hide(use => use(width) < 10)),
+                     child2 = dom('span', dom.show(use => use(width) < 10)));
 
+      assert.equal(elem.getAttribute('a1'), 'foo');
+      assert.equal(elem.getAttribute('a2'), 'bar');
+      assert.equal(elem.getAttribute('a3'), 'a3bar');
+      assert.equal(elem.getAttribute('b1'), '');
+      assert.equal(elem.value, 'propbar17');
+      assert.equal(elem.textContent, 'bar');
+      assert.equal(elem.style.width, '17px');
+      assert.equal(elem.className, 'isbar classbar');
+      assert.equal(child1.style.display, '');
+      assert.equal(child2.style.display, 'none');
+
+      obs.set('BAZ');
+      width.set('34');
+      assert.equal(elem.getAttribute('a1'), 'foo');
+      assert.equal(elem.getAttribute('a2'), 'BAZ');
+      assert.equal(elem.getAttribute('a3'), 'a3BAZ');
+      assert.equal(elem.getAttribute('b1'), '');
+      assert.equal(elem.value, 'propBAZ34');
+      assert.equal(elem.textContent, 'BAZ');
+      assert.equal(elem.style.width, '34px');
+      assert.equal(elem.className, 'classBAZ');
+
+      obs.set('');
+      assert.equal(elem.hasAttribute('b1'), false);
+      assert.equal(elem.value, 'prop34');
+
+      obs.set('bar');
+      assert.equal(elem.hasAttribute('b1'), true);
+      assert.equal(elem.value, 'propbar34');
+      assert.equal(elem.className, 'classbar isbar');
+      assert.equal(child1.style.display, '');
+      assert.equal(child2.style.display, 'none');
+
+      width.set(5);
+      assert.equal(elem.style.width, '5px');
+      assert.equal(elem.value, 'propbar5');
+      assert.equal(child1.style.display, 'none');
+      assert.equal(child2.style.display, '');
+    });
+
+    it('should auto-dispose subscriptions', function() {
+      let spy1 = sinon.stub().returnsArg(0),
+          spy2 = sinon.stub().returnsArg(0),
+          spy3 = sinon.stub().returnsArg(0);
+      let obs = observable('foo');
+      let comp = computed(obs, (use, obs) => spy1(obs.toUpperCase()));
+      let elem = dom('div',
+                     dom.attr('aaa', obs),
+                     dom.prop('bbb', use => spy2("bbb" + use(obs))),
+                     dom.style('ccc', comp),
+                     dom.autoDispose(comp),
+                     dom.boolAttr('bool', use => spy3(use(comp) === "FOO")));
+
+      assert.equal(elem.getAttribute('aaa'), 'foo');
+      assert.equal(elem.bbb, 'bbbfoo');
+      assert.equal(elem.style.ccc, 'FOO');
+      assert.equal(elem.hasAttribute('bool'), true);
+      assertResetSingleCall(spy1, undefined, "FOO");
+      assertResetSingleCall(spy2, undefined, "bbbfoo");
+      assertResetSingleCall(spy3, undefined, true);
+
+      obs.set('bar');
+      assert.equal(elem.getAttribute('aaa'), 'bar');
+      assert.equal(elem.bbb, 'bbbbar');
+      assert.equal(elem.style.ccc, 'BAR');
+      assert.equal(elem.hasAttribute('bool'), false);
+      assertResetSingleCall(spy1, undefined, "BAR");
+      assertResetSingleCall(spy2, undefined, "bbbbar");
+      assertResetSingleCall(spy3, undefined, false);
+
+      dom.dispose(elem);
+      obs.set('foo');
+      sinon.assert.notCalled(spy1);
+      sinon.assert.notCalled(spy2);
+      sinon.assert.notCalled(spy3);
+    });
+  });
 });

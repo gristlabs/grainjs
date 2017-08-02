@@ -33,7 +33,7 @@
     "jsdom": "^9.4.1",
     "knockout": "^3.4.2",
     "mocha": "^3.0.1",
-    "sinon": "^1.17.5"
+    "sinon": "^2.4.1"
   },
   "dependencies": {
     "fast.js": "^0.1.1",

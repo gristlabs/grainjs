@@ -9,13 +9,18 @@ const perCallUsec = Symbol('perCallUsec');
 
 
 /**
- * Assert that the given spy was called once with a certain context and arguments, and resets it.
+ * Assert that the given spy was called once with a certain context and arguments, and resets its
+ * history. Also works for stubs.
  */
 function assertResetSingleCall(spy, context, ...args) {
   sinon.assert.calledOnce(spy);
   sinon.assert.calledOn(spy, context);
   sinon.assert.calledWithExactly(spy, ...args);
-  spy.reset();
+  if (typeof spy.resetHistory === 'function') {
+    spy.resetHistory();   // This is the appropriate method for stubs.
+  } else {
+    spy.reset();
+  }
 }
 exports.assertResetSingleCall = assertResetSingleCall;
 
@@ -103,7 +108,8 @@ function consoleCapture(optMethodNames, bodyFunc) {
   let methodNames = (bodyFunc === undefined ? ['log'] : optMethodNames);
   let func = (bodyFunc === undefined ? optMethodNames : bodyFunc);
   let messages = [];
-  methodNames.forEach(m => sinon.stub(console, m, (...args) => _capture(messages, m, ...args)));
+  methodNames.forEach(m => sinon.stub(console, m).callsFake(
+    (...args) => _capture(messages, m, ...args)));
   try {
     return func(messages);
   } finally {

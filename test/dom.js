@@ -272,6 +272,8 @@ describe('dom', function() {
       assertResetSingleCall(spy3, undefined, true);
 
       obs.set('bar');
+      assert.equal(comp.get(), 'BAR');
+
       assert.equal(elem.getAttribute('aaa'), 'bar');
       assert.equal(elem.bbb, 'bbbbar');
       assert.equal(elem.style.ccc, 'BAR');

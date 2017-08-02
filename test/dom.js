@@ -250,6 +250,36 @@ describe('dom', function() {
       assert.equal(child2.style.display, '');
     });
 
+    it('should support associating data with DOM', function() {
+      let val = {1:2};
+      let obs1 = observable('bar');
+      let obs2 = observable(val);
+      let elem = dom('div',
+        dom.data('obs1', obs1),
+        dom.data('obs2', obs2));
+      assert.strictEqual(dom.getData(elem, 'obs1'), 'bar');
+      assert.strictEqual(dom.getData(elem, 'obs2'), val);
+
+      obs1.set('foo');
+      assert.strictEqual(dom.getData(elem, 'obs1'), 'foo');
+      assert.strictEqual(dom.getData(elem, 'obs2'), val);
+
+      val = {3:4};
+      obs2.set(val);
+      assert.strictEqual(dom.getData(elem, 'obs1'), 'foo');
+      assert.strictEqual(dom.getData(elem, 'obs2'), val);
+
+      obs1.set(undefined);
+      assert.strictEqual(dom.getData(elem, 'obs1'), undefined);
+      obs1.set('foo');
+      assert.strictEqual(dom.getData(elem, 'obs1'), 'foo');
+
+      dom.dispose(elem);
+      obs1.set('bar');
+      assert.strictEqual(dom.getData(elem, 'obs1'), undefined);
+      assert.strictEqual(dom.getData(elem, 'obs2'), undefined);
+    });
+
     it('should auto-dispose subscriptions', function() {
       let spy1 = sinon.stub().returnsArg(0),
           spy2 = sinon.stub().returnsArg(0),

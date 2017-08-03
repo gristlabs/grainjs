@@ -155,6 +155,27 @@ describe('dom', function() {
       assert(spy3.calledBefore(spy2));
       assert(spy2.calledBefore(spy1));
     });
+
+    it("should call disposers when a function argument throws exception", function() {
+      let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy(), spy4 = sinon.spy();
+      let div, span, input;
+      assert.throws(() =>
+        div = dom('div', dom.onDispose(spy1),
+          span = dom('span',
+            dom.onDispose(spy2),
+            input = dom('input', dom.onDispose(spy3)),
+            elem => { throw new Error("fake"); },
+            dom.onDispose(spy4))),
+        /fake/);
+      // We don't have div and span set, but they are still passed to dispose functions.
+      sinon.assert.notCalled(spy1);
+      sinon.assert.calledOnce(spy2);
+      sinon.assert.calledWithExactly(spy2, sinon.match.has('tagName', 'SPAN'));
+      sinon.assert.calledOnce(spy3);
+      sinon.assert.calledWithExactly(spy3, sinon.match.has('tagName', 'INPUT'));
+      sinon.assert.notCalled(spy4);
+      assert.isTrue(spy3.calledBefore(spy2));
+    });
   });
 
   describe("dom.svg", function() {
@@ -304,6 +325,7 @@ describe('dom', function() {
       obs.set('bar');
       assert.equal(comp.get(), 'BAR');
 
+      // Check that DOM gets updated and computed-functions called.
       assert.equal(elem.getAttribute('aaa'), 'bar');
       assert.equal(elem.bbb, 'bbbbar');
       assert.equal(elem.style.ccc, 'BAR');
@@ -312,9 +334,10 @@ describe('dom', function() {
       assertResetSingleCall(spy2, undefined, "bbbbar");
       assertResetSingleCall(spy3, undefined, false);
 
+      // Once disposed, check that computed-functions do not get called.
       dom.dispose(elem);
       obs.set('foo');
-      sinon.assert.notCalled(spy1);
+      sinon.assert.notCalled(spy1);   // comp doesn't get called because of dom.autoDispose(comp).
       sinon.assert.notCalled(spy2);
       sinon.assert.notCalled(spy3);
     });

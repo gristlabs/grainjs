@@ -2,6 +2,7 @@
 
 /* global describe, before, after, it */
 
+const dispose = require('../lib/dispose.js');
 const dom = require('../lib/dom.js');
 const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
@@ -386,6 +387,50 @@ describe('dom', function() {
       sinon.assert.notCalled(spy1);   // comp doesn't get called because of dom.autoDispose(comp).
       sinon.assert.notCalled(spy2);
       sinon.assert.notCalled(spy3);
+    });
+  });
+
+  describe("component", function() {
+    class Comp extends dispose.Disposable(Object) {
+      constructor(arg, spies) {
+        super();
+        this.arg = arg;
+        this.spies = spies;
+        this.spies.onConstruct(arg);
+        this.autoDisposeCallback(() => this.spies.onDispose());
+      }
+      render() {
+        return dom('div', dom.toggleClass(this.arg.toUpperCase(), true),
+          this.spies.onRender,
+          dom.onDispose(this.spies.onDomDispose));
+      }
+    }
+
+    it("should call render and disposers correctly", function() {
+      function makeSpies() {
+        return {
+          onConstruct: sinon.spy(),
+          onDispose: sinon.spy(),
+          onRender: sinon.spy(),
+          onDomDispose: sinon.spy(),
+        };
+      }
+      let spies1 = makeSpies(), spies2 = makeSpies();
+
+      let elem = dom('div', 'Hello',
+        dom.component(Comp, 'foo', spies1),
+        dom.component(Comp, 'bar', spies2),
+        'World');
+
+      assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
+      assertResetSingleCall(spies2.onConstruct, spies2, 'bar');
+      assertResetSingleCall(spies1.onRender, undefined, sinon.match.has('className', 'FOO'));
+      assertResetSingleCall(spies2.onRender, undefined, sinon.match.has('className', 'BAR'));
+      dom.dispose(elem);
+      assertResetSingleCall(spies1.onDispose, spies1);
+      assertResetSingleCall(spies2.onDispose, spies2);
+      assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
+      assertResetSingleCall(spies2.onDomDispose, undefined, sinon.match.has('className', 'BAR'));
     });
   });
 });

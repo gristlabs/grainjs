@@ -2,14 +2,14 @@
 
 /* global describe, it */
 
+const ko = require('knockout');
 const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
-const kowrap = require('../lib/kowrap.js');
+const kowrap = require('../lib/kowrap.js')(ko);
 const { assertResetSingleCall } = require('./testutil.js');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');
-const ko = require('knockout');
 
 describe('kowrap', function() {
 

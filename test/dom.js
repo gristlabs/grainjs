@@ -7,7 +7,7 @@ const dom = require('../lib/dom.js');
 const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
 const browserGlobals = require('../lib/browserGlobals.js');
-const { assertResetSingleCall } = require('./testutil.js');
+const { assertResetSingleCall, consoleCapture } = require('./testutil.js');
 const G = browserGlobals.use('document', 'window', 'DocumentFragment');
 
 const assert = require('chai').assert;
@@ -406,20 +406,21 @@ describe('dom', function() {
       }
     }
 
+    function makeSpies() {
+      return {
+        onConstruct: sinon.spy(),
+        onDispose: sinon.spy(),
+        onRender: sinon.spy(),
+        onDomDispose: sinon.spy(),
+      };
+    }
+
     it("should call render and disposers correctly", function() {
-      function makeSpies() {
-        return {
-          onConstruct: sinon.spy(),
-          onDispose: sinon.spy(),
-          onRender: sinon.spy(),
-          onDomDispose: sinon.spy(),
-        };
-      }
       let spies1 = makeSpies(), spies2 = makeSpies();
 
       let elem = dom('div', 'Hello',
-        dom.component(Comp, 'foo', spies1),
-        dom.component(Comp, 'bar', spies2),
+        dom.create(Comp, 'foo', spies1),
+        dom.create(Comp, 'bar', spies2),
         'World');
 
       assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
@@ -431,6 +432,58 @@ describe('dom', function() {
       assertResetSingleCall(spies2.onDispose, spies2);
       assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
       assertResetSingleCall(spies2.onDomDispose, undefined, sinon.match.has('className', 'BAR'));
+    });
+
+    it('should dispose even on a later exception', function() {
+      let spies1 = makeSpies(), spies2 = makeSpies();
+      spies2.onConstruct = sinon.stub().throws(new Error('ctor throw'));
+
+      consoleCapture(['error'], messages => {
+        assert.throws(() =>
+          dom('div', 'Hello',
+            dom.create(Comp, 'foo', spies1),
+            dom.create(Comp, 'bar', spies2),
+            'World'
+          ),
+          /ctor throw/
+        );
+      });
+      assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
+      assertResetSingleCall(spies1.onRender, undefined, sinon.match.has('className', 'FOO'));
+      assertResetSingleCall(spies1.onDispose, spies1);
+      assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
+      // The second component has an exception during construction.
+      assertResetSingleCall(spies2.onConstruct, spies2, 'bar');
+      sinon.assert.notCalled(spies2.onRender);
+      sinon.assert.notCalled(spies2.onDispose);
+      sinon.assert.notCalled(spies2.onDomDispose);
+    });
+
+    it('should solve an issue with inline construction', function() {
+      // Test the NOT-recommended way, to explain the problem with it.
+      // [Keep this case identical to the above except for how components are constructed!]
+      let spies1 = makeSpies(), spies2 = makeSpies();
+      spies2.onConstruct = sinon.stub().throws(new Error('ctor throw'));
+
+      consoleCapture(['error'], messages => {
+        assert.throws(() =>
+          dom('div', 'Hello',
+            dom.render(Comp.create('foo', spies1)),
+            dom.render(Comp.create('bar', spies2)),
+            'World'
+          ),
+          /ctor throw/
+        );
+      });
+      // Note the problem: the first component gets constructed but not disposed on an exception.
+      assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
+      sinon.assert.notCalled(spies1.onRender);
+      sinon.assert.notCalled(spies1.onDispose);     // This is the problem-line!
+      sinon.assert.notCalled(spies1.onDomDispose);
+      assertResetSingleCall(spies2.onConstruct, spies2, 'bar');
+      sinon.assert.notCalled(spies2.onRender);
+      sinon.assert.notCalled(spies2.onDispose);
+      sinon.assert.notCalled(spies2.onDomDispose);
     });
   });
 });

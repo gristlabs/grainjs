@@ -176,52 +176,6 @@ describe('dom', function() {
       sinon.assert.notCalled(spy4);
       assert.isTrue(spy3.calledBefore(spy2));
     });
-
-    it("should support dom disposers skipping a range of nodes", function() {
-      let spy = [], spy2b, spy4a, spy4b;
-      let el = [];
-      // This is a bit hard to read, but it is simply a nested DOM structure where each element
-      // has a disposer. We save elements in `el` array and disposer spys in `spy` array, with a
-      // few exceptions. In the middle, when we reach el[4] we skip to el[7], inclusive.
-      el[0] = dom('div', dom.onDispose(spy[0] = sinon.spy()),
-        el[1] = dom('span', '1', dom.onDispose(spy[1] = sinon.spy())),
-        el[2] = dom('span', '2',
-          dom.onDispose(spy[2] = sinon.spy()),
-          el[3] = dom('div', dom.onDispose(spy[3] = sinon.spy())),
-          el[4] = dom('div',
-            // Extra disposers should be fine; the last non-falsy one is used for skipping.
-            dom.onDispose(spy4a = sinon.spy()),
-            dom.onDispose(spy[4] = sinon.spy(elem => el[7])),
-            dom.onDispose(spy4b = sinon.spy()),
-            // Note that THIS disposer is called because it actually is handled BEFORE the skip.
-            el[5] = dom('input', dom.onDispose(spy[5] = sinon.spy()))
-          ),
-          el[6] = dom('div', dom.onDispose(spy[6] = sinon.spy())),
-          el[7] = dom('div', dom.onDispose(spy[7] = sinon.spy()),
-            el[8] = dom('input', dom.onDispose(spy[8] = sinon.spy()))
-          ),
-          el[9] = dom('div', dom.onDispose(spy[9] = sinon.spy())),
-          dom.onDispose(spy2b = sinon.spy())
-        ),
-        el[10] = dom('span', '3', dom.onDispose(spy[10] = sinon.spy()))
-      );
-      dom.dispose(el[0]);
-      assertResetSingleCall(spy[0], undefined, el[0]);
-      assertResetSingleCall(spy[1], undefined, el[1]);
-      assertResetSingleCall(spy[2], undefined, el[2]);
-      assertResetSingleCall(spy2b,  undefined, el[2]);
-      assertResetSingleCall(spy[3], undefined, el[3]);
-      assertResetSingleCall(spy[4], undefined, el[4]);
-      assertResetSingleCall(spy4a,  undefined, el[4]);
-      assertResetSingleCall(spy4b,  undefined, el[4]);
-      assertResetSingleCall(spy[5], undefined, el[5]);
-      sinon.assert.notCalled(spy[6]);
-      sinon.assert.notCalled(spy[7]);
-      sinon.assert.notCalled(spy[8]);
-      assertResetSingleCall(spy[9], undefined, el[9]);
-      assertResetSingleCall(spy[10], undefined, el[10]);
-
-    });
   });
 
   describe("dom.svg", function() {

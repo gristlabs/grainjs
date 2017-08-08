@@ -443,5 +443,60 @@ describe('dom', function() {
       sinon.assert.notCalled(spies2.onDispose);
       sinon.assert.notCalled(spies2.onDomDispose);
     });
+
+    it('should support render() returning any number of children', function() {
+      let components = [];
+      class Comp extends dom.Component {
+        constructor(arg, spies) {
+          super();
+          this.arg = arg;
+          this.spies = spies;
+          this.spies.onConstruct(arg);
+          this.autoDisposeCallback(() => this.spies.onDispose());
+          components.push(this);
+        }
+        render() {
+          return [
+            dom('div', '(', dom.text(this.arg.toLowerCase()), ')'),
+            dom('span', '[', dom.text(this.arg.toUpperCase()), ']'),
+            this.spies.onRender,
+            // A disposer like this is only run when the DOM containing this Component is
+            // disposed, it doesn't get run when the component itself is disposed.
+            dom.onDispose(this.spies.onDomDispose)
+          ];
+        }
+      }
+
+      let spies1 = makeSpies(), spies2 = makeSpies();
+
+      let elem = dom('div.parent', 'Hello',
+        dom.create(Comp, 'Xx', spies1),
+        dom.create(Comp, 'Yy', spies2),
+        'World');
+
+      assertResetSingleCall(spies1.onConstruct, spies1, 'Xx');
+      assertResetSingleCall(spies2.onConstruct, spies2, 'Yy');
+      assertResetSingleCall(spies1.onRender, undefined, sinon.match.same(elem));
+      assertResetSingleCall(spies2.onRender, undefined, sinon.match.same(elem));
+      assert.equal(elem.innerHTML, 'Hello<!--A--><div>(xx)</div><span>[XX]</span><!--B-->' +
+        '<!--A--><div>(yy)</div><span>[YY]</span><!--B-->World');
+
+      // We don't make it easy to get a handle to a created component, but if we manage to, and
+      // dispose it, its DOM should get removed.
+      components[0].dispose();
+      assert.equal(elem.innerHTML, 'Hello<!--A--><div>(yy)</div><span>[YY]</span><!--B-->World');
+      assertResetSingleCall(spies1.onDispose, spies1);
+      // This isn't a great behavior, but it makes sense: a disposer returned as part of an array
+      // is attached to the parent containing the Component, and not called until THAT's disposed.
+      sinon.assert.notCalled(spies1.onDomDispose);
+
+      // If we dispose the parent, the DOM doesn't need to be modified, but disposers get called.
+      dom.dispose(elem);
+      // Check that DOM isn't modified (that would be wasteful).
+      assert.equal(elem.innerHTML, 'Hello<!--A--><div>(yy)</div><span>[YY]</span><!--B-->World');
+      assertResetSingleCall(spies2.onDispose, spies2);
+      assertResetSingleCall(spies2.onDomDispose, undefined, sinon.match.same(elem));
+      assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.same(elem));
+    });
   });
 });

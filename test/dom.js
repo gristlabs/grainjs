@@ -2,7 +2,6 @@
 
 /* global describe, before, after, it */
 
-const dispose = require('../lib/dispose.js');
 const dom = require('../lib/dom.js');
 const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
@@ -391,7 +390,7 @@ describe('dom', function() {
   });
 
   describe("component", function() {
-    class Comp extends dispose.Disposable(Object) {
+    class Comp extends dom.Component {
       constructor(arg, spies) {
         super();
         this.arg = arg;
@@ -465,11 +464,16 @@ describe('dom', function() {
       let spies1 = makeSpies(), spies2 = makeSpies();
       spies2.onConstruct = sinon.stub().throws(new Error('ctor throw'));
 
+      // Function from the explanatory example in the comment to createElem().
+      function _insert_(component) {
+        return elem => component._mount(elem);
+      }
+
       consoleCapture(['error'], messages => {
         assert.throws(() =>
           dom('div', 'Hello',
-            dom.render(Comp.create('foo', spies1)),
-            dom.render(Comp.create('bar', spies2)),
+            _insert_(Comp.create('foo', spies1)),
+            _insert_(Comp.create('bar', spies2)),
             'World'
           ),
           /ctor throw/

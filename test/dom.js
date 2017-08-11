@@ -499,4 +499,246 @@ describe('dom', function() {
       assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.same(elem));
     });
   });
+
+
+  describe('computed', function() {
+
+    it('should work for comparative examples in documentation', function() {
+      let nlinesObs = observable(1);
+      let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
+      const textareaHTML = '<!--a--><textarea></textarea><!--b-->';
+      const inputHTML = '<!--a--><input><!--b-->';
+
+      // Example 1: Here dom.computed() listens to nlinesObs directly, but rebuilds DOM when it
+      // changes between 2 and 3.
+      let elem1 = dom('div', dom.computed(nlinesObs, nlines => nlines > 1 ?
+        dom('textarea', dom.onDispose(spy1)) : dom('input', dom.onDispose(spy1))));
+
+      // Example 2: The recommended way; dom.computed() takes a function whose value only
+      // changes when DOM needs to be rebuilt.
+      let elem2 = dom('div', dom.computed(use => use(nlinesObs) > 1, isTall => isTall ?
+        dom('textarea', dom.onDispose(spy2)) : dom('input', dom.onDispose(spy2))));
+
+      // Example 3: The computed returns DOM omitting last arg. Makes it too easy to do things
+      // the wrong way, and suffers here from unnecessary rebuilding, as Example 1.
+      let elem3 = dom('div', dom.computed(use => use(nlinesObs) > 1 ?
+        dom('textarea', dom.onDispose(spy3)) : dom('input', dom.onDispose(spy3))));
+
+      function checkDispose(spy, tagName) {
+        if (tagName) {
+          assertResetSingleCall(spy, undefined, sinon.match.has('tagName', tagName));
+        } else {
+          sinon.assert.notCalled(spy);
+        }
+      }
+      function checkAllDispose(tagName) {
+        checkDispose(spy1, tagName);
+        checkDispose(spy2, tagName);
+        checkDispose(spy3, tagName);
+      }
+      function checkAllHTML(html) {
+        assert.equal(elem1.innerHTML, html);
+        assert.equal(elem2.innerHTML, html);
+        assert.equal(elem3.innerHTML, html);
+      }
+
+      // All examples get correct DOM initially.
+      checkAllHTML(inputHTML);
+
+      // All dispose previous DOM, and build new one correctly when observable changes.
+      nlinesObs.set(2);
+      checkAllHTML(textareaHTML);
+      checkAllDispose('INPUT');
+
+      // Here all examples have correct HTML, but only the second one avoids rebuilding DOM unnecessarily.
+      nlinesObs.set(3);
+      checkAllHTML(textareaHTML);
+      checkDispose(spy1, 'TEXTAREA');
+      checkDispose(spy2, null);
+      checkDispose(spy3, 'TEXTAREA');
+
+      // All examples have to rebuild DOM and correctly dispose previous DOM.
+      nlinesObs.set(1);
+      checkAllHTML(inputHTML);
+      checkAllDispose('TEXTAREA');
+
+      // Check that disposing the parent calls disposers but doesn't change HTML.
+      dom.dispose(elem1);
+      dom.dispose(elem2);
+      dom.dispose(elem3);
+      checkAllHTML(inputHTML);
+      checkAllDispose('INPUT');
+
+      // Check that after disposal, changes to the observable are ignored.
+      nlinesObs.set(2);
+      checkAllHTML(inputHTML);
+      checkAllDispose(null);
+    });
+
+    it('should be able to depend on several observables', function() {
+      let readonlyObs = observable(false);
+      let nlinesObs = observable(1);
+      let spy = sinon.spy();
+      const textareaHTML = '<!--a--><textarea></textarea><!--b-->';
+      const inputHTML = '<!--a--><input><!--b-->';
+      const divHTML = '<!--a--><div></div><!--b-->';
+
+      let elem = dom('div', dom.computed(use => use(readonlyObs) ?
+        dom('div', dom.onDispose(spy)) :
+        (use(nlinesObs) > 1 ?
+          dom('textarea', dom.onDispose(spy)) :
+          dom('input', dom.onDispose(spy)))));
+
+      function checkDispose(tagName) {
+        if (tagName) {
+          assertResetSingleCall(spy, undefined, sinon.match.has('tagName', tagName));
+        } else {
+          sinon.assert.notCalled(spy);
+        }
+      }
+      function checkHTML(html) {
+        assert.equal(elem.innerHTML, html);
+      }
+
+      checkHTML(inputHTML);
+
+      nlinesObs.set(2);
+      checkHTML(textareaHTML);
+      checkDispose('INPUT');
+
+      nlinesObs.set(3);
+      checkHTML(textareaHTML);      // still the same
+      checkDispose('TEXTAREA');     // suboptimal: disposes unnecessarily
+
+      readonlyObs.set(true);
+      checkHTML(divHTML);
+      checkDispose('TEXTAREA');
+
+      // At this point, there is no subscription to nlinesObs, so changes should be ignored.
+      nlinesObs.set(1);
+      checkHTML(divHTML);
+      checkDispose(null);
+
+      // After resetting readonlyObs, nlinesObs is used again.
+      readonlyObs.set(false);
+      checkHTML(inputHTML);
+      checkDispose('DIV');
+
+      // Check that disposing the parent calls disposers but doesn't change HTML.
+      dom.dispose(elem);
+      checkHTML(inputHTML);
+      checkDispose('INPUT');
+
+      // Check that after disposal, changes to the observable are ignored.
+      readonlyObs.set(true);
+      nlinesObs.set(2);
+      checkHTML(inputHTML);
+      checkDispose(null);
+
+    });
+
+    it('should work for non-observable values', function() {
+      // This examples shows how to use dom.computed() for plain values, but recommeds against it.
+      // This example ALSO tests that the dom.computed() callback may return an array.
+      let listValue = [1,2,3];
+      let listObs = observable([1,2,3]);
+      let elem1 = dom('div', dom.computed(listObs,    list => list.map(x => dom('div', x))));
+      let elem2 = dom('div', dom.computed(listValue,  list => list.map(x => dom('div', x))));
+      let elem3 = dom('div', listValue.map(x => dom('div', x)));
+
+      let html = '<div>1</div><div>2</div><div>3</div>';
+      assert.equal(elem1.innerHTML, `<!--a-->${html}<!--b-->`);
+      assert.equal(elem2.innerHTML, `<!--a-->${html}<!--b-->`);
+      assert.equal(elem3.innerHTML, html);
+
+      // Only changes to the observable value cause the DOM to change.
+      let htmlNew = '<div>A</div><div>B</div>';
+      listValue = ['A', 'B'];
+      listObs.set(['A', 'B']);
+      assert.equal(elem1.innerHTML, `<!--a-->${htmlNew}<!--b-->`);
+      assert.equal(elem2.innerHTML, `<!--a-->${html}<!--b-->`);
+      assert.equal(elem3.innerHTML, html);
+    });
+
+    it("should handle any number of children", function() {
+      var obs = observable();
+      var elem = dom('div', 'Hello', dom.computed(obs), 'World');
+      assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
+      obs.set("Foo");
+      assert.equal(elem.innerHTML, 'Hello<!--a-->Foo<!--b-->World');
+      obs.set([]);
+      assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
+      obs.set(["Foo", "Bar"]);
+      assert.equal(elem.innerHTML, 'Hello<!--a-->FooBar<!--b-->World');
+      obs.set(null);
+      assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
+      obs.set([dom.frag("Foo", dom("span", "Bar")), dom("div", "Baz")]);
+      assert.equal(elem.innerHTML, 'Hello<!--a-->Foo<span>Bar</span><div>Baz</div><!--b-->World');
+    });
+
+    it("should cope with children getting removed outside", function() {
+      var obs = observable();
+      var elem = dom('div', 'Hello', dom.computed(obs), 'World');
+      assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
+
+      obs.set(dom.frag(dom('div', 'Foo'), dom('div', 'Bar')));
+      assert.equal(elem.innerHTML, 'Hello<!--a--><div>Foo</div><div>Bar</div><!--b-->World');
+      elem.removeChild(elem.childNodes[2]);
+      assert.equal(elem.innerHTML, 'Hello<!--a--><div>Bar</div><!--b-->World');
+      obs.set(null);
+      assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
+
+      obs.set(dom.frag(dom('div', 'Foo'), dom('div', 'Bar')));
+      elem.removeChild(elem.childNodes[3]);
+      assert.equal(elem.innerHTML, 'Hello<!--a--><div>Foo</div><!--b-->World');
+      obs.set(dom.frag(dom('div', 'Foo'), dom('div', 'Bar')));
+      assert.equal(elem.innerHTML, 'Hello<!--a--><div>Foo</div><div>Bar</div><!--b-->World');
+
+      // Remove all children including the marker elements.
+      while (elem.firstChild) {
+        elem.removeChild(elem.firstChild);
+      }
+      assert.equal(elem.innerHTML, '');
+      // We can't expect anything good if we lost the markers, but it shouldn't cause errors.
+      obs.set('Foo');
+      assert.equal(elem.innerHTML, '');
+    });
+  });
+
+
+  describe("maybe", function() {
+
+    it("should handle any number of children", function() {
+      var obs = observable(0);
+      var elem = dom('div',
+        'Hello',
+        dom.maybe(use => use(obs) > 0, () => dom('span', 'Foo')),
+        dom.maybe(use => use(obs) > 1, () => [dom('span', 'Foo'), dom('span', 'Bar')]),
+        'World');
+      assert.equal(elem.textContent, "HelloWorld");
+      assert.equal(elem.innerHTML, "Hello<!--a--><!--b--><!--a--><!--b-->World");
+      obs.set(1);
+      assert.equal(elem.textContent, "HelloFooWorld");
+      assert.equal(elem.innerHTML, "Hello<!--a--><span>Foo</span><!--b--><!--a--><!--b-->World");
+      obs.set(2);
+      assert.equal(elem.textContent, "HelloFooFooBarWorld");
+      assert.equal(elem.innerHTML, "Hello<!--a--><span>Foo</span><!--b-->" +
+        "<!--a--><span>Foo</span><span>Bar</span><!--b-->World");
+      obs.set(0);
+      assert.equal(elem.textContent, "HelloWorld");
+      assert.equal(elem.innerHTML, "Hello<!--a--><!--b--><!--a--><!--b-->World");
+    });
+
+    it("should pass truthy values to the content function", function() {
+      var obs = observable(null);
+      var elem = dom('div', 'Hello', dom.maybe(obs, x => x), 'World');
+      assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
+      obs.set(dom('span', 'Foo'));
+      assert.equal(elem.innerHTML, 'Hello<!--a--><span>Foo</span><!--b-->World');
+      obs.set(dom('span', 'Bar'));
+      assert.equal(elem.innerHTML, 'Hello<!--a--><span>Bar</span><!--b-->World');
+      obs.set(0);   // Falsy values should destroy the content
+      assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
+    });
+  });
 });

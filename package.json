@@ -9,7 +9,7 @@
   "scripts": {
     "test": "mocha -R list --harmony test",
     "build": "mkdir -p dist && browserify index.js -o dist/grain-only.debug.js --no-bundle-external && babili dist/grain-only.debug.js -o dist/grain-only.min.js",
-    "buildall": "mkdir -p dist && browserify index.js -o dist/grain-full.debug.js && babili dist/grain-full.debug.js -o dist/grain-full.min.js"
+    "buildall": "mkdir -p dist && browserify index.js -s grainjs -o dist/grain-full.debug.js && babili dist/grain-full.debug.js -o dist/grain-full.min.js"
   },
   "repository": {
     "type": "git",

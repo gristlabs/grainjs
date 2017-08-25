@@ -7,7 +7,7 @@ const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
 const browserGlobals = require('../lib/browserGlobals.js');
 const { assertResetSingleCall, consoleCapture } = require('./testutil.js');
-const G = browserGlobals.use('document', 'window', 'DocumentFragment');
+const G = browserGlobals.use('DocumentFragment');
 
 const assert = require('chai').assert;
 const jsdom = require('jsdom');

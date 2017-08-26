@@ -24,7 +24,7 @@ describe('dispose', function() {
       let cleanup1 = sinon.spy();
       let cleanup2 = sinon.spy();
 
-      class Foo extends dispose.Disposable(Object) {
+      class Foo extends dispose.Disposable {
         create() {
           this.bar = this.autoDispose(bar);
           this.baz = this.autoDisposeWithMethod('destroy', baz);
@@ -79,7 +79,7 @@ describe('dispose', function() {
         }
       }
       let cleanup = sinon.spy();
-      class Bar extends dispose.Disposable(Foo) {
+      class Bar extends dispose.mixinDisposable(Foo) {
         create() {
           this.autoDisposeCallback(cleanup);
         }
@@ -98,12 +98,12 @@ describe('dispose', function() {
     it("should wipe object, only when requested", function() {
       let bar1 = new Bar();
       let bar2 = new Bar();
-      class Foo extends dispose.Disposable(Object) {
+      class Foo extends dispose.Disposable {
         create() {
           this.bar = this.autoDispose(bar1);
         }
       }
-      class FooWiped extends dispose.Disposable(Object) {
+      class FooWiped extends dispose.Disposable {
         create() {
           this.wipeOnDispose();
           this.bar = this.autoDispose(bar2);
@@ -127,7 +127,7 @@ describe('dispose', function() {
     let bar = new Bar();
     let baz = new Bar();
 
-    class Foo extends dispose.Disposable(Object) {
+    class Foo extends dispose.Disposable {
       create(throwWhen) {
         if (throwWhen === 0) { throw new Error("test-error"); }
         this.bar = this.autoDispose(bar);
@@ -180,7 +180,7 @@ describe('dispose', function() {
 
     it("should dispose on propagated errors", function() {
       let bar2 = new Bar();
-      class Foo2 extends dispose.Disposable(Object) {
+      class Foo2 extends dispose.Disposable {
         create() {
           this.bar2 = this.autoDispose(bar2);
           this.foo = this.autoDispose(new Foo(1));
@@ -194,7 +194,7 @@ describe('dispose', function() {
       assert.equal(bar2.dispose.callCount, 1);
     });
 
-    class FailOnDispose extends dispose.Disposable(Object) {
+    class FailOnDispose extends dispose.Disposable {
       create() {
         this.bar = this.autoDispose(bar);
         this.foo = this.autoDisposeCallback(() => { throw new Error("test-error-disposal"); });
@@ -214,7 +214,7 @@ describe('dispose', function() {
     });
 
     it("should be helpful on exceptions cleaning partially-constructed objects", function() {
-      class FailOnConstruct extends dispose.Disposable(Object) {
+      class FailOnConstruct extends dispose.Disposable {
         create() {
           this.fod = this.autoDispose(new FailOnDispose());
           throw new Error("test-error-construct");
@@ -230,7 +230,7 @@ describe('dispose', function() {
         assert.equal(bar.dispose.callCount, 1);
         assert.deepEqual(messages, [
           "error: While disposing FailOnDispose, error disposing Function: Error: test-error-disposal",
-          "error: Error cleaning up partially constructed FailOnConstruct: Error: test-error-disposal2"
+          "error: Error disposing partially constructed FailOnConstruct: Error: test-error-disposal2"
         ]);
       });
     });

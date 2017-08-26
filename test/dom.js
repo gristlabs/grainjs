@@ -426,8 +426,8 @@ describe('dom', function() {
       consoleCapture(['error'], messages => {
         assert.throws(() =>
           dom('div', 'Hello',
-            _insert_(Comp.create('foo', spies1)),
-            _insert_(Comp.create('bar', spies2)),
+            _insert_(new Comp('foo', spies1)),
+            _insert_(new Comp('bar', spies2)),
             'World'
           ),
           /ctor throw/

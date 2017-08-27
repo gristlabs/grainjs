@@ -345,17 +345,12 @@ describe('dom', function() {
 
   describe("component", function() {
     class Comp extends dom.Component {
-      constructor(arg, spies) {
-        super();
-        this.arg = arg;
-        this.spies = spies;
-        this.spies.onConstruct(arg);
-        this.autoDisposeCallback(() => this.spies.onDispose());
-      }
-      render() {
-        return dom('div', dom.toggleClass(this.arg.toUpperCase(), true),
-          this.spies.onRender,
-          dom.onDispose(this.spies.onDomDispose));
+      render(arg, spies) {
+        spies.onConstruct(arg);
+        this.autoDisposeCallback(() => spies.onDispose());
+        return dom('div', dom.toggleClass(arg.toUpperCase(), true),
+          spies.onRender,
+          dom.onDispose(spies.onDomDispose));
       }
     }
 
@@ -418,16 +413,25 @@ describe('dom', function() {
       let spies1 = makeSpies(), spies2 = makeSpies();
       spies2.onConstruct = sinon.stub().throws(new Error('ctor throw'));
 
-      // Function from the explanatory example in the comment to createElem().
+      // Simulate the explanatory example in the comment to createElem() to show the problem, and
+      // compare with the previous test case. The approach here is to create a class that can be
+      // separately created and inserted into DOM by reusing the code for a real Component. So we
+      // override create() to call Comp's render but do nothing else. Then mount() finishes the
+      // work that Component's own create() normally does.
+      class Comp2 extends Comp {
+        create(...args) { this._content = super.render(...args); }
+        render() { return this._content; }
+        mount(elem) { super.create(elem); }
+      }
       function _insert_(component) {
-        return elem => component._mount(elem);
+        return elem => component.mount(elem);
       }
 
       consoleCapture(['error'], messages => {
         assert.throws(() =>
           dom('div', 'Hello',
-            _insert_(new Comp('foo', spies1)),
-            _insert_(new Comp('bar', spies2)),
+            _insert_(new Comp2('foo', spies1)),
+            _insert_(new Comp2('bar', spies2)),
             'World'
           ),
           /ctor throw/
@@ -435,8 +439,8 @@ describe('dom', function() {
       });
       // Note the problem: the first component gets constructed but not disposed on an exception.
       assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
-      sinon.assert.notCalled(spies1.onRender);
-      sinon.assert.notCalled(spies1.onDispose);     // This is the problem-line!
+      assertResetSingleCall(spies1.onRender, undefined, sinon.match.has('className', 'FOO'));
+      sinon.assert.notCalled(spies1.onDispose);     // This (and the next) are the problem-lines!
       sinon.assert.notCalled(spies1.onDomDispose);
       assertResetSingleCall(spies2.onConstruct, spies2, 'bar');
       sinon.assert.notCalled(spies2.onRender);
@@ -447,22 +451,17 @@ describe('dom', function() {
     it('should support render() returning any number of children', function() {
       let components = [];
       class Comp extends dom.Component {
-        constructor(arg, spies) {
-          super();
-          this.arg = arg;
-          this.spies = spies;
-          this.spies.onConstruct(arg);
-          this.autoDisposeCallback(() => this.spies.onDispose());
+        render(arg, spies) {
+          spies.onConstruct(arg);
+          this.autoDisposeCallback(() => spies.onDispose());
           components.push(this);
-        }
-        render() {
           return [
-            dom('div', '(', dom.text(this.arg.toLowerCase()), ')'),
-            dom('span', '[', dom.text(this.arg.toUpperCase()), ']'),
-            this.spies.onRender,
+            dom('div', '(', dom.text(arg.toLowerCase()), ')'),
+            dom('span', '[', dom.text(arg.toUpperCase()), ']'),
+            spies.onRender,
             // A disposer like this is only run when the DOM containing this Component is
             // disposed, it doesn't get run when the component itself is disposed.
-            dom.onDispose(this.spies.onDomDispose)
+            dom.onDispose(spies.onDomDispose)
           ];
         }
       }

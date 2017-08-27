@@ -27,14 +27,14 @@ describe('domevent', function() {
     return new window.MouseEvent(eventType, {view: window, bubbles: true, cancelable: true});
   }
 
-  describe('on', function() {
+  describe('onElem', function() {
     it("should subscribe callback to events", function() {
       let elemA = document.getElementById('a');
       let elemB = document.getElementById('b');
       let stubA = sinon.stub(), stubB = sinon.stub();
 
-      domevent.on(elemA, 'click', stubA);
-      let lisB = domevent.on(elemB, 'click', stubB);
+      domevent.onElem(elemA, 'click', stubA);
+      let lisB = domevent.onElem(elemB, 'click', stubB);
 
       // B is inside of A. If we dispatch event on A, listeners on B shouldn't see it.
       let e1 = makeEvent('click');
@@ -67,16 +67,16 @@ describe('domevent', function() {
     });
   });
 
-  describe('onMatch', function() {
+  describe('onMatchElem', function() {
     it("should subscribe callback to delegated events", function() {
       let elemA = document.getElementById('a');
       let elemB = document.getElementById('b');
       let elemC = document.getElementById('c');
       let stubA = sinon.stub(), stubB = sinon.stub(), stubDelB = sinon.stub();
 
-      domevent.on(elemA, 'click', stubA);
-      domevent.on(elemB, 'click', stubB);
-      domevent.onMatch(elemA, '#b', 'click', stubDelB);
+      domevent.onElem(elemA, 'click', stubA);
+      domevent.onElem(elemB, 'click', stubB);
+      domevent.onMatchElem(elemA, '#b', 'click', stubDelB);
 
       // B is inside of A. If we dispatch event on A, listeners on B shouldn't see it.
       let e1 = makeEvent('click');

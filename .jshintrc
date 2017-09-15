@@ -3,6 +3,5 @@
   "unused": "vars",
   "globalstrict": true,
   "node": true,
-  "esnext": true,
-  "predef": [ "-Promise" ]
+  "esnext": true
 }

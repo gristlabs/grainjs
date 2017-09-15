@@ -4,6 +4,7 @@
 
 const observable = require('../lib/observable.js');
 const computed = require('../lib/computed.js');
+const pureComputed = require('../lib/pureComputed.js');
 const _computed_queue = require('../lib/_computed_queue.js');
 
 const _ = require('lodash');
@@ -12,7 +13,8 @@ const sinon = require('sinon');
 const ko = require('knockout');
 const timeit = require('./testutil.js').timeit;
 
-describe('computed', function() {
+// These test cases are separated and used for both computed() and pureComputed().
+function testComputed(computed) {
 
   it('should depend on static and dynamic dependencies', function() {
     // Create four observables, and a computed that depends on them statically or dynamically.
@@ -350,9 +352,9 @@ describe('computed', function() {
         /* arrComp */ ':U0', '(:U0):U1', '((:U0):U1):U2', undefined,
         /* totObs */ ':U0', '((:U0):U1):U2', ':U0 (:U0):U1 ((:U0):U1):U2',
       ]);
-    assert.deepEqual(allObs.map(x => _priority(x)),
+    assert.deepEqual(allObs.map(x => x.isDisposed() ? null : _priority(x)),
       [ 0, 1, /* arrObs */ 0, 0, 0, 0,
-        /* arrComp */ 2, 3, 4, /* disposed */5,
+        /* arrComp */ 2, 3, 4, /* disposed */null,
         /* totObs */ 5, 5, 5 ]);
     assert.deepEqual(allSpies.map(x => x.callCount),
       [ 2, 2, 2, 4, /* not called */3, 4, 4, 4 ]);
@@ -439,4 +441,19 @@ describe('computed', function() {
       }, 500, { compareToPrevious: true });
     });
   });
+}
+
+describe('computed', function() {
+  testComputed(computed);
+});
+
+describe('pureComputed active', function() {
+  // A pureComputed that has a subscription behaves the same way as a regular computed.
+  // So we run the same suite of tests for it.
+  function makeActivePureComputed(...args) {
+    let c = pureComputed(...args);
+    c.addListener(() => {});
+    return c;
+  }
+  testComputed(makeActivePureComputed);
 });

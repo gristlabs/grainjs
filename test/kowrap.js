@@ -51,7 +51,7 @@ describe('kowrap', function() {
     sinon.assert.notCalled(stub);
 
     // Test that using a knockout observable works with kowrap(), and throws an exception without.
-    assert.throws(() => computed(use => use(kObs)), /addListener/);
+    assert.throws(() => computed(use => use(kObs)), TypeError);
     computed(use => use(kowrap(kObs)));
   });
 

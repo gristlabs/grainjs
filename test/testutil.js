@@ -4,6 +4,7 @@
 
 const _ = require('lodash');
 const sinon = require('sinon');
+const mocha = require('mocha');
 
 const perCallUsec = Symbol('perCallUsec');
 
@@ -228,6 +229,9 @@ function _measureMemoryUsageImpl(N, spec) {
  */
 function skipWithoutGC(context) {
   if (typeof gc === 'undefined') {
+    if (!(context instanceof mocha.Context)) {
+      throw new Error('skipWithoutGC should be called from before() or inside of it()');
+    }
     if (context.test.type === 'test') {
       context.test.title += ' [requires -gc]';
     } else if (context.test.type === 'hook') {

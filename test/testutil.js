@@ -130,3 +130,96 @@ function _capture(messages, methodName, format, ...args) {
   }
   messages.push(message);
 }
+
+function sleep(ms) {
+  return new Promise((resolve, reject) => { setTimeout(resolve, ms); });
+}
+
+/**
+ * Returns a Promise for memory usage. Calls gc() twice with some delays in the hope of getting a
+ * more reliable measurement.
+ */
+function getMemUsage() {
+  return Promise.resolve()
+  .then(() => { gc(); return sleep(10); })
+  .then(() => { gc(); return sleep(10); })
+  .then(() => process.memoryUsage().heapUsed);
+}
+
+/**
+ * Makes N calls to createItem(index), saving their return values, and then calls
+ * destroyItem(item) for each of them, and finally finish(). Measures memory usage, and returns a
+ * Promise for:
+ *      { bytesCreated, bytesDestroyed, bytesAtFinish }
+ * containing per-object bytes, computed from delta of memory usage.
+ *
+ * Note that it is far from precise and may easily be slightly negative, but for large number of
+ * objects, it should approach something a meaningful number.
+ *
+ * NOTE: this require mocha to be run with -gc flag, as it runs gc() for better measurements. Use
+ * skipWithoutGC() to skip a test case or suite, rather than error out, when -gc is missing.
+ */
+function measureMemoryUsage(N, createItem, destroyItem, finish) {
+  /* global gc */
+  if (typeof gc === 'undefined') {
+    throw new Error('No global "gc"; mocha should be run with -gc flag.');
+  }
+  // Measure things twice, returning just the second measurement, which seems to reduce unexpected
+  // memory effects when new code first runs.
+  return _measureMemoryUsageImpl(N, createItem, destroyItem, finish)
+  .then(() => _measureMemoryUsageImpl(N, createItem, destroyItem, finish));
+}
+exports.measureMemoryUsage = measureMemoryUsage;
+
+
+function _measureMemoryUsageImpl(N, createItem, destroyItem, finish) {
+  let bytesAtStart, bytesCreated, bytesDestroyed, bytesAtFinish;
+  let items = _.times(N, () => null);
+  return getMemUsage()
+  .then(value => {
+    bytesAtStart = value;
+    for (let i = 0; i < N; i++) {
+      items[i] = createItem(i);
+    }
+    return getMemUsage();
+  })
+  .then(value => {
+    bytesCreated = value;
+    for (let i = 0; i < N; i++) {
+      destroyItem(items[i]);
+      items[i] = null;
+    }
+    return getMemUsage();
+  })
+  .then(value => {
+    bytesDestroyed = value;
+    finish();
+    return getMemUsage();
+  })
+  .then(value => {
+    bytesAtFinish = value;
+    return {
+      bytesCreated: Math.ceil((bytesCreated - bytesAtStart) / N + 1) - 1,
+      bytesDestroyed: Math.ceil((bytesDestroyed - bytesAtStart) / N + 1) - 1,
+      bytesAtFinish: Math.ceil((bytesAtFinish - bytesAtStart) / N + 1) - 1,
+    };
+  });
+}
+
+
+/**
+ * If a test can only run with -gc flag (such as those using measureMemoryUsage()), you can skip
+ * it, rather than error out, by calling skipWithoutGC(this) at the start of the test case, or in
+ * a before() handler.
+ */
+function skipWithoutGC(context) {
+  if (typeof gc === 'undefined') {
+    if (context.test.type === 'test') {
+      context.test.title += ' [requires -gc]';
+    } else if (context.test.type === 'hook') {
+      context.test.parent.tests.forEach(t => t.title += ' [requires -gc]');
+    }
+    context.skip();
+  }
+}
+exports.skipWithoutGC = skipWithoutGC;

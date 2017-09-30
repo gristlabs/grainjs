@@ -1,7 +1,8 @@
 "use strict";
 
-/* global describe, it */
+/* global describe, it, before */
 
+const _ = require('lodash');
 const assert = require('chai').assert;
 const testutil = require('./testutil.js');
 
@@ -41,4 +42,58 @@ describe('testutil', function() {
       });
     });
   });
+
+  describe('measureMemoryUsage', function() {
+    this.timeout(60000);
+
+    before(function() {
+      testutil.skipWithoutGC(this);
+    });
+
+    it('should measure simple things correctly', function() {
+      return testutil.measureMemoryUsage(100000, (i) => [i], _.noop, _.noop)
+      .then(ret => {
+        assert.closeTo(ret.bytesCreated, 60, 40);
+        assert.closeTo(ret.bytesDestroyed, 0, 5);
+        assert.closeTo(ret.bytesAtFinish, 0, 5);
+      })
+      .then(() => testutil.measureMemoryUsage(100000, (i) => ({a: i}), _.noop, _.noop))
+      .then(ret => {
+        assert.closeTo(ret.bytesCreated, 60, 40);
+        assert.closeTo(ret.bytesDestroyed, 0, 5);
+        assert.closeTo(ret.bytesAtFinish, 0, 5);
+      });
+    });
+
+    it('should detect when values are not garbage-collected', function() {
+      let array = [];
+      class FooPlain {
+        constructor(i) {
+          this.value = i;
+        }
+      }
+      class FooWithLeak {
+        constructor(i) {
+          this.value = i;
+          array.push(this);
+        }
+      }
+
+      return testutil.measureMemoryUsage(10000, (i) => new FooPlain(i), _.noop,
+        () => { array = []; })
+      .then(ret => {
+        assert.closeTo(ret.bytesCreated, 60, 40);
+        assert.closeTo(ret.bytesDestroyed, 0, 5);
+        assert.closeTo(ret.bytesAtFinish, 0, 5);
+      })
+      .then(() => testutil.measureMemoryUsage(10000, (i) => new FooWithLeak(i), _.noop,
+        () => { array = []; }))
+      .then(ret => {
+        assert.closeTo(ret.bytesCreated, 60, 40);
+        assert.closeTo(ret.bytesDestroyed, 60, 40);
+        assert.closeTo(ret.bytesAtFinish, 0, 5);
+      });
+    });
+  });
+
 });

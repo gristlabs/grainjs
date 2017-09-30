@@ -2,7 +2,6 @@
 
 /* global describe, it, before */
 
-const _ = require('lodash');
 const assert = require('chai').assert;
 const testutil = require('./testutil.js');
 
@@ -51,13 +50,13 @@ describe('testutil', function() {
     });
 
     it('should measure simple things correctly', function() {
-      return testutil.measureMemoryUsage(100000, (i) => [i], _.noop, _.noop)
+      return testutil.measureMemoryUsage(100000, { createItem: (i) => [i] })
       .then(ret => {
         assert.closeTo(ret.bytesCreated, 60, 40);
         assert.closeTo(ret.bytesDestroyed, 0, 5);
         assert.closeTo(ret.bytesAtFinish, 0, 5);
       })
-      .then(() => testutil.measureMemoryUsage(100000, (i) => ({a: i}), _.noop, _.noop))
+      .then(() => testutil.measureMemoryUsage(100000, { createItem: (i) => ({a: i}) }))
       .then(ret => {
         assert.closeTo(ret.bytesCreated, 60, 40);
         assert.closeTo(ret.bytesDestroyed, 0, 5);
@@ -79,15 +78,19 @@ describe('testutil', function() {
         }
       }
 
-      return testutil.measureMemoryUsage(10000, (i) => new FooPlain(i), _.noop,
-        () => { array = []; })
+      return testutil.measureMemoryUsage(10000, {
+        createItem: (i) => new FooPlain(i),
+        after: () => { array = []; }
+      })
       .then(ret => {
         assert.closeTo(ret.bytesCreated, 60, 40);
         assert.closeTo(ret.bytesDestroyed, 0, 5);
         assert.closeTo(ret.bytesAtFinish, 0, 5);
       })
-      .then(() => testutil.measureMemoryUsage(10000, (i) => new FooWithLeak(i), _.noop,
-        () => { array = []; }))
+      .then(() => testutil.measureMemoryUsage(10000, {
+        createItem: (i) => new FooWithLeak(i),
+        after: () => { array = []; }
+      }))
       .then(ret => {
         assert.closeTo(ret.bytesCreated, 60, 40);
         assert.closeTo(ret.bytesDestroyed, 60, 40);

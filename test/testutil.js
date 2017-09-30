@@ -147,35 +147,49 @@ function getMemUsage() {
 }
 
 /**
- * Makes N calls to createItem(index), saving their return values, and then calls
- * destroyItem(item) for each of them, and finally finish(). Measures memory usage, and returns a
- * Promise for:
- *      { bytesCreated, bytesDestroyed, bytesAtFinish }
- * containing per-object bytes, computed from delta of memory usage.
+ * Measure average per-call memory usage for N calls of some function, to detect memory leaks
+ * or understand when values can be garbage-collected.
+ *
+ * Specifically, calls steps (which are all optional):
+ *    1. spec.before()
+ *    2. spec.createItem(index) [N times]
+ *    3. spec.destroyItem(item) [N times]
+ *    4. spec.after()
+ * and returns a Promise for the object with per-item deltas in memory usage:
+ *    {
+ *      bytesCreated,       // delta between steps 1 and 2
+ *      bytesDestroyed,     // delta between steps 1 and 3
+ *      bytesAtFinish,      // delta between steps 1 and 4
+ *    }
  *
  * Note that it is far from precise and may easily be slightly negative, but for large number of
- * objects, it should approach something a meaningful number.
+ * objects, it should approach a meaningful number.
  *
- * NOTE: this require mocha to be run with -gc flag, as it runs gc() for better measurements. Use
- * skipWithoutGC() to skip a test case or suite, rather than error out, when -gc is missing.
+ * NOTE: this require mocha to be run with -gc flag, as it runs gc() for better measurements. To
+ * skip tests in the absence of -gc option rather than error, use skipWithoutGC() helper.
  */
-function measureMemoryUsage(N, createItem, destroyItem, finish) {
+function measureMemoryUsage(N, spec) {
   /* global gc */
   if (typeof gc === 'undefined') {
     throw new Error('No global "gc"; mocha should be run with -gc flag.');
   }
   // Measure things twice, returning just the second measurement, which seems to reduce unexpected
   // memory effects when new code first runs.
-  return _measureMemoryUsageImpl(N, createItem, destroyItem, finish)
-  .then(() => _measureMemoryUsageImpl(N, createItem, destroyItem, finish));
+  return _measureMemoryUsageImpl(N, spec)
+  .then(() => _measureMemoryUsageImpl(N, spec));
 }
 exports.measureMemoryUsage = measureMemoryUsage;
 
 
-function _measureMemoryUsageImpl(N, createItem, destroyItem, finish) {
+function _measureMemoryUsageImpl(N, spec) {
+  let { before = _.noop, after = _.noop, createItem = _.noop, destroyItem = _.noop } = spec;
   let bytesAtStart, bytesCreated, bytesDestroyed, bytesAtFinish;
   let items = _.times(N, () => null);
-  return getMemUsage()
+  return Promise.resolve()
+  .then(() => {
+    before();
+    return getMemUsage();
+  })
   .then(value => {
     bytesAtStart = value;
     for (let i = 0; i < N; i++) {
@@ -193,7 +207,7 @@ function _measureMemoryUsageImpl(N, createItem, destroyItem, finish) {
   })
   .then(value => {
     bytesDestroyed = value;
-    finish();
+    after();
     return getMemUsage();
   })
   .then(value => {

@@ -10,17 +10,17 @@ const { assertResetSingleCall, consoleCapture } = require('./testutil.js');
 const G = browserGlobals.use('DocumentFragment');
 
 const assert = require('chai').assert;
-const jsdom = require('jsdom');
+const { JSDOM } = require('jsdom');
 const sinon = require('sinon');
 
 describe('dom', function() {
   let jsdomDoc;
 
   before(function() {
-    jsdomDoc = jsdom.jsdom("<!doctype html><html><body>" +
+    jsdomDoc = new JSDOM("<!doctype html><html><body>" +
       "<div id='a'></div>" +
       "</body></html>");
-    browserGlobals.pushGlobals(jsdomDoc.defaultView);
+    browserGlobals.pushGlobals(jsdomDoc.window);
   });
 
   after(function() {

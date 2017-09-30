@@ -6,20 +6,20 @@ const domevent = require('../lib/domevent.js');
 const { assertResetSingleCall } = require('./testutil.js');
 
 const assert = require('assert');
-const jsdom = require('jsdom');
+const { JSDOM } = require('jsdom');
 const sinon = require('sinon');
 
 describe('domevent', function() {
   let jsdomDoc, window, document;
 
   before(function() {
-    jsdomDoc = jsdom.jsdom("<!doctype html><html><body>" +
+    jsdomDoc = new JSDOM("<!doctype html><html><body>" +
       "<div id='a'>" +
       "<div id='b'>x</div>" +
       "<div id='c'>y</div>" +
       "</div>" +
       "</body></html>");
-    window = jsdomDoc.defaultView;
+    window = jsdomDoc.window;
     document = window.document;
   });
 

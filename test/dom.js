@@ -740,4 +740,41 @@ describe('dom', function() {
       assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
     });
   });
+
+  describe("find", function() {
+    before(function() {
+      jsdomDoc = new JSDOM("<!doctype html><html><body>" +
+        "<div id='a' class='x'></div>" +
+        "<div id='b' class='x y'></div>" +
+        "<div id='c' class='x y z'></div>" +
+        "</body></html>");
+      browserGlobals.pushGlobals(jsdomDoc.window);
+    });
+
+    after(function() {
+      browserGlobals.popGlobals();
+    });
+
+    it("should find the first matching element", function() {
+      assert.equal(dom.find('#a').id, 'a');
+      assert.equal(dom.find('#b').id, 'b');
+      assert.equal(dom.find('.x').id, 'a');
+      assert.equal(dom.find('.y').id, 'b');
+      assert.equal(dom.find('.z').id, 'c');
+      assert.equal(dom.find('#a.x').id, 'a');
+      assert.equal(dom.find('.x.z').id, 'c');
+      assert.equal(dom.find('div').id, 'a');
+    });
+
+    it("should find all matching elements with findAll", function() {
+      assert.deepEqual(Array.from(dom.findAll('#a'), e => e.id), ['a']);
+      assert.deepEqual(Array.from(dom.findAll('#b'), e => e.id), ['b']);
+      assert.deepEqual(Array.from(dom.findAll('.x'), e => e.id), ['a', 'b', 'c']);
+      assert.deepEqual(Array.from(dom.findAll('.y'), e => e.id), ['b', 'c']);
+      assert.deepEqual(Array.from(dom.findAll('.z'), e => e.id), ['c']);
+      assert.deepEqual(Array.from(dom.findAll('#a.x'), e => e.id), ['a']);
+      assert.deepEqual(Array.from(dom.findAll('.x.z'), e => e.id), ['c']);
+      assert.deepEqual(Array.from(dom.findAll('div'), e => e.id), ['a', 'b', 'c']);
+    });
+  });
 });

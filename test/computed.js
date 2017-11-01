@@ -87,10 +87,12 @@ function testComputed(computed) {
   it('should support writing when writable', function() {
     let x = observable("Test");
     let comp1 = computed(x, (use, x) => x.toUpperCase());
-    let comp2 = computed(x, (use, x) => x.toUpperCase(), {
+    let comp2 = computed(x, {
+      read: (use, x) => x.toUpperCase(),
       write: val => x.set(val.toLowerCase())
     });
 
+    // Verify that the read method works.
     assert.strictEqual(comp1.get(), "TEST");
     assert.strictEqual(comp2.get(), "TEST");
 
@@ -107,11 +109,11 @@ function testComputed(computed) {
   });
 
 
-  it('should support options.read argument', function() {
+  it('should support options.read with or without options.write', function() {
     let x1 = observable("Test");
     let x2 = observable("Test");
-    let comp1 = computed(x1, (use, x1) => x1.toUpperCase(), {
-      write: v => x1.set(v.toLowerCase())
+    let comp1 = computed(x1, {
+      read: (use, x1) => x1.toUpperCase()
     });
     let comp2 = computed(x2, {
       read: (use, x2) => x2.toUpperCase(),
@@ -123,11 +125,11 @@ function testComputed(computed) {
     assert.strictEqual(comp2.get(), "TEST");
 
     // Verify that write methods work and that the read() is invoked automatically.
-    comp1.set("Foo");
+    assert.throws(() => comp1.set("Foo"), /non-writable/);
     comp2.set("Bar");
-    assert.strictEqual(x1.get(), "foo");
+    assert.strictEqual(x1.get(), "Test");
     assert.strictEqual(x2.get(), "bar");
-    assert.strictEqual(comp1.get(), "FOO");
+    assert.strictEqual(comp1.get(), "TEST");
     assert.strictEqual(comp2.get(), "BAR");
   });
 

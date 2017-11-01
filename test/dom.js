@@ -348,6 +348,7 @@ describe('dom', function() {
       render(arg, spies) {
         spies.onConstruct(arg);
         this.autoDisposeCallback(() => spies.onDispose());
+        this.fakeAttr = "fakeAttr";   // This should NOT become an attribute.
         return dom('div', dom.toggleClass(arg.toUpperCase(), true),
           spies.onRender,
           dom.onDispose(spies.onDomDispose));
@@ -369,6 +370,7 @@ describe('dom', function() {
       let elem = dom('div', 'Hello',
         dom.create(Comp, 'foo', spies1),
         dom.create(Comp, 'bar', spies2),
+        { realattr: "a" },
         'World');
 
       assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
@@ -380,6 +382,12 @@ describe('dom', function() {
       assertResetSingleCall(spies2.onDispose, spies2);
       assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
       assertResetSingleCall(spies2.onDomDispose, undefined, sinon.match.has('className', 'BAR'));
+
+      // This verifies, in particular, that we don't treat the component as an object with a bunch
+      // of attributes, but do treat plain objects as attributes.
+      assert.equal(elem.outerHTML,
+        '<div realattr="a">Hello<!--A--><div class="FOO"></div><!--B-->' +
+        '<!--A--><div class="BAR"></div><!--B-->World</div>');
     });
 
     it('should dispose even on a later exception', function() {
@@ -446,6 +454,43 @@ describe('dom', function() {
       sinon.assert.notCalled(spies2.onRender);
       sinon.assert.notCalled(spies2.onDispose);
       sinon.assert.notCalled(spies2.onDomDispose);
+    });
+
+    it('should support createInit', function() {
+      let spies1 = makeSpies(), spies2 = makeSpies();
+      let spy1 = sinon.spy();
+      let spy2 = sinon.stub().throws(new Error('init throw'));
+      let elem = dom('div', 'Hello',
+        dom.createInit(Comp, 'foo', spies1, c => { spy1(c); })
+      );
+
+      assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
+      assert.isTrue(spies1.onRender.calledBefore(spy1));
+      assertResetSingleCall(spies1.onRender, undefined, sinon.match.has('className', 'FOO'));
+      assertResetSingleCall(spy1, undefined, sinon.match.instanceOf(Comp));
+      dom.dispose(elem);
+      assertResetSingleCall(spies1.onDispose, spies1);
+      assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
+
+      // Now check that in case of an exception, already-constructed parts get disposed. 
+      assert.throws(() =>
+        dom('div', 'Hello',
+          dom.createInit(Comp, 'foo', spies1, c => { spy1(c); }),
+          dom.createInit(Comp, 'bar', spies2, c => { spy2(c); })
+        ),
+        /init throw/);
+
+      assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
+      assertResetSingleCall(spies1.onRender, undefined, sinon.match.has('className', 'FOO'));
+      assertResetSingleCall(spy1, undefined, sinon.match.instanceOf(Comp));
+      assertResetSingleCall(spies1.onDispose, spies1);
+      assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
+      // The second component has an exception after construction, in init callback.
+      assertResetSingleCall(spies2.onConstruct, spies2, 'bar');
+      assertResetSingleCall(spies2.onRender, undefined, sinon.match.has('className', 'BAR'));
+      assertResetSingleCall(spy2, undefined, sinon.match.instanceOf(Comp));
+      assertResetSingleCall(spies2.onDispose, spies2);
+      assertResetSingleCall(spies2.onDomDispose, undefined, sinon.match.has('className', 'BAR'));
     });
 
     it('should support render() returning any number of children', function() {

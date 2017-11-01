@@ -20,7 +20,6 @@
  * To emit an event, call emit() with any number of arguments:
  *    emitter.emit("hello", "world");
  */
-"use strict";
 
 
 // Note about a possible alternative implementation.
@@ -38,23 +37,66 @@
 
 
 // The private property name to hold next/prev pointers.
-const _next = Symbol('_next');
-const _prev = Symbol('_prev');
-const _changeCB = Symbol('_changeCB');
 
-function _noop() {}
+function _noop() { /* noop */}
 
-class Emitter {
-  /**
-   * Constructs an Emitter object.
-   */
+type ListenerCB = (...args: any[]) => void;
+type ChangeCB = (hasListeners: boolean) => void;
+
+
+/**
+ * This is an implementation of a doubly-linked list, with just the minimal functionality we need.
+ */
+class LLink {
+  protected _next: LLink|null = null;
+  protected _prev: LLink|null = null;
+
   constructor() {
     // This immediate circular reference might be undesirable for GC, but might not matter, and
     // makes the linked list implementation simpler and faster.
-    this[_next] = this;
-    this[_prev] = this;
-    this[_changeCB] = _noop;
+    this._next = this;
+    this._prev = this;
   }
+
+  public isDisposed(): boolean {
+    return !this._next;
+  }
+
+  protected _insertBefore(next: LLink, node: LLink): void {
+    const last = next._prev!;
+    last._next = node;
+    next._prev = node;
+    node._prev = last;
+    node._next = next;
+  }
+
+  protected _removeNode(node: LLink): void {
+    if (node._prev) {
+      node._prev._next = node._next;
+      node._next!._prev = node._prev;
+    }
+    node._prev = node._next = null;
+  }
+
+  protected _disposeList(): void {
+    let node: LLink = this;
+    let next = node._next;
+    while (next !== null) {
+      node._next = node._prev = null;
+      node = next;
+      next = node._next;
+    }
+  }
+}
+
+
+export class Emitter extends LLink {
+  private _changeCB: ChangeCB = _noop;
+
+  /**
+   * Constructs an Emitter object.
+   */
+  constructor() { super(); }
 
   /**
    * Adds a listening callback to the list of functions to call on emit().
@@ -62,22 +104,15 @@ class Emitter {
    * @param {Object} optContext: Context for the function.
    * @returns {Listener} Listener object. Its dispose() method removes the callback from the list.
    */
-  addListener(callback, optContext) {
+  public addListener(callback: ListenerCB, optContext?: object): Listener {
     return new Listener(this, callback, optContext);
   }
 
   /**
    * Calls all listener callbacks, passing all arguments to each of them.
    */
-  emit(...args) {
-    let lis = this[_next];
-    while (lis !== this) {
-      // There is a bug in Node 4.2.4 with ...args calls, which cause a ReferenceError, but they
-      // work as long as there is a "let" variable defined inside the block. Weird.
-      let dummy = lis;
-      lis.callback.call(lis.context, ...args);
-      lis = lis[_next];
-    }
+  public emit(...args: any[]): void {
+    Listener.callAll(this._next!, this, args);
   }
 
   /**
@@ -86,72 +121,59 @@ class Emitter {
    *    removed. It's called with a boolean indicating whether this Emitter has any listeners.
    *    Pass in `null` to unset the callback.
    */
-  setChangeCB(changeCB) {
-    this[_changeCB] = changeCB || _noop;
+  public setChangeCB(changeCB: ChangeCB): void {
+    this._changeCB = changeCB || _noop;
+  }
+
+  /**
+   * Helper used by Listener class, but not intended for public usage.
+   */
+  public _triggerChangeCB(): void {
+    this._changeCB.call(undefined, this.hasListeners());
   }
 
   /**
    * Returns whether this Emitter has any listeners.
    */
-  hasListeners() {
-    return this[_next] !== this;
+  public hasListeners(): boolean {
+    return this._next !== this;
   }
 
   /**
    * Disposes the Emitter. It breaks references between the emitter and all the items, allowing
    * for better garbage collection. It effectively disposes all current listeners.
    */
-  dispose() {
-    let node = this;
-    let next = node[_next];
-    while (next !== null) {
-      node[_next] = node[_prev] = null;
-      node = next;
-      next = node[_next];
-    }
-    this[_changeCB] = _noop;
-  }
-
-  /**
-   * Returns whether this Emitter is disposed.
-   */
-  isDisposed() {
-    return !this[_next];
+  public dispose(): void {
+    this._disposeList();
+    this._changeCB = _noop;
   }
 }
-exports.Emitter = Emitter;
 
 
 /**
  * Listener object wraps a callback added to an Emitter, allowing for O(1) removal when the
  * listener is disposed.
  */
-class Listener {
-  constructor(emitter, callback, context) {
-    this.emitter = emitter;
-    this.callback = callback;
-    this.context = context;
-
-    let next = emitter;
-    let last = next[_prev];
-    last[_next] = this;
-    next[_prev] = this;
-    this[_prev] = last;
-    this[_next] = next;
-    emitter[_changeCB].call(undefined, true);
+export class Listener extends LLink {
+  public static callAll(begin: LLink, end: LLink, args: any[]): void {
+    while (begin !== end) {
+      const lis = begin as Listener;
+      lis.callback.call(lis.context, ...args);
+      begin = lis._next!;
+    }
   }
 
-  dispose() {
+  constructor(private emitter: Emitter,
+              private callback: ListenerCB,
+              private context?: object) {
+    super();
+    this._insertBefore(emitter, this);
+    emitter._triggerChangeCB();
+  }
+
+  public dispose(): void {
     if (this.isDisposed()) { return; }
-    this[_prev][_next] = this[_next];
-    this[_next][_prev] = this[_prev];
-    this[_prev] = this[_next] = null;
-    let emitter = this.emitter;
-    emitter[_changeCB].call(undefined, emitter[_next] !== emitter);
-  }
-
-  isDisposed() {
-    return !this[_next];
+    this._removeNode(this);
+    this.emitter._triggerChangeCB();
   }
 }
-exports.Listener = Listener;

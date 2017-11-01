@@ -35,7 +35,8 @@
     "jsdom": "^11.3.0",
     "knockout": "^3.4.2",
     "mocha": "^3.0.1",
-    "sinon": "^4.0.0"
+    "sinon": "^4.0.0",
+    "typescript": "^2.6.1"
   },
   "dependencies": {
     "fast.js": "^0.1.1",

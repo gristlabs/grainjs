@@ -2,8 +2,8 @@
 
 /* global describe, it, afterEach */
 
-const dispose = require('../lib/dispose.js');
-const { consoleCapture } = require('./testutil.js');
+const dispose = require('../lib/dispose');
+const { consoleCapture } = require('./testutil');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');

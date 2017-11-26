@@ -2,12 +2,12 @@
 
 /* global describe, before, beforeEach, afterEach, it */
 
-const util = require('../lib/util.js');
+const util = require('../lib/util');
 
 const _ = require('lodash');
 const assert = require('chai').assert;
 const sinon = require('sinon');
-const timeit = require('./testutil.js').timeit;
+const timeit = require('./testutil').timeit;
 
 describe('util', function() {
 

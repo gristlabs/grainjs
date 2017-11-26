@@ -3,7 +3,7 @@
 /* global describe, it, before */
 
 const assert = require('chai').assert;
-const testutil = require('./testutil.js');
+const testutil = require('./testutil');
 
 describe('testutil', function() {
   describe('consoleCapture', function() {

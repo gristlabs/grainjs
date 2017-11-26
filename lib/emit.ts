@@ -21,7 +21,6 @@
  *    emitter.emit("hello", "world");
  */
 
-
 // Note about a possible alternative implementation.
 //
 // We could implement the same interface using an array of listeners. Certain issues apply, in
@@ -35,19 +34,17 @@
 // take 3.82us. (In array-based implementation with same set up, add+remove is 0.06us, while
 // add+remove+emit is 4.80us.)
 
-
 // The private property name to hold next/prev pointers.
 
 function _noop() { /* noop */}
 
-type ListenerCB = (...args: any[]) => void;
-type ChangeCB = (hasListeners: boolean) => void;
-
+export type ListenerCB = (...args: any[]) => void;
+export type ChangeCB = (hasListeners: boolean) => void;
 
 /**
  * This is an implementation of a doubly-linked list, with just the minimal functionality we need.
  */
-class LLink {
+export class LLink {
   protected _next: LLink|null = null;
   protected _prev: LLink|null = null;
 
@@ -88,7 +85,6 @@ class LLink {
     }
   }
 }
-
 
 export class Emitter extends LLink {
   private _changeCB: ChangeCB = _noop;
@@ -148,7 +144,6 @@ export class Emitter extends LLink {
     this._changeCB = _noop;
   }
 }
-
 
 /**
  * Listener object wraps a callback added to an Emitter, allowing for O(1) removal when the

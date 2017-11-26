@@ -2,11 +2,11 @@
 
 /* global describe, before, after, it */
 
-const dom = require('../lib/dom.js');
-const observable = require('../lib/observable.js');
-const computed = require('../lib/computed.js');
-const browserGlobals = require('../lib/browserGlobals.js');
-const { assertResetSingleCall, consoleCapture } = require('./testutil.js');
+const dom = require('../lib/dom');
+const {observable} = require('../lib/observable');
+const computed = require('../lib/computed');
+const browserGlobals = require('../lib/browserGlobals');
+const { assertResetSingleCall, consoleCapture } = require('./testutil');
 const G = browserGlobals.use('DocumentFragment');
 
 const assert = require('chai').assert;

@@ -1,6 +1,6 @@
 "use strict";
 
-const { computed, observable, dom } = require('../../index.js');
+const { computed, observable, dom } = require('../../build/index');
 
 function toCelsius(fahrenheit) {
   return (fahrenheit - 32) * 5 / 9;

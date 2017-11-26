@@ -2,7 +2,7 @@
 
 /* global describe, it */
 
-var browserGlobals = require('../lib/browserGlobals.js');
+var browserGlobals = require('../lib/browserGlobals');
 
 var assert = require('chai').assert;
 

@@ -2,8 +2,8 @@
 
 /* global describe, before, it */
 
-const domevent = require('../lib/domevent.js');
-const { assertResetSingleCall } = require('./testutil.js');
+const domevent = require('../lib/domevent');
+const { assertResetSingleCall } = require('./testutil');
 
 const assert = require('assert');
 const { JSDOM } = require('jsdom');

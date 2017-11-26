@@ -2,16 +2,16 @@
 
 /* global describe, before, it */
 
-const observable = require('../lib/observable.js');
-const computed = require('../lib/computed.js');
-const pureComputed = require('../lib/pureComputed.js');
-const _computed_queue = require('../lib/_computed_queue.js');
+const {observable, bundleChanges} = require('../lib/observable');
+const computed = require('../lib/computed');
+const pureComputed = require('../lib/pureComputed');
+const _computed_queue = require('../lib/_computed_queue');
 
 const _ = require('lodash');
 const assert = require('chai').assert;
 const sinon = require('sinon');
 const ko = require('knockout');
-const timeit = require('./testutil.js').timeit;
+const timeit = require('./testutil').timeit;
 
 // These test cases are separated and used for both computed() and pureComputed().
 function testComputed(computed) {
@@ -227,7 +227,7 @@ function testComputed(computed) {
 
     // Now check that with bundleChanges, there is a single update.
     spy1.reset(); spy2.reset();
-    observable.bundleChanges(() => {
+    bundleChanges(() => {
       x.set("x2");
       y.set("y2");
     });

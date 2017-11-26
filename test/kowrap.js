@@ -3,10 +3,10 @@
 /* global describe, it */
 
 const ko = require('knockout');
-const observable = require('../lib/observable.js');
-const computed = require('../lib/computed.js');
-const kowrap = require('../lib/kowrap.js')(ko);
-const { assertResetSingleCall } = require('./testutil.js');
+const {observable, bundleChanges} = require('../lib/observable');
+const computed = require('../lib/computed');
+const kowrap = require('../lib/kowrap')(ko);
+const { assertResetSingleCall } = require('./testutil');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');
@@ -40,7 +40,7 @@ describe('kowrap', function() {
     stub.resetHistory();
 
     // We can avoid multiple changes at the level of Grain.js observables using bundleChanges().
-    observable.bundleChanges(() => kObs(6));
+    bundleChanges(() => kObs(6));
     assert.deepEqual(gComp.get(), [6, 12, "bar", 6]);
     assertResetSingleCall(stub, undefined, [6, 12, "bar", 6]);
 

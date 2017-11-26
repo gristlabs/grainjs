@@ -16,19 +16,17 @@
  * call, or of bundleChanges() call, the queue gets processed in order of _priority.
  */
 
-import FastPriorityQueue from 'fastpriorityqueue';
-
-const queue = new FastPriorityQueue((a, b) => a._priority < b._priority);
-
-let bundleDepth = 0;
-const _seen: any[] = [];
-
+import * as FastPriorityQueue from 'fastpriorityqueue';
 
 /**
  * DepItem is an item in a dependency relationship. It may depend on other DepItems. It is used
  * for subscriptions and computed observables.
  */
 export class DepItem {
+  public static isPrioritySmaller(a: DepItem, b: DepItem): boolean {
+    return a._priority < b._priority;
+  }
+
   private _priority: number = 0;
   private _enqueued: boolean = false;
   private _callback: () => void;
@@ -73,15 +71,23 @@ export class DepItem {
 }
 exports.DepItem = DepItem;
 
+// The main compute queue.
+const queue = new FastPriorityQueue(DepItem.isPrioritySmaller);
+
+// Array to keep track of items recomputed during this call to compute(). It could be a local
+// variable in compute(), but is made global to minimize allocations.
+const _seen: any[] = [];
+
+// Counter used for bundling multiple calls to compute() into one.
+let bundleDepth = 0;
 
 /**
  * Exposed for unittests. Returns the internal priority value of an observable.
  */
-export function _getPriority(obs): number {
+export function _getPriority(obs: any): number {
   const depItem = obs._getDepItem();
   return depItem ? depItem._priority : 0;
 }
-
 
 /**
  * Update any computed observables that need updating. The update is deferred if we are currently
@@ -110,7 +116,6 @@ export function compute(): void {
     }
   }
 }
-
 
 /**
  * Defer recomputations of all computed observables and subscriptions until func() returns. This

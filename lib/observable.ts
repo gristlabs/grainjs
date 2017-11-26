@@ -27,7 +27,6 @@ import {Emitter, Listener} from './emit';
 
 export {bundleChanges} from './_computed_queue';
 
-
 export class Observable<T> {
   private _onChange: Emitter;
   private _value: T;
@@ -113,12 +112,11 @@ export class Observable<T> {
   }
 }
 
-
 /**
  * Creates a new Observable with the initial value of optValue if given or undefined if omitted.
  * @param {Object} optValue: The initial value to set.
  * @returns {Observable} The newly created observable.
  */
-export default function observable<T>(value: T): Observable<T> {
+export function observable<T>(value: T): Observable<T> {
   return new Observable<T>(value);
 }

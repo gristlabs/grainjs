@@ -2,12 +2,12 @@
 
 /* global describe, before, it */
 
-const emit = require('../lib/emit.js');
-const { assertResetSingleCall } = require('./testutil.js');
+const emit = require('../lib/emit');
+const { assertResetSingleCall } = require('./testutil');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');
-const timeit = require('./testutil.js').timeit;
+const timeit = require('./testutil').timeit;
 
 describe('emitter.Emitter', function() {
 

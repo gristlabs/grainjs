@@ -2,9 +2,9 @@
 
 /* global describe, it */
 
-const observable = require('../lib/observable.js');
-const computed = require('../lib/computed.js');
-const subscribe = require('../lib/subscribe.js');
+const {observable, bundleChanges} = require('../lib/observable');
+const computed = require('../lib/computed');
+const subscribe = require('../lib/subscribe');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');
@@ -63,7 +63,7 @@ describe('subscribe', function() {
     spy.reset();
 
     // Check that for bundled changes, subscription is only called once.
-    observable.bundleChanges(() => {
+    bundleChanges(() => {
       x.set('x');
       y.set('y');
       z.set('z');

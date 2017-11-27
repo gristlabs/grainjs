@@ -4,7 +4,7 @@
 
 const {observable, bundleChanges} = require('../lib/observable');
 const computed = require('../lib/computed');
-const subscribe = require('../lib/subscribe');
+const {subscribe} = require('../lib/subscribe');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');

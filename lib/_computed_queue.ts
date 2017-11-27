@@ -44,7 +44,7 @@ export class DepItem {
    * Mark depItem as a dependency of this DepItem. The argument may be null to indicate a leaf (an
    * item such as a plain observable, which does not itself depend on anything else).
    */
-  public useDep(depItem: DepItem): void {
+  public useDep(depItem: DepItem|null): void {
     const p = depItem ? depItem._priority : 0;
     if (p >= this._priority) {
       this._priority = p + 1;

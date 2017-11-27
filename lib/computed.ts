@@ -44,8 +44,8 @@ export class Computed<T> extends Observable<T> {
    * Internal constructor for a Computed observable. You should use computed() function instead.
    */
   constructor(callback: (use: UseCB, ...args: any[]) => T, dependencies: ISubscribable[]) {
-    // At initialization we fore an undefined value even though it's not of type T: it gets set to
-    // a proper value during the creation of new Subscription, which calls this._read.
+    // At initialization we force an undefined value even though it's not of type T: it gets set
+    // to a proper value during the creation of new Subscription, which calls this._read.
     super(undefined as any);
     this._read = (use, ...args) => super.set(callback(use, ...args));
     this._write = _noWrite;
@@ -127,8 +127,7 @@ interface IComputed {
  */
 export const computed: IComputed = function(...args: any[]): Computed<any> {
   const readCb = args.pop();
-  // The cast helps ensure that Observable is compatible with ISubscribable abstraction that we use.
-  return new Computed<any>(readCb, args as Array<Observable<any>>);
+  return new Computed<any>(readCb, args);
 };
 
 // TODO Consider mplementing .singleUse() method.

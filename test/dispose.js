@@ -2,7 +2,7 @@
 
 /* global describe, it, afterEach */
 
-const dispose = require('../lib/dispose');
+const {Disposable} = require('../lib/dispose');
 const { consoleCapture } = require('./testutil');
 
 const assert = require('chai').assert;
@@ -24,7 +24,7 @@ describe('dispose', function() {
       let cleanup1 = sinon.spy();
       let cleanup2 = sinon.spy();
 
-      class Foo extends dispose.Disposable {
+      class Foo extends Disposable {
         create() {
           this.bar = this.autoDispose(bar);
           this.baz = this.autoDisposeWithMethod('destroy', baz);
@@ -37,7 +37,7 @@ describe('dispose', function() {
       assert(!foo.isDisposed());
       assert(foo.bar instanceof Bar);
       assert.equal(foo.constructor.name, "Foo");
-      assert.equal(Object.getPrototypeOf(Foo).name, "Disposable:Object");
+      assert.equal(Object.getPrototypeOf(Foo).name, "Disposable");
 
       // We can also use disposal methods outside the constructor.
       foo.autoDisposeCallback(cleanup2);
@@ -72,38 +72,15 @@ describe('dispose', function() {
       assert(baz.destroy.calledBefore(bar.dispose));
     });
 
-    it("should mixin with any base class", function() {
-      class Foo {
-        constructor() {
-          this.hello = "hello";
-        }
-      }
-      let cleanup = sinon.spy();
-      class Bar extends dispose.mixinDisposable(Foo) {
-        create() {
-          this.autoDisposeCallback(cleanup);
-        }
-      }
-      let bar = new Bar();
-      assert(!bar.isDisposed());
-      assert.equal(bar.hello, "hello");
-      assert.equal(bar.constructor.name, "Bar");
-      assert.equal(Object.getPrototypeOf(Bar).name, "Disposable:Foo");
-      bar.dispose();
-      assert.equal(cleanup.callCount, 1);
-      assert(cleanup.calledOn(bar));
-      assert(bar.isDisposed());
-    });
-
     it("should wipe object, only when requested", function() {
       let bar1 = new Bar();
       let bar2 = new Bar();
-      class Foo extends dispose.Disposable {
+      class Foo extends Disposable {
         create() {
           this.bar = this.autoDispose(bar1);
         }
       }
-      class FooWiped extends dispose.Disposable {
+      class FooWiped extends Disposable {
         create() {
           this.wipeOnDispose();
           this.bar = this.autoDispose(bar2);
@@ -127,7 +104,7 @@ describe('dispose', function() {
     let bar = new Bar();
     let baz = new Bar();
 
-    class Foo extends dispose.Disposable {
+    class Foo extends Disposable {
       create(throwWhen) {
         if (throwWhen === 0) { throw new Error("test-error"); }
         this.bar = this.autoDispose(bar);
@@ -180,7 +157,7 @@ describe('dispose', function() {
 
     it("should dispose on propagated errors", function() {
       let bar2 = new Bar();
-      class Foo2 extends dispose.Disposable {
+      class Foo2 extends Disposable {
         create() {
           this.bar2 = this.autoDispose(bar2);
           this.foo = this.autoDispose(new Foo(1));
@@ -194,7 +171,7 @@ describe('dispose', function() {
       assert.equal(bar2.dispose.callCount, 1);
     });
 
-    class FailOnDispose extends dispose.Disposable {
+    class FailOnDispose extends Disposable {
       create() {
         this.bar = this.autoDispose(bar);
         this.foo = this.autoDisposeCallback(() => { throw new Error("test-error-disposal"); });
@@ -214,7 +191,7 @@ describe('dispose', function() {
     });
 
     it("should be helpful on exceptions cleaning partially-constructed objects", function() {
-      class FailOnConstruct extends dispose.Disposable {
+      class FailOnConstruct extends Disposable {
         create() {
           this.fod = this.autoDispose(new FailOnDispose());
           throw new Error("test-error-construct");

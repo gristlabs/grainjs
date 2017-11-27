@@ -1,10 +1,22 @@
 /**
- * binding.js offers a convenient subscribe() function that creates a binding to an observable, a
- * a plain value, or a function (from which it builds a computed).
+ * binding.ts offers a convenient subscribe() function that creates a binding to an observable, a
+ * a plain value, or a function from which it builds a computed.
  */
-"use strict";
 
-const computed = require('./computed');
+import {computed} from './computed';
+import {IDisposable} from './dispose';
+import {Observable} from './observable';
+import {UseCB} from './subscribe';
+
+type BindableValue<T> = Observable<T> | ComputedCallback<T> | T | IKnockoutObservable<T>;
+
+type ComputedCallback<T> = (use: UseCB, ...args: any[]) => T;
+
+interface IKnockoutObservable<T> {
+  (): T;
+  peek(): T;
+  subscribe(callback: (newValue: T) => void, target?: any, event?: "change"): IDisposable;
+}
 
 /**
  * Subscribes a callback to valueObs, which may be one a plain value, an observable, a knockout
@@ -17,14 +29,16 @@ const computed = require('./computed');
  *
  * Returns an object which should be disposed to remove the created subscriptions, or null.
  */
-function subscribe(valueObs, callback) {
+export function subscribe<T>(valueObs: BindableValue<T>,
+                             callback: (newVal: T, oldVal?: T) => void): IDisposable|null {
   // A plain function (to make a computed from), or a knockout observable.
   if (typeof valueObs === 'function') {
     // Knockout observable.
-    if (typeof valueObs.peek === 'function') {
-      let savedValue = valueObs.peek();
-      let sub = valueObs.subscribe(val => {
-        let old = savedValue;
+    const koValue = valueObs as IKnockoutObservable<T>;
+    if (typeof koValue.peek === 'function') {
+      let savedValue = koValue.peek();
+      const sub = koValue.subscribe((val: T) => {
+        const old = savedValue;
         savedValue = val;
         callback(val, old);
       });
@@ -36,15 +50,15 @@ function subscribe(valueObs, callback) {
     //    let sub = subscribe(use => callback(valueObs(use)));
     // The difference is that when valueObs() evaluates to unchanged value, callback would be
     // called in the version above, but not in the version below.
-    let comp = computed(valueObs);
+    const comp = computed(valueObs);
     comp.addListener(callback);
     callback(comp.get(), undefined);
     return comp;      // Disposing this will dispose its one listener.
   }
 
   // An observable.
-  if (typeof valueObs.addListener === 'function') {
-    let sub = valueObs.addListener(callback);
+  if (valueObs instanceof Observable) {
+    const sub = valueObs.addListener(callback);
     callback(valueObs.get(), undefined);
     return sub;
   }
@@ -52,5 +66,3 @@ function subscribe(valueObs, callback) {
   callback(valueObs, undefined);
   return null;
 }
-
-exports.subscribe = subscribe;

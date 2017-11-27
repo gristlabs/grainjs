@@ -9,7 +9,7 @@
   "scripts": {
     "test": "mocha -R list --harmony -gc test",
     "dist": "bash build.sh",
-    "build-demo": "browserify demo/celsius_grain/index.js | minify -o demo/celsius_grain/build-index.js"
+    "build-demo": "browserify demo/celsius_grain/index.js -d | uglifyjs --source-map 'content=inline,url=build-index.js.map' -o demo/celsius_grain/build-index.js"
   },
   "repository": {
     "type": "git",
@@ -27,8 +27,6 @@
   },
   "homepage": "https://github.com/gristlabs/grainjs#readme",
   "devDependencies": {
-    "babel-core": "^6.25.0",
-    "babel-minify": "^0.2.0",
     "browserify": "^14.4.0",
     "chai": "^4.1.0",
     "create-react-app": "^1.4.1",
@@ -38,7 +36,8 @@
     "sinon": "^4.0.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",
-    "typescript": "^2.6.1"
+    "typescript": "^2.6.1",
+    "uglify-es": "^3.2.0"
   },
   "dependencies": {
     "fastpriorityqueue": "^0.3.1",

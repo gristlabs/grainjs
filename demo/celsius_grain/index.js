@@ -51,10 +51,9 @@ class Calculator extends dom.Component {
   }
 
   _makeScaleTemp(toScale, converter) {
-    return computed(this._temp, this._scale, {
-      read: (use, temp, scale) => (scale === toScale ? temp : tryConvert(temp, converter)),
-      write: val => { this._scale.set(toScale); this._temp.set(val); }
-    });
+    return computed(this._temp, this._scale,
+      (use, temp, scale) => (scale === toScale ? temp : tryConvert(temp, converter)))
+    .onWrite(val => { this._scale.set(toScale); this._temp.set(val); });
   }
 }
 

@@ -4,7 +4,7 @@
 
 const ko = require('knockout');
 const {observable, bundleChanges} = require('../lib/observable');
-const computed = require('../lib/computed');
+const {computed} = require('../lib/computed');
 const kowrap = require('../lib/kowrap')(ko);
 const { assertResetSingleCall } = require('./testutil');
 

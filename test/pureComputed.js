@@ -5,7 +5,7 @@
 const assert = require('chai').assert;
 const sinon = require('sinon');
 const {observable} = require('../lib/observable');
-const computed = require('../lib/computed');
+const {computed} = require('../lib/computed');
 const pureComputed = require('../lib/pureComputed');
 const testutil = require('./testutil');
 

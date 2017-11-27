@@ -3,7 +3,7 @@
 /* global describe, it */
 
 const {observable, bundleChanges} = require('../lib/observable');
-const computed = require('../lib/computed');
+const {computed} = require('../lib/computed');
 const {subscribe} = require('../lib/subscribe');
 
 const assert = require('chai').assert;

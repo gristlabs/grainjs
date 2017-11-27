@@ -4,7 +4,7 @@
 
 const dom = require('../lib/dom');
 const {observable} = require('../lib/observable');
-const computed = require('../lib/computed');
+const {computed} = require('../lib/computed');
 const browserGlobals = require('../lib/browserGlobals');
 const { assertResetSingleCall, consoleCapture } = require('./testutil');
 const G = browserGlobals.use('DocumentFragment');

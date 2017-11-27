@@ -23,11 +23,14 @@ import {Listener} from './emit';
 import {Observable} from './observable';
 import {bindB} from './util';
 
-interface IObservable {
+export interface ISubscribable {
   _getDepItem(): DepItem|null;
   addListener(callback: (val: any, prev: any) => void, optContext?: object): Listener;
   get(): any;
 }
+
+// The generic type for the use() function that callbacks get.
+export type UseCB = <T>(obs: Observable<T>) => T;
 
 interface IListenerWithInUse extends Listener {
   _inUse: boolean;
@@ -35,22 +38,22 @@ interface IListenerWithInUse extends Listener {
 
 export class Subscription {
   private _depItem: DepItem;
-  private _dependencies: IObservable[];
+  private _dependencies: ISubscribable[];
   private _depListeners: Listener[];
-  private _dynDeps: Map<IObservable, IListenerWithInUse>;
+  private _dynDeps: Map<ISubscribable, IListenerWithInUse>;
   private _readArgs: any[];
   private _read: () => void;
 
   /**
    * Internal constructor for a Subscription. You should use subscribe() function instead.
    */
-  constructor(callback: () => void, dependencies: IObservable[]) {
+  constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ISubscribable[]) {
     this._depItem = new DepItem(this._evaluate, this);
     this._dependencies = dependencies || [];
     this._depListeners = this._dependencies.map((obs) => this._subscribeTo(obs));
     this._dynDeps = new Map();   // Maps dependent observable to its Listener object.
 
-    const useFunc = ((obs: IObservable) => this._useDependency(obs));
+    const useFunc = ((obs: ISubscribable) => this._useDependency(obs));
     this._readArgs = Array(this._dependencies.length + 1);
     this._readArgs[0] = useFunc;
     this._read = bindB(callback, this._readArgs);
@@ -67,12 +70,17 @@ export class Subscription {
   }
 
   /**
+   * For use by computed(): returns this subscription's hook into the _computed_queue.
+   */
+  public _getDepItem(): DepItem { return this._depItem; }
+
+  /**
    * @private
    * Gets called when the callback calls `use(obs)` for an observable. It creates a
    * subscription to `obs` if one doesn't yet exist.
    * @param {Observable} obs: The observable being used as a dependency.
    */
-  private _useDependency(obs: IObservable) {
+  private _useDependency(obs: ISubscribable) {
     let listener = this._dynDeps.get(obs);
     if (!listener) {
       listener = this._subscribeTo(obs) as IListenerWithInUse;
@@ -114,7 +122,7 @@ export class Subscription {
    * @param {Observable} obs: The observable to subscribe to.
    * @returns {Listener} Listener object.
    */
-  private _subscribeTo(obs: IObservable) {
+  private _subscribeTo(obs: ISubscribable) {
     return obs.addListener(this._enqueue, this);
   }
 
@@ -127,38 +135,35 @@ export class Subscription {
   }
 }
 
-type UseCB = <T>(obs: Observable<T>) => T;
 type Obs<T> = Observable<T>;
 
 /**
- * This is the type-checking interface for subscribe() and similar functions (e.g. computed()). It
- * allows TypeScript to do helpful type-checking when using these functions.
- *
- * We can't support a completely arbitrary number of arguments (explicit dependencies), but we
- * support up to 5, which should almost always be sufficient.
+ * This is the type-checking interface for subscribe(), which allows TypeScript to do helpful
+ * type-checking when using it. We can only support a fixed number of argumnets (explicit
+ * dependencies), but 5 should almost always be enough.
  */
-export interface ISubscribe<Ret> {
-  (cb: (use: UseCB) => Ret): Subscription;
+interface ISubscribe {
+  (cb: (use: UseCB) => void): Subscription;
 
   <A>(
     a: Obs<A>,
-    cb: (use: UseCB, a: A) => Ret): Subscription;
+    cb: (use: UseCB, a: A) => void): Subscription;
 
   <A, B>(
     a: Obs<A>, b: Obs<B>,
-    cb: (use: UseCB, a: A, b: B) => Ret): Subscription;
+    cb: (use: UseCB, a: A, b: B) => void): Subscription;
 
   <A, B, C>(
     a: Obs<A>, b: Obs<B>, c: Obs<C>,
-    cb: (use: UseCB, a: A, b: B, c: C) => Ret): Subscription;
+    cb: (use: UseCB, a: A, b: B, c: C) => void): Subscription;
 
   <A, B, C, D>(
     a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
-    cb: (use: UseCB, a: A, b: B, c: C, d: D) => Ret): Subscription;
+    cb: (use: UseCB, a: A, b: B, c: C, d: D) => void): Subscription;
 
   <A, B, C, D, E>(
     a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
-    cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => Ret): Subscription;
+    cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => void): Subscription;
 }
 
 /**
@@ -171,8 +176,8 @@ export interface ISubscribe<Ret> {
  *    This callback is called immediately, and whenever any dependency changes.
  * @returns {Subscription} The new subscription which may be disposed to unsubscribe.
  */
-export const subscribe: ISubscribe<void> = function(...args: any[]): Subscription {
+export const subscribe: ISubscribe = function(...args: any[]): Subscription {
   const cb = args.pop();
-  // The case helps ensure that Observable is compatible with IObservable abstraction that we use.
+  // The cast helps ensure that Observable is compatible with ISubscribable abstraction that we use.
   return new Subscription(cb, args as Array<Observable<any>>);
 };

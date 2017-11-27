@@ -3,7 +3,7 @@
 /* global describe, it */
 
 const binding = require('../lib/binding');
-const computed = require('../lib/computed');
+const {computed} = require('../lib/computed');
 const {observable} = require('../lib/observable');
 const { assertResetSingleCall } = require('./testutil');
 

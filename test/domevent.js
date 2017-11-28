@@ -50,18 +50,25 @@ describe('domevent', function() {
       assertResetSingleCall(stubB, undefined, e2, elemB);
       assertResetSingleCall(stubA, undefined, e2, elemA);
 
-      // If a listener returns false, it should prevent the event from bubbling.
+      // If a listener returns false, it does NOT prevent the event from bubbling.
       stubB.returns(false);
       let e3 = makeEvent('click');
       elemB.dispatchEvent(e3);
-      sinon.assert.notCalled(stubA);
+      assertResetSingleCall(stubA, undefined, e3, elemA);
       assertResetSingleCall(stubB, undefined, e3, elemB);
+
+      // If listener calls e.stopPropagation(), that does prevent the event from bubbling.
+      stubB.callsFake(ev => ev.stopPropagation());
+      let e4 = makeEvent('click');
+      elemB.dispatchEvent(e4);
+      sinon.assert.notCalled(stubA);
+      assertResetSingleCall(stubB, undefined, e4, elemB);
 
       // If lisB is disposed, it stops listening.
       lisB.dispose();
-      let e4 = makeEvent('click');
-      elemB.dispatchEvent(e4);
-      assertResetSingleCall(stubA, undefined, e4, elemA);
+      let e5 = makeEvent('click');
+      elemB.dispatchEvent(e5);
+      assertResetSingleCall(stubA, undefined, e5, elemA);
       sinon.assert.notCalled(stubB);
 
     });

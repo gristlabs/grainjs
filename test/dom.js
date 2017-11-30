@@ -5,9 +5,8 @@
 const dom = require('../lib/dom');
 const {observable} = require('../lib/observable');
 const {computed} = require('../lib/computed');
-const browserGlobals = require('../lib/browserGlobals');
+const {G, pushGlobals, popGlobals} = require('../lib/browserGlobals');
 const { assertResetSingleCall, consoleCapture } = require('./testutil');
-const G = browserGlobals.use('DocumentFragment');
 
 const assert = require('chai').assert;
 const { JSDOM } = require('jsdom');
@@ -20,11 +19,11 @@ describe('dom', function() {
     jsdomDoc = new JSDOM("<!doctype html><html><body>" +
       "<div id='a'></div>" +
       "</body></html>");
-    browserGlobals.pushGlobals(jsdomDoc.window);
+    pushGlobals(jsdomDoc.window);
   });
 
   after(function() {
-    browserGlobals.popGlobals();
+    popGlobals();
   });
 
   describe("construction", function() {
@@ -793,11 +792,11 @@ describe('dom', function() {
         "<div id='b' class='x y'></div>" +
         "<div id='c' class='x y z'></div>" +
         "</body></html>");
-      browserGlobals.pushGlobals(jsdomDoc.window);
+      pushGlobals(jsdomDoc.window);
     });
 
     after(function() {
-      browserGlobals.popGlobals();
+      popGlobals();
     });
 
     it("should find the first matching element", function() {

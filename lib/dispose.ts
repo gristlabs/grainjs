@@ -90,7 +90,7 @@ export abstract class Disposable implements IDisposable {
    * @returns {Object} obj
    */
   public autoDispose<T extends IDisposable>(obj: T): T {
-    return this.autoDisposeWith(_defaultDisposer, obj);
+    return this.autoDisposeWith<T>(_defaultDisposer, obj);
   }
 
   /**

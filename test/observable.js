@@ -2,8 +2,8 @@
 
 /* global describe, it */
 
-const observable = require('../lib/observable.js');
-const { assertResetSingleCall } = require('./testutil.js');
+const {observable} = require('../lib/observable');
+const { assertResetSingleCall } = require('./testutil');
 
 const assert = require('assert');
 const sinon = require('sinon');

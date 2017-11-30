@@ -17,29 +17,62 @@
  *
  *    subscribe(...deps, ((use, ...depValues) => READ_CALLBACK));
  */
-"use strict";
 
-const fastMap = require('fast.js/map');
-const _computed_queue = require('./_computed_queue.js');
-const util = require('./util.js');
+import {DepItem} from './_computed_queue';
+import {Listener} from './emit';
+import {Observable} from './observable';
+import {bindB} from './util';
 
-class Subscription {
+export interface ISubscribable {
+  _getDepItem(): DepItem|null;
+  addListener(callback: (val: any, prev: any) => void, optContext?: object): Listener;
+  get(): any;
+}
+
+// The generic type for the use() function that callbacks get.
+export type UseCB = <T>(obs: Observable<T>) => T;
+
+interface IListenerWithInUse extends Listener {
+  _inUse: boolean;
+}
+
+export class Subscription {
+  private _depItem: DepItem;
+  private _dependencies: ISubscribable[];
+  private _depListeners: Listener[];
+  private _dynDeps: Map<ISubscribable, IListenerWithInUse>;
+  private _readArgs: any[];
+  private _read: () => void;
+
   /**
    * Internal constructor for a Subscription. You should use subscribe() function instead.
    */
-  constructor(callback, dependencies) {
-    this._depItem = new _computed_queue.DepItem(this._evaluate, this);
+  constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ISubscribable[]) {
+    this._depItem = new DepItem(this._evaluate, this);
     this._dependencies = dependencies || [];
-    this._depListeners = fastMap(this._dependencies, obs => this._subscribeTo(obs));
+    this._depListeners = this._dependencies.map((obs) => this._subscribeTo(obs));
     this._dynDeps = new Map();   // Maps dependent observable to its Listener object.
 
-    let useFunc = (obs => this._useDependency(obs));
+    const useFunc = ((obs: ISubscribable) => this._useDependency(obs));
     this._readArgs = Array(this._dependencies.length + 1);
     this._readArgs[0] = useFunc;
-    this._read = util.bindB(callback, this._readArgs);
+    this._read = bindB(callback, this._readArgs);
 
     this._evaluate();
   }
+
+  /**
+   * Disposes the computed, unsubscribing it from all observables it depends on.
+   */
+  public dispose() {
+    for (const lis of this._depListeners) { lis.dispose(); }
+    for (const lis of this._dynDeps.values()) { lis.dispose(); }
+  }
+
+  /**
+   * For use by computed(): returns this subscription's hook into the _computed_queue.
+   */
+  public _getDepItem(): DepItem { return this._depItem; }
 
   /**
    * @private
@@ -47,13 +80,13 @@ class Subscription {
    * subscription to `obs` if one doesn't yet exist.
    * @param {Observable} obs: The observable being used as a dependency.
    */
-  _useDependency(obs) {
+  private _useDependency(obs: ISubscribable) {
     let listener = this._dynDeps.get(obs);
     if (!listener) {
-      listener = this._subscribeTo(obs);
+      listener = this._subscribeTo(obs) as IListenerWithInUse;
       this._dynDeps.set(obs, listener);
     }
-    listener.inUse = true;
+    listener._inUse = true;
     this._depItem.useDep(obs._getDepItem());
     return obs.get();
   }
@@ -63,7 +96,7 @@ class Subscription {
    * Calls the callback() with appropriate args, and updates subscriptions when it is done.
    * I.e. adds dynamic subscriptions created via `use(obs)`, and disposes those no longer used.
    */
-  _evaluate() {
+  private _evaluate() {
     try {
       // Note that this is optimized for speed.
       for (let i = 0, len = this._dependencies.length; i < len; i++) {
@@ -73,8 +106,8 @@ class Subscription {
       return this._read();
     } finally {
       this._dynDeps.forEach((listener, obs) => {
-        if (listener.inUse) {
-          listener.inUse = false;
+        if (listener._inUse) {
+          listener._inUse = false;
         } else {
           this._dynDeps.delete(obs);
           listener.dispose();
@@ -89,7 +122,7 @@ class Subscription {
    * @param {Observable} obs: The observable to subscribe to.
    * @returns {Listener} Listener object.
    */
-  _subscribeTo(obs) {
+  private _subscribeTo(obs: ISubscribable) {
     return obs.addListener(this._enqueue, this);
   }
 
@@ -97,19 +130,41 @@ class Subscription {
    * @private
    * Adds this item to the recompute queue.
    */
-  _enqueue() {
+  private _enqueue() {
     this._depItem.enqueue();
-  }
-
-  /**
-   * Disposes the computed, unsubscribing it from all observables it depends on.
-   */
-  dispose() {
-    for (let lis of this._depListeners) { lis.dispose(); }
-    for (let lis of this._dynDeps.values()) { lis.dispose(); }
   }
 }
 
+type Obs<T> = Observable<T>;
+
+/**
+ * This is the type-checking interface for subscribe(), which allows TypeScript to do helpful
+ * type-checking when using it. We can only support a fixed number of argumnets (explicit
+ * dependencies), but 5 should almost always be enough.
+ */
+interface ISubscribe {
+  (cb: (use: UseCB) => void): Subscription;
+
+  <A>(
+    a: Obs<A>,
+    cb: (use: UseCB, a: A) => void): Subscription;
+
+  <A, B>(
+    a: Obs<A>, b: Obs<B>,
+    cb: (use: UseCB, a: A, b: B) => void): Subscription;
+
+  <A, B, C>(
+    a: Obs<A>, b: Obs<B>, c: Obs<C>,
+    cb: (use: UseCB, a: A, b: B, c: C) => void): Subscription;
+
+  <A, B, C, D>(
+    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
+    cb: (use: UseCB, a: A, b: B, c: C, d: D) => void): Subscription;
+
+  <A, B, C, D, E>(
+    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
+    cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => void): Subscription;
+}
 
 /**
  * Creates a new Subscription.
@@ -121,10 +176,8 @@ class Subscription {
  *    This callback is called immediately, and whenever any dependency changes.
  * @returns {Subscription} The new subscription which may be disposed to unsubscribe.
  */
-function subscribe(...args) {
-  let callback = args.pop();
-  return new Subscription(callback, args);
-}
-
-module.exports = subscribe;
-module.exports.Subscription = Subscription;
+export const subscribe: ISubscribe = function(...args: any[]): Subscription {
+  const cb = args.pop();
+  // The cast helps ensure that Observable is compatible with ISubscribable abstraction that we use.
+  return new Subscription(cb, args as Array<Observable<any>>);
+};

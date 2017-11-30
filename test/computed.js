@@ -2,16 +2,16 @@
 
 /* global describe, before, it */
 
-const observable = require('../lib/observable.js');
-const computed = require('../lib/computed.js');
-const pureComputed = require('../lib/pureComputed.js');
-const _computed_queue = require('../lib/_computed_queue.js');
+const {observable, bundleChanges} = require('../lib/observable');
+const {computed} = require('../lib/computed');
+const {pureComputed} = require('../lib/pureComputed');
+const _computed_queue = require('../lib/_computed_queue');
 
 const _ = require('lodash');
 const assert = require('chai').assert;
 const sinon = require('sinon');
 const ko = require('knockout');
-const timeit = require('./testutil.js').timeit;
+const timeit = require('./testutil').timeit;
 
 // These test cases are separated and used for both computed() and pureComputed().
 function testComputed(computed) {
@@ -87,10 +87,7 @@ function testComputed(computed) {
   it('should support writing when writable', function() {
     let x = observable("Test");
     let comp1 = computed(x, (use, x) => x.toUpperCase());
-    let comp2 = computed(x, {
-      read: (use, x) => x.toUpperCase(),
-      write: val => x.set(val.toLowerCase())
-    });
+    let comp2 = computed(x, (use, x) => x.toUpperCase()).onWrite(val => x.set(val.toLowerCase()));
 
     // Verify that the read method works.
     assert.strictEqual(comp1.get(), "TEST");
@@ -112,13 +109,8 @@ function testComputed(computed) {
   it('should support options.read with or without options.write', function() {
     let x1 = observable("Test");
     let x2 = observable("Test");
-    let comp1 = computed(x1, {
-      read: (use, x1) => x1.toUpperCase()
-    });
-    let comp2 = computed(x2, {
-      read: (use, x2) => x2.toUpperCase(),
-      write: v => x2.set(v.toLowerCase())
-    });
+    let comp1 = computed(x1, (use, x1) => x1.toUpperCase());
+    let comp2 = computed(x2, (use, x2) => x2.toUpperCase()).onWrite(v => x2.set(v.toLowerCase()));
 
     // Verify that the read method works.
     assert.strictEqual(comp1.get(), "TEST");
@@ -227,7 +219,7 @@ function testComputed(computed) {
 
     // Now check that with bundleChanges, there is a single update.
     spy1.reset(); spy2.reset();
-    observable.bundleChanges(() => {
+    bundleChanges(() => {
       x.set("x2");
       y.set("y2");
     });

@@ -3,10 +3,10 @@
 /* global describe, it */
 
 const ko = require('knockout');
-const observable = require('../lib/observable.js');
-const computed = require('../lib/computed.js');
-const kowrap = require('../lib/kowrap.js')(ko);
-const { assertResetSingleCall } = require('./testutil.js');
+const {observable, bundleChanges} = require('../lib/observable');
+const {computed} = require('../lib/computed');
+const {fromKo, toKo} = require('../lib/kowrap');
+const { assertResetSingleCall } = require('./testutil');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');
@@ -19,11 +19,11 @@ describe('kowrap', function() {
     let gObs = observable("foo");
 
     // Check that multiple calls to wrap don't create different observables.
-    let gWrap = kowrap(kObs);
-    assert.strictEqual(kowrap(kObs), gWrap);
+    let gWrap = fromKo(kObs);
+    assert.strictEqual(fromKo(kObs), gWrap);
 
     let stub = sinon.stub().returnsArg(0);
-    let gComp = computed(use => stub([use(kowrap(kObs)), use(kowrap(kComp)), use(gObs), use(gWrap)]));
+    let gComp = computed(use => stub([use(fromKo(kObs)), use(fromKo(kComp)), use(gObs), use(gWrap)]));
 
     assert.deepEqual(gComp.get(), [17, 34, "foo", 17]);
     assertResetSingleCall(stub, undefined, [17, 34, "foo", 17]);
@@ -40,7 +40,7 @@ describe('kowrap', function() {
     stub.resetHistory();
 
     // We can avoid multiple changes at the level of Grain.js observables using bundleChanges().
-    observable.bundleChanges(() => kObs(6));
+    bundleChanges(() => kObs(6));
     assert.deepEqual(gComp.get(), [6, 12, "bar", 6]);
     assertResetSingleCall(stub, undefined, [6, 12, "bar", 6]);
 
@@ -50,9 +50,9 @@ describe('kowrap', function() {
     kObs(17);
     sinon.assert.notCalled(stub);
 
-    // Test that using a knockout observable works with kowrap(), and throws an exception without.
+    // Test that using a knockout observable works with fromKo(), and throws an exception without.
     assert.throws(() => computed(use => use(kObs)), TypeError);
-    computed(use => use(kowrap(kObs)));
+    computed(use => use(fromKo(kObs)));
   });
 
   it('should support being a dependency of knockout observables', function() {
@@ -61,11 +61,11 @@ describe('kowrap', function() {
     let kObs = ko.observable("foo");
 
     // Check that multiple calls to wrap don't create different observables.
-    let kWrap = kowrap.ko(gObs);
-    assert.strictEqual(kowrap.ko(gObs), kWrap);
+    let kWrap = toKo(ko, gObs);
+    assert.strictEqual(toKo(ko, gObs), kWrap);
 
     let stub = sinon.stub().returnsArg(0);
-    let kComp = ko.computed(() => stub([kowrap.koUnwrap(gObs), kowrap.ko(gComp)(), kObs(), kWrap()]));
+    let kComp = ko.computed(() => stub([toKo(ko, gObs)(), toKo(ko, gComp)(), kObs(), kWrap()]));
 
     assert.deepEqual(kComp.peek(), [17, 34, "foo", 17]);
     assertResetSingleCall(stub, undefined, [17, 34, "foo", 17]);

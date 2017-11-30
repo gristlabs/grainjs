@@ -17,41 +17,46 @@
  * values will be passed to the read() callback. These may be combined with automatic dependencies
  * detected using use(). Note that constructor dependencies have less overhead.
  *
- *  let val = computed(...deps, ((use, ...depValues) => READ_CALLBACK), options);
+ *  let val = computed(...deps, ((use, ...depValues) => READ_CALLBACK));
  *
- * Options are optional, and may specify a `write` callback. If a `write` callback is not
- * specified, calling `set` on a computed observable will throw an exception. It is also possible
- * for options to specify a `read` callback instead of passing it as a separate argument.
+ * You may specify a `write` callback by calling `onWrite(WRITE_CALLBACK)`, which will be called
+ * whenever set() is called on the computed by its user. If a `write` bacllback is not specified,
+ * calling `set` on a computed observable will throw an exception.
  *
  * Note that pureComputed.js offers a variation of computed() with the same interface, but which
  * stays unsubscribed from dependencies while it itself has no subscribers.
  */
-"use strict";
 
-const observable = require('./observable.js');
-const subscribe = require('./subscribe.js');
+import {DepItem} from './_computed_queue';
+import {Observable} from './observable';
+import {ISubscribable, Subscription, UseCB} from './subscribe';
 
-
-function _noWrite() {
+function _noWrite(): never {
   throw new Error("Can't write to non-writable computed");
 }
 
-class Computed extends observable.Observable {
+export class Computed<T> extends Observable<T> {
+  private _read: (use: UseCB, ...args: ISubscribable[]) => void;
+  private _write: (value: T) => void;
+  private _sub: Subscription;
+
   /**
    * Internal constructor for a Computed observable. You should use computed() function instead.
    */
-  constructor(dependencies, {read, write=null}) {
-    super();
-    this._read = (use, ...args) => super.set(read(use, ...args));
-    this._write = write || _noWrite;
-    this._sub = new subscribe.Subscription(this._read, dependencies);
+  constructor(callback: (use: UseCB, ...args: any[]) => T, dependencies: ISubscribable[]) {
+    // At initialization we force an undefined value even though it's not of type T: it gets set
+    // to a proper value during the creation of new Subscription, which calls this._read.
+    super(undefined as any);
+    this._read = (use, ...args) => super.set(callback(use, ...args));
+    this._write = _noWrite;
+    this._sub = new Subscription(this._read, dependencies);
   }
 
   /**
    * Used by subscriptions to keep track of dependencies.
    */
-  _getDepItem() {
-    return this._sub._depItem;
+  public _getDepItem(): DepItem {
+    return this._sub._getDepItem();
   }
 
   /**
@@ -59,15 +64,55 @@ class Computed extends observable.Observable {
    * constructor. Throws an error if there was no such callback (not a "writable" computed).
    * @param {Object} value: The value to pass to the write() callback.
    */
-  set(value) { this._write(value); }
+  public set(value: T): void { this._write(value); }
+
+  /**
+   * Set callback to call when this.set(value) is called, to make it a writable computed. If not
+   * set, attempting to write to this computed will throw an exception.
+   */
+  public onWrite(writeFunc: (value: T) => void): Computed<T> {
+    this._write = writeFunc;
+    return this;
+  }
 
   /**
    * Disposes the computed, unsubscribing it from all observables it depends on.
    */
-  dispose() {
+  public dispose() {
     this._sub.dispose();
     super.dispose();
   }
+}
+
+type Obs<T> = Observable<T>;
+
+/**
+ * This is the type-checking interface for computed(), which allows TypeScript to do helpful
+ * type-checking when using it. We can only support a fixed number of argumnets (explicit
+ * dependencies), but 5 should almost always be enough.
+ */
+interface IComputed {
+  <T>(cb: (use: UseCB) => T): Computed<T>;
+
+  <A, T>(
+    a: Obs<A>,
+    cb: (use: UseCB, a: A) => T): Computed<T>;
+
+  <A, B, T>(
+    a: Obs<A>, b: Obs<B>,
+    cb: (use: UseCB, a: A, b: B) => T): Computed<T>;
+
+  <A, B, C, T>(
+    a: Obs<A>, b: Obs<B>, c: Obs<C>,
+    cb: (use: UseCB, a: A, b: B, c: C) => T): Computed<T>;
+
+  <A, B, C, D, T>(
+    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
+    cb: (use: UseCB, a: A, b: B, c: C, d: D) => T): Computed<T>;
+
+  <A, B, C, D, E, T>(
+    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
+    cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
 }
 
 /**
@@ -75,19 +120,15 @@ class Computed extends observable.Observable {
  * @param {Observable} ...observables: The initial params, of which there may be zero or more, are
  *    observables on which this computed depends. When any of them change, the read() callback
  *    will be called with the values of these observables as arguments.
- * @param {Object|Function} options|read:
- *    Either an options object, or just the read callback as for options.read.
- * @param {Function} options.read: Read callback that will be called with (use, ...values),
- *    i.e. the `use` function and values for all of the ...observables.
- * @param {Function} options.write: Function to be called with (value) when `computed.set(value)`
- *    is called, making it a "writable" computed. If omitted, calling `set()` throws an error.
+ * @param {Function} readCallback: Read callback that will be called with (use, ...values),
+ *    i.e. the `use` function and values for all of the ...observables. The callback is called
+ *    immediately and whenever any dependency changes.
  * @returns {Computed} The newly created computed observable.
  */
-function computed(...args) {
-  let last = args.pop();
-  let options = (typeof last === 'function') ? {read: last} : last;
-  return new Computed(args, options);
-}
+export const computed: IComputed = function(...args: any[]): Computed<any> {
+  const readCb = args.pop();
+  return new Computed<any>(readCb, args);
+};
 
 // TODO Consider mplementing .singleUse() method.
 // An open question is in how to pass e.g. kd.hide(computed(x, x => !x)) in such a way that
@@ -101,7 +142,3 @@ function computed(...args) {
 // .singleUse() automatically disposes a computed (or an observable?) once there are no
 // subscriptions to it. If there are no subscriptions at the time of this call, waits for the next
 // tick, and possibly disposes then.
-
-
-module.exports = computed;
-module.exports.Computed = Computed;

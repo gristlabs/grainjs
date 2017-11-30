@@ -1,47 +1,37 @@
-"use strict";
-
-const isNil = require('lodash/isNil');
-const identity = require('lodash/identity');
-const binding = require('./binding.js');
-const _domDispose = require('./_domDispose.js');
-const _domImpl = require('./_domImpl.js');
+import {autoDisposeElem, domDispose, onDisposeElem} from './_domDispose';
+import {DomArg, DomElementMethod, DomMethod, frag} from './_domImpl';
+import {BindableValue, subscribe as subscribeBinding} from './binding';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
-const G = require('./browserGlobals.js').use('document');
-
+import {G} from './browserGlobals';
 
 /**
  * Private global map for associating arbitrary data with DOM. It's a WeakMap, so does not prevent
  * values from being garbage collected when the owning DOM elements are no longer used.
  */
-let _dataMap = new WeakMap();
-
+const _dataMap: WeakMap<Node, {[key: string]: any}> = new WeakMap();
 
 /**
  * Internal helper that binds the callback to valueObs, which may be a value, observble, or
  * function, and attaches a disposal callback to the passed-in element.
  */
-function _subscribe(elem, valueObs, callback) {
-  _domDispose.autoDisposeElem(elem, binding.subscribe(valueObs, callback));
+function _subscribe<T>(elem: Node, valueObs: BindableValue<T>,
+                       callback: (newVal: T, oldVal?: T) => void): void {
+  autoDisposeElem(elem, subscribeBinding(valueObs, callback));
 }
-
 
 /**
  * Sets multiple attributes of a DOM element. The `attrs()` variant takes no `elem` argument.
- * @param {Element} elem: The element to update.
  * @param {Object} attrsObj: Object mapping attribute names to attribute values.
  */
-function attrsElem(elem, attrsObj) {
-  for (let key of Object.keys(attrsObj)) {
+export function attrsElem(elem: Element, attrsObj: {[name: string]: string}): void {
+  for (const key of Object.keys(attrsObj)) {
     elem.setAttribute(key, attrsObj[key]);
   }
 }
-function attrs(attrsObj) {
-  return elem => attrsElem(elem, attrsObj);
+export function attrs(attrsObj: {[name: string]: string}): DomElementMethod {
+  return (elem) => attrsElem(elem, attrsObj);
 }
-exports.attrsElem = attrsElem;
-exports.attrs = attrs;
-
 
 /**
  * Sets an attribute of a DOM element to the given value. Removes the attribute when the value is
@@ -51,19 +41,16 @@ exports.attrs = attrs;
  * @param {String} attrName: The name of the attribute to bind, e.g. 'href'.
  * @param {String|null} attrValue: The string value or null to remove the attribute.
  */
-function attrElem(elem, attrName, attrValue) {
-  if (isNil(attrValue)) {
+export function attrElem(elem: Element, attrName: string, attrValue: string|null): void {
+  if (attrValue === null || attrValue === undefined) {
     elem.removeAttribute(attrName);
   } else {
     elem.setAttribute(attrName, attrValue);
   }
 }
-function attr(attrName, attrValueObs) {
-  return elem => _subscribe(elem, attrValueObs, val => attrElem(elem, attrName, val));
+export function attr(attrName: string, attrValueObs: BindableValue<string>): DomElementMethod {
+  return (elem) => _subscribe(elem, attrValueObs, (val) => attrElem(elem, attrName, val));
 }
-exports.attrElem = attrElem;
-exports.attr = attr;
-
 
 /**
  * Sets or removes a boolean attribute of a DOM element. According to the spec, empty string is a
@@ -73,15 +60,12 @@ exports.attr = attr;
  * @param {String} attrName: The name of the attribute to bind, e.g. 'checked'.
  * @param {Boolean} boolValue: Boolean value whether to set or unset the attribute.
  */
-function boolAttrElem(elem, attrName, boolValue) {
+export function boolAttrElem(elem: Element, attrName: string, boolValue: boolean): void {
   attrElem(elem, attrName, boolValue ? '' : null);
 }
-function boolAttr(attrName, boolValueObs) {
-  return elem => _subscribe(elem, boolValueObs, val => boolAttrElem(elem, attrName, val));
+export function boolAttr(attrName: string, boolValueObs: BindableValue<boolean>): DomElementMethod {
+  return (elem) => _subscribe(elem, boolValueObs, (val) => boolAttrElem(elem, attrName, val));
 }
-exports.boolAttrElem = boolAttrElem;
-exports.boolAttr = boolAttr;
-
 
 /**
  * Adds a text node to the element. The `text()` variant takes no `elem`, and `value` may be an
@@ -89,19 +73,16 @@ exports.boolAttr = boolAttr;
  * @param {Element} elem: The element to update.
  * @param {String} value: The text value to add.
  */
-function textElem(elem, value) {
+export function textElem(elem: Node, value: string): void {
   elem.appendChild(G.document.createTextNode(value));
 }
-function text(valueObs) {
-  return elem => {
-    let textNode = G.document.createTextNode('');
-    _subscribe(elem, valueObs, val => { textNode.nodeValue = val; });
+export function text(valueObs: BindableValue<string>): DomMethod {
+  return (elem) => {
+    const textNode = G.document.createTextNode('');
+    _subscribe(elem, valueObs, (val) => { textNode.nodeValue = val; });
     elem.appendChild(textNode);
   };
 }
-exports.textElem = textElem;
-exports.text = text;
-
 
 /**
  * Sets a style property of a DOM element to the given value. The `style()` variant takes no
@@ -110,15 +91,13 @@ exports.text = text;
  * @param {String} property: The name of the style property to update, e.g. 'fontWeight'.
  * @param {String} value: The value for the property.
  */
-function styleElem(elem, property, value) {
-  elem.style[property] = value;
+export function styleElem(elem: Element, property: string, value: string): void {
+  (elem as any).style[property] = value;
 }
-function style(property, valueObs) {
-  return elem => _subscribe(elem, valueObs, val => styleElem(elem, property, val));
+export function style(property: string, valueObs: BindableValue<string>): DomElementMethod {
+  return (elem) =>
+    _subscribe(elem, valueObs, (val) => styleElem(elem, property, val));
 }
-exports.styleElem = styleElem;
-exports.style = style;
-
 
 /**
  * Sets the property of a DOM element to the given value.
@@ -127,15 +106,12 @@ exports.style = style;
  * @param {String} property: The name of the property to update, e.g. 'disabled'.
  * @param {Object} value: The value for the property.
  */
-function propElem(elem, property, value) {
-  elem[property] = value;
+export function propElem(elem: Node, property: string, value: any): void {
+  (elem as any)[property] = value;
 }
-function prop(property, valueObs) {
-  return elem => _subscribe(elem, valueObs, val => propElem(elem, property, val));
+export function prop(property: string, valueObs: BindableValue<any>): DomMethod {
+  return (elem) => _subscribe(elem, valueObs, (val) => propElem(elem, property, val));
 }
-exports.propElem = propElem;
-exports.prop = prop;
-
 
 /**
  * Shows or hides the element depending on a boolean value. Note that the element must be visible
@@ -144,15 +120,13 @@ exports.prop = prop;
  * @param {Element} elem: The element to update.
  * @param {Boolean} boolValue: True to show the element, false to hide it.
  */
-function showElem(elem, boolValue) {
-  elem.style.display = boolValue ? '' : 'none';
+export function showElem(elem: Element, boolValue: boolean): void {
+  (elem as HTMLElement).style.display = boolValue ? '' : 'none';
 }
-function show(boolValueObs) {
-  return elem => _subscribe(elem, boolValueObs, val => showElem(elem, val));
+export function show(boolValueObs: BindableValue<boolean>): DomElementMethod {
+  return (elem) =>
+    _subscribe(elem, boolValueObs, (val) => showElem(elem, val));
 }
-exports.showElem = showElem;
-exports.show = show;
-
 
 /**
  * The opposite of show, hiding the element when boolValue is true.
@@ -160,15 +134,13 @@ exports.show = show;
  * @param {Element} elem: The element to update.
  * @param {Boolean} boolValue: True to hide the element, false to show it.
  */
-function hideElem(elem, boolValue) {
-  elem.style.display = boolValue ? 'none' : '';
+export function hideElem(elem: Element, boolValue: boolean): void {
+  (elem as HTMLElement).style.display = boolValue ? 'none' : '';
 }
-function hide(boolValueObs) {
-  return elem => _subscribe(elem, boolValueObs, val => hideElem(elem, val));
+export function hide(boolValueObs: BindableValue<boolean>): DomElementMethod {
+  return (elem) =>
+    _subscribe(elem, boolValueObs, (val) => hideElem(elem, val));
 }
-exports.hideElem = hideElem;
-exports.hide = hide;
-
 
 /**
  * Toggles a css class `className` according to a boolean value.
@@ -177,15 +149,12 @@ exports.hide = hide;
  * @param {String} className: The name of the class to toggle.
  * @param {Boolean} boolValue: Whether to add or remove the class.
  */
-function toggleClassElem(elem, className, boolValue) {
+export function toggleClassElem(elem: Element, className: string, boolValue: boolean): void {
   elem.classList.toggle(className, Boolean(boolValue));
 }
-function toggleClass(className, boolValueObs) {
-  return elem => _subscribe(elem, boolValueObs, val => toggleClassElem(elem, className, val));
+export function toggleClass(className: string, boolValueObs: BindableValue<boolean>): DomElementMethod {
+  return (elem) => _subscribe(elem, boolValueObs, (val) => toggleClassElem(elem, className, val));
 }
-exports.toggleClassElem = toggleClassElem;
-exports.toggleClass = toggleClass;
-
 
 /**
  * Adds a css class of the given name. A falsy name does not add any class. The `cssClass()`
@@ -194,15 +163,15 @@ exports.toggleClass = toggleClass;
  * @param {Element} elem: The element to update.
  * @param {String} className: The name of the class to add.
  */
-function cssClassElem(elem, className) {
+export function cssClassElem(elem: Element, className: string): void {
   if (className) {
     elem.classList.add(className);
   }
 }
-function cssClass(classNameObs) {
-  return elem => {
-    let prevClass;
-    _subscribe(elem, classNameObs, name => {
+export function cssClass(classNameObs: BindableValue<string>): DomElementMethod {
+  return (elem) => {
+    let prevClass: string|null = null;
+    _subscribe(elem, classNameObs, (name: string) => {
       if (prevClass) {
         elem.classList.remove(prevClass);
       }
@@ -213,9 +182,6 @@ function cssClass(classNameObs) {
     });
   };
 }
-exports.cssClassElem = cssClassElem;
-exports.cssClass = cssClass;
-
 
 /**
  * Associate arbitrary data with a DOM element. The `data()` variant takes no `elem`, and `value`
@@ -224,40 +190,36 @@ exports.cssClass = cssClass;
  * @param {String} key: Key to identify this piece of data among others attached to elem.
  * @param {Object} value: Arbitrary value to associate with elem.
  */
-function dataElem(elem, key, value) {
-  let obj = _dataMap.get(elem);
+export function dataElem(elem: Node, key: string, value: any): void {
+  const obj = _dataMap.get(elem);
   if (obj) {
     obj[key] = value;
   } else {
-    _domDispose.onDisposeElem(elem, () => _dataMap.delete(elem));
+    onDisposeElem(elem, () => _dataMap.delete(elem));
     _dataMap.set(elem, {[key]: value});
   }
 }
-function data(key, valueObs) {
-  return elem => _subscribe(elem, valueObs, val => dataElem(elem, key, val));
+export function data(key: string, valueObs: BindableValue<any>): DomMethod {
+  return (elem) => _subscribe(elem, valueObs, (val) => dataElem(elem, key, val));
 }
-function getData(elem, key) {
-  let obj = _dataMap.get(elem);
+export function getData(elem: Node, key: string) {
+  const obj = _dataMap.get(elem);
   return obj && obj[key];
 }
-exports.dataElem = dataElem;
-exports.data = data;
-exports.getData = getData;
 
-
-// Helper for dom.computed();
-function _replaceContent(elem, markerPre, markerPost, content) {
+// Helper for domComputed(); replace content between markerPre and markerPost with the given DOM
+// content, running disposers if any on the removed content.
+function _replaceContent(elem: Node, markerPre: Node, markerPost: Node, content: DomArg): void {
   if (markerPre.parentNode === elem) {
     let next;
-    for (let n = markerPre.nextSibling; n && n != markerPost; n = next) {
+    for (let n = markerPre.nextSibling; n && n !== markerPost; n = next) {
       next = n.nextSibling;
-      _domDispose.dispose(n);
+      domDispose(n);
       elem.removeChild(n);
     }
-    elem.insertBefore(_domImpl.frag(content), markerPost);
+    elem.insertBefore(frag(content), markerPost);
   }
 }
-
 
 /**
  * Appends dynamic DOM content to an element. The value may be an observable or function (from
@@ -269,25 +231,25 @@ function _replaceContent(elem, markerPre, markerPost, content) {
  * changes, previous content is disposed and removed, and new content added in its place.
  *
  * These are roughly equivalent:
- *  (A) dom.computed(nlinesObs, nlines => nlines > 1 ? dom('textarea') : dom('input'));
- *  (B) dom.computed(use => use(nlinesObs) > 1, isTall => isTall ? dom('textarea') : dom('input'));
- *  (C) dom.computed(use => use(nlinesObs) > 1 ? dom('textarea') : dom('input'));
+ *  (A) domComputed(nlinesObs, nlines => nlines > 1 ? dom('textarea') : dom('input'));
+ *  (B) domComputed(use => use(nlinesObs) > 1, isTall => isTall ? dom('textarea') : dom('input'));
+ *  (C) domComputed(use => use(nlinesObs) > 1 ? dom('textarea') : dom('input'));
  *
  * Here, (B) is best. It encapsulates meaningful changes in the observable, and separates DOM
  * creation, so that DOM is only recreated when necessary. Between (A) and (C), (A) should be
  * preferred. Both (A) and (C) would rebuild DOM for any change in nlinesObs, but in (C), it's too
  * easy to use `use` more than necessary and cause inadvertent rebuilding of DOM.
  *
- * Syntax (C), without the last argument, may be useful in cases of DOM depeneding on several
+ * Syntax (C), without the last argument, may be useful in cases of DOM depending on several
  * observables, e.g.
  *
- *    dom.computed(use => use(readonlyObs) ? dom('div') :
- *                            (use(nlinesObs) > 1 ? dom('textarea') : dom('input')));
+ *    domComputed(use => use(readonlyObs) ? dom('div') :
+ *                          (use(nlinesObs) > 1 ? dom('textarea') : dom('input')));
  *
- * If the argument is not an observable, dom.computed() may but should not be used. The following
+ * If the argument is not an observable, domComputed() may but should not be used. The following
  * are equivalent:
  *
- *    dom(..., dom.computed(listValue, list => list.map(x => dom('div', x))), ...)
+ *    dom(..., domComputed(listValue, list => list.map(x => dom('div', x))), ...)
  *    dom(..., listValue.map(x => dom('div', x)), ...)
  *
  * In this case, the latter is preferred as the clearly simpler one.
@@ -297,19 +259,21 @@ function _replaceContent(elem, markerPre, markerPost, content) {
  * @param [Function] contentFunc: Function called with the result of valueObs as the input, and
  *    returning DOM as output. If omitted, defaults to the identity function.
  */
-function computed(valueObs, contentFunc) {
-  contentFunc = contentFunc || identity;
-  return elem => {
-    let markerPre = G.document.createComment('a');
-    let markerPost = G.document.createComment('b');
+export function domComputed<T extends DomArg>(valueObs: BindableValue<T>): DomMethod;
+export function domComputed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomMethod;
+export function domComputed<T>(valueObs: BindableValue<T>, contentFunc?: (val: T) => DomArg): DomMethod {
+  const _contentFunc: (val: T) => DomArg = contentFunc || (identity as any);
+  return (elem: Node) => {
+    const markerPre = G.document.createComment('a');
+    const markerPost = G.document.createComment('b');
     elem.appendChild(markerPre);
     elem.appendChild(markerPost);
     _subscribe(elem, valueObs,
-      value => _replaceContent(elem, markerPre, markerPost, contentFunc(value)));
+      (value) => _replaceContent(elem, markerPre, markerPost, _contentFunc(value)));
   };
 }
-exports.computed = computed;
 
+function identity<T>(arg: T): T { return arg; }
 
 /**
  * Conditionally appends DOM to an element. The value may be an observable or function (from which
@@ -322,7 +286,7 @@ exports.computed = computed;
  *
  *    dom.maybe(use => Boolean(use(fooObs)), () => dom(...));
  *
- * As with dom.computed(), dom.maybe() may but should not be used when the argument is not an
+ * As with domComputed(), dom.maybe() may but should not be used when the argument is not an
  * observable or function. The following are equivalent:
  *
  *    dom(..., dom.maybe(myValue, () => dom(...)));
@@ -335,7 +299,6 @@ exports.computed = computed;
  * @param [Function] contentFunc: Function called with the result of boolValueObs when it is
  *    truthy. Should returning DOM as output.
  */
-function maybe(boolValueObs, contentFunc) {
-  return computed(boolValueObs, value => value ? contentFunc(value) : null);
+export function maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomMethod {
+  return domComputed(boolValueObs, (value) => value ? contentFunc(value) : null);
 }
-exports.maybe = maybe;

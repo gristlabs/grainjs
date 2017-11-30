@@ -1,6 +1,6 @@
 "use strict";
 
-const { computed, observable, dom } = require('../../index.js');
+const { computed, observable, dom } = require('../../build/index');
 
 function toCelsius(fahrenheit) {
   return (fahrenheit - 32) * 5 / 9;
@@ -51,10 +51,9 @@ class Calculator extends dom.Component {
   }
 
   _makeScaleTemp(toScale, converter) {
-    return computed(this._temp, this._scale, {
-      read: (use, temp, scale) => (scale === toScale ? temp : tryConvert(temp, converter)),
-      write: val => { this._scale.set(toScale); this._temp.set(val); }
-    });
+    return computed(this._temp, this._scale,
+      (use, temp, scale) => (scale === toScale ? temp : tryConvert(temp, converter)))
+    .onWrite(val => { this._scale.set(toScale); this._temp.set(val); });
   }
 }
 

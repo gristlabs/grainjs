@@ -2,10 +2,10 @@
 
 /* global describe, it */
 
-const binding = require('../lib/binding.js');
-const computed = require('../lib/computed.js');
-const observable = require('../lib/observable.js');
-const { assertResetSingleCall } = require('./testutil.js');
+const binding = require('../lib/binding');
+const {computed} = require('../lib/computed');
+const {observable} = require('../lib/observable');
+const { assertResetSingleCall } = require('./testutil');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');

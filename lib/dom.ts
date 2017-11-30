@@ -2,6 +2,7 @@
  * dom.js provides a way to build a DOM tree easily.
  *
  * E.g.
+ *  import {dom} from 'grainjs';
  *  dom('a#link.c1.c2', {'href': url}, 'Hello ', dom('span', 'world'));
  *    creates Node <a id="link" class="c1 c2" href={{url}}Hello <span>world</span></a>.
  *
@@ -16,24 +17,28 @@
  *    identical to the first example above.
  */
 
-"use strict";
-
-const _domImpl = require('./_domImpl.js');
-const _domComponent = require('./_domComponent.js');
-const _domDispose = require('./_domDispose.js');
-const _domMethods = require('./_domMethods.js');
-const domevent = require('./domevent.js');
-
 // We keep various dom-related functions organized in private modules, but they are exposed here.
+export * from './_domImpl';
+export * from './_domComponent';
+export * from './_domDispose';
+export * from './_domMethods';
+export * from './domevent';
 
-let dom             = _domImpl.dom;
+import * as _domComponent from './_domComponent';
+import * as _domDispose from './_domDispose';
+import * as _domImpl from './_domImpl';
+import * as _domMethods from './_domMethods';
+import * as domevent from './domevent';
+
+// Additionally export all methods as properties of dom() function.
+const dom: any = _domImpl.dom;
 dom.svg             = _domImpl.svg;
 dom.frag            = _domImpl.frag;
 dom.update          = _domImpl.update;
 dom.find            = _domImpl.find;
 dom.findAll         = _domImpl.findAll;
 
-dom.dispose         = _domDispose.dispose;
+dom.domDispose      = _domDispose.domDispose;
 dom.onDisposeElem   = _domDispose.onDisposeElem;
 dom.onDispose       = _domDispose.onDispose;
 dom.autoDisposeElem = _domDispose.autoDisposeElem;
@@ -62,7 +67,7 @@ dom.cssClass        = _domMethods.cssClass;
 dom.dataElem        = _domMethods.dataElem;
 dom.data            = _domMethods.data;
 dom.getData         = _domMethods.getData;
-dom.computed        = _domMethods.computed;
+dom.domComputed     = _domMethods.domComputed;
 dom.maybe           = _domMethods.maybe;
 
 dom.Component       = _domComponent.Component;
@@ -74,5 +79,3 @@ dom.onElem          = domevent.onElem;
 dom.on              = domevent.on;
 dom.onMatchElem     = domevent.onMatchElem;
 dom.onMatch         = domevent.onMatch;
-
-module.exports = dom;

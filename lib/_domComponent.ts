@@ -2,14 +2,13 @@
  * Implementation of UI components that can be inserted into dom(). See documentation for
  * createElem() and create().
  */
-"use strict";
 
-const { Disposable } = require('./dispose.js');
-const _domImpl = require('./_domImpl.js');
-const _domDispose = require('./_domDispose.js');
+import {domDispose, onDisposeElem} from './_domDispose';
+import {DomElementArg, DomElementMethod, update} from './_domImpl';
+import {Disposable} from './dispose';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
-const G = require('./browserGlobals.js').use('document');
+import {G} from './browserGlobals';
 
 /**
  * A UI component should extend this base class and implement `render()`. Compared to a simple
@@ -19,31 +18,9 @@ const G = require('./browserGlobals.js').use('document');
  * In addition, a "class" component may be disposed to remove it from the DOM, although this is
  * uncommon since a UI component is normally owned by its containing DOM.
  */
-class Component extends Disposable {
-  /**
-   * This is not intended to be called directly or overridden. Instead, implement render().
-   */
-  create(elem, ...args) {
-    let content = this.render(...args);
-
-    this._markerPre = G.document.createComment('A');
-    this._markerPost = G.document.createComment('B');
-
-    // If the containing DOM is disposed, it will dispose all of our DOM (included among children
-    // of the containing DOM). Let it also dispose this Component when it gets to _markerPost.
-    // Since _unmount() is unnecessary here, we skip its work by unseting _markerPre/_markerPost.
-    _domDispose.onDisposeElem(this._markerPost, () => {
-      this._markerPre = this._markerPost = null;
-      this.dispose();
-    });
-
-    // When the component is disposed, unmount the DOM we created (i.e. dispose and remove).
-    // Except that we skip this as unnecessary when the disposal is triggered by containing DOM.
-    this.autoDisposeWith(this._unmount, this);
-
-    // Insert the result of render() into the given parent element.
-    _domImpl.update(elem, this._markerPre, content, this._markerPost);
-  }
+export class Component extends Disposable {
+  private _markerPre: Node|undefined;
+  private _markerPost: Node|undefined;
 
   /**
    * Components must extend this class and implement a `render()` method, which is called at
@@ -55,28 +32,55 @@ class Component extends Disposable {
    * DOM element, a string, null, or an array. The returned DOM is automatically owned by the
    * component, so do not wrap it in `this.autoDispose()`.
    */
-  render() {
+  public render(...args: any[]): DomElementArg {
     throw new Error("Not implemented");
+  }
+
+  /**
+   * This is not intended to be called directly or overridden. Instead, implement render().
+   */
+  protected create(elem: Element, ...args: any[]) {
+    const content: DomElementArg = this.render(...args);
+
+    this._markerPre = G.document.createComment('A');
+    this._markerPost = G.document.createComment('B');
+
+    // If the containing DOM is disposed, it will dispose all of our DOM (included among children
+    // of the containing DOM). Let it also dispose this Component when it gets to _markerPost.
+    // Since _unmount() is unnecessary here, we skip its work by unseting _markerPre/_markerPost.
+    onDisposeElem(this._markerPost, () => {
+      this._markerPre = this._markerPost = undefined;
+      this.dispose();
+    });
+
+    // When the component is disposed, unmount the DOM we created (i.e. dispose and remove).
+    // Except that we skip this as unnecessary when the disposal is triggered by containing DOM.
+    this.autoDisposeWith(this._unmount, this);
+
+    // Insert the result of render() into the given parent element.
+    update(elem, this._markerPre, content, this._markerPost);
   }
 
   /**
    * Detaches and disposes the DOM created and attached in _mount().
    */
-  _unmount() {
+  private _unmount() {
     // Dispose the owned content, and remove it from the DOM.
     if (this._markerPre && this._markerPre.parentNode) {
-      let next, elem = this._markerPre.parentNode;
+      let next;
+      const elem = this._markerPre.parentNode;
       for (let n = this._markerPre.nextSibling; n && n !== this._markerPost; n = next) {
         next = n.nextSibling;
-        _domDispose.dispose(n);
+        domDispose(n);
         elem.removeChild(n);
       }
       elem.removeChild(this._markerPre);
-      elem.removeChild(this._markerPost);
+      elem.removeChild(this._markerPost!);
     }
   }
 }
-exports.Component = Component;
+
+type ComponentClassType = typeof Component;
 
 /**
  * Construct and insert a UI component into the given DOM element. The component must extend
@@ -98,7 +102,7 @@ exports.Component = Component;
  *
  *    In both cases, the constructor for Comp1 runs before the constructor for Comp2. What happens
  *    when Comp2's constructor throws an exception? In the second case, nothing yet owns the
- *    created Comp1 component, and it will never get cleaned up. In the first correct case,
+ *    created Comp1 component, and it will never get cleaned up. In the first, correct case,
  *    dom('div') element gets ownership of it early enough and will dispose it.
  *
  * @param {Element} elem: The element to which to append the newly constructed component.
@@ -106,15 +110,14 @@ exports.Component = Component;
  *    dom.Component(...) and implement the render() method.
  * @param {Objects} ...args: Arguments to the constructor which passes them to the render method.
  */
-function createElem(elem, ComponentClass, ...args) {
+export function createElem(elem: Element, ComponentClass: ComponentClassType, ...args: any[]) {
+  // tslint:disable-next-line:no-unused-expression
   new ComponentClass(elem, ...args);
 }
-function create(ComponentClass, ...args) {
-  return elem => { new ComponentClass(elem, ...args); };
+export function create(ComponentClass: ComponentClassType, ...args: any[]): DomElementMethod {
+  // tslint:disable-next-line:no-unused-expression
+  return (elem) => { new ComponentClass(elem, ...args); };
 }
-exports.createElem = createElem;
-exports.create = create;
-
 
 /**
  * If you need to initialize a component after creation, you may do it in the middle of a dom()
@@ -128,11 +131,10 @@ exports.create = create;
  * soon as it's created, so an exception in the init function or later among dom()'s arguments
  * will trigger a cleanup.
  */
-function createInit(ComponentClass, ...args) {
-  return elem => {
-    const initFunc = args.pop();
-    let c = new ComponentClass(elem, ...args);
+export function createInit(ComponentClass: ComponentClassType, ...args: any[]): DomElementMethod {
+  return (elem) => {
+    const initFunc: (c: Component) => void = args.pop();
+    const c = new ComponentClass(elem, ...args);
     initFunc(c);
   };
 }
-exports.createInit = createInit;

@@ -1,11 +1,8 @@
-"use strict";
-
-const isNil = require('lodash/isNil');
-const isObjectLike = require('lodash/isObjectLike');
-const _domMethods = require('./_domMethods.js');
+import {domDispose} from './_domDispose';
+import {attrsElem} from './_domMethods';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
-const G = require('./browserGlobals.js').use('Node', 'document');
+import {G} from './browserGlobals';
 
 // For inline modifications, some other options were considered:
 // (1) Chainable methods (to use e.g. `dom('div').attr('href', url).value()`). This approach is
@@ -17,11 +14,34 @@ const G = require('./browserGlobals.js').use('Node', 'document');
 // is more flexible and robust, and only suffers from slightly more verbosity. E.g.
 // `dom('div', dom.attr('href', url))`.
 
+export type DomMethod = (elem: Node) => DomArg|void;
+export type DomElementMethod = (elem: Element) => DomElementArg|void;
+
+interface IAttrObj {
+  [attrName: string]: string;
+}
+
+// Type of argument to dom-building functions, that work for any Node.
+export type DomArg = Node | string | IDomArgArray | DomMethod | void | null | undefined;
+interface IDomArgArray extends Array<DomArg> {}
+
+// More options are allowed when dom-building functions are used on an Element.
+export type DomElementArg = DomArg | IAttrObj | IDomElementArgArray | DomElementMethod;
+interface IDomElementArgArray extends Array<DomElementArg> {}
+
+// The goal of the above declarations is to get help from TypeScript in detecting incorrect usage:
+//  import {text, hide} from './_domMethods';
+//  dom('div', text('hello'));        // OK
+//  dom('div', hide(true));           // OK
+//  dom('div', {title: 'hello'});     // OK
+//  frag(text('hello'));              // OK
+//  frag(hide(true));                 // Bad: DocumentFragment is not an Element
+//  frag({title: 'hello'});           // Bad: DocumentFragment is not an Element
 
 /**
  * dom('tag#id.class1.class2', ...args)
  *   The first argument is a string consisting of a tag name, with optional #foo suffix
- *   to add the ID 'foo', and zero or more .bar suffixes to add a css class 'bar'.
+ *   to add the ID 'foo', and zero or more .bar suffixes to add a CSS class 'bar'.
  *
  * The rest of the arguments are optional and may be:
  *
@@ -31,31 +51,28 @@ const G = require('./browserGlobals.js').use('Node', 'document');
  *   Arrays - which are flattened with each item processed recursively;
  *   functions - which are called with elem as the argument, for a chance to modify the
  *       element as it's being created. Return values are processed recursively.
- *   "dom functions" - expressions such as `dom.attr('href', url)` or `dom.hide(obs)`, which
+ *   "dom methods" - expressions such as `dom.attr('href', url)` or `dom.hide(obs)`, which
  *       are actually special cases of the "functions" category.
  */
-function dom(tagString, ...args) {
+export function dom(tagString: string, ...args: DomElementArg[]): HTMLElement {
   return _updateWithArgsOrDispose(_createFromTagString(_createElementHtml, tagString), args);
 }
-exports.dom = dom;
 
 /**
- * dom.svg('tag#id.class1.class2', ...args)
- *  Same as dom(...), but creates and SVG element.
+ * svg('tag#id.class1.class2', ...args)
+ *  Same as dom(...), but creates an SVG element.
  */
-function svg(tagString, ...args) {
+export function svg(tagString: string, ...args: DomElementArg[]): SVGElement {
   return _updateWithArgsOrDispose(_createFromTagString(_createElementSvg, tagString), args);
 }
-exports.svg = svg;
-
 
 // Internal helper used to create HTML elements.
-function _createElementHtml(tag) {
+function _createElementHtml(tag: string): HTMLElement {
   return G.document.createElement(tag);
 }
 
 // Internal helper used to create SVG elements.
-function _createElementSvg(tag) {
+function _createElementSvg(tag: string): SVGElement {
   return G.document.createElementNS("http://www.w3.org/2000/svg", tag);
 }
 
@@ -68,12 +85,14 @@ function _createElementSvg(tag) {
  *    optional.
  * @return {Element} The result of createFunc(), possibly with id and class attributes also set.
  */
-function _createFromTagString(createFunc, tagString) {
+function _createFromTagString<E extends Element>(createFunc: (tag: string) => E, tagString: string): E {
   // We do careful hand-written parsing rather than use a regexp for speed. Using a regexp is
   // significantly more expensive.
-  let tag, id, classes;
-  let dotPos = tagString.indexOf(".");
-  let hashPos = tagString.indexOf('#');
+  let tag: string;
+  let id: string|undefined;
+  let classes: string|undefined;
+  let dotPos: number = tagString.indexOf(".");
+  const hashPos: number = tagString.indexOf('#');
   if (dotPos === -1) {
     dotPos = tagString.length;
   } else {
@@ -88,27 +107,28 @@ function _createFromTagString(createFunc, tagString) {
     id = tagString.substring(hashPos + 1, dotPos);
   }
 
-  let elem = createFunc(tag);
+  const elem: E = createFunc(tag);
   if (id) { elem.setAttribute('id', id); }
   if (classes) { elem.setAttribute('class', classes); }
   return elem;
 }
 
-
 /**
  * Update an element with any number of arguments, as documented in dom().
  */
-function update(elem, ...args) {
+export function update<E extends Element>(elem: E, ...args: DomElementArg[]): E;
+export function update<E extends Node>(elem: E, ...args: DomArg[]): E;
+export function update(elem: any, ...args: DomElementArg[]): Node {
   return _updateWithArgs(elem, args);
 }
-exports.update = update;
-
 
 /**
  * Update an element with an array of arguments.
  */
-function _updateWithArgs(elem, args) {
-  for (let arg of args) {
+function _updateWithArgs<E extends Element>(elem: E, args: DomElementArg[]): E;
+function _updateWithArgs<E extends Node>(elem: E, args: DomArg[]): E;
+function _updateWithArgs(elem: any, args: DomElementArg[]): Node {
+  for (const arg of args) {
     _updateWithArg(elem, arg);
   }
   return elem;
@@ -119,55 +139,53 @@ function _updateWithArgs(elem, args) {
  * an internal helper to be used whenever elem is a newly-created element. If elem is an existing
  * element which the user already knows about, then _updateWithArgs should be called.
  */
-function _updateWithArgsOrDispose(elem, args) {
+function _updateWithArgsOrDispose<E extends Element>(elem: E, args: DomElementArg[]): E;
+function _updateWithArgsOrDispose<E extends Node>(elem: E, args: DomArg[]): E;
+function _updateWithArgsOrDispose(elem: any, args: DomElementArg[]): Node {
   try {
     return _updateWithArgs(elem, args);
   } catch (e) {
-    dom.dispose(elem);
+    domDispose(elem);
     throw e;
   }
 }
 
-/**
- * Update an element with a single argument.
- */
-function _updateWithArg(elem, arg) {
+function _updateWithArg(elem: Element, arg: DomElementArg): void;
+function _updateWithArg(elem: Node, arg: DomArg): void;
+function _updateWithArg(elem: any, arg: DomElementArg): void {
   if (typeof arg === 'function') {
-    let value = arg(elem);
+    const value: DomArg = (arg as DomMethod)(elem);
     // Skip the recursive call in the common case when the function returns nothing.
-    if (!isNil(value)) {
+    if (value !== undefined && value !== null) {
       _updateWithArg(elem, value);
     }
   } else if (Array.isArray(arg)) {
     _updateWithArgs(elem, arg);
-  } else if (isNil(arg)) {
+  } else if (arg === undefined || arg === null) {
     // Nothing to do.
   } else if (arg instanceof G.Node) {
     elem.appendChild(arg);
-  } else if (isObjectLike(arg)) {
-    _domMethods.attrsElem(elem, arg);
+  } else if (typeof arg === 'object') {
+    attrsElem(elem, arg);
   } else {
     elem.appendChild(G.document.createTextNode(arg));
   }
 }
 
-
 /**
  * Creates a DocumentFragment processing arguments the same way as the dom() function.
  */
-function frag(...args) {
-  let elem = G.document.createDocumentFragment();
+export function frag(...args: DomArg[]): DocumentFragment {
+  const elem = G.document.createDocumentFragment();
   return _updateWithArgsOrDispose(elem, args);
 }
-exports.frag = frag;
-
 
 /**
  * Find the first element matching a selector; just an abbreviation for document.querySelector().
  */
-exports.find = function(selector) { return G.document.querySelector(selector); };
+export function find(selector: string) { return G.document.querySelector(selector); }
 
 /**
  * Find all elements matching a selector; just an abbreviation for document.querySelectorAll().
  */
-exports.findAll = function(selector) { return G.document.querySelectorAll(selector); };
+export function findAll(selector: string) { return G.document.querySelectorAll(selector); }

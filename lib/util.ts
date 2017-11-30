@@ -1,11 +1,9 @@
-"use strict";
-
 
 /**
  * Returns f such that f() calls func(...boundArgs), i.e. optimizes `() => func(...boundArgs)`.
  * It is faster on node6 by 57-92%.
  */
-function bindB(func, b) {
+export function bindB<R>(func: (...args: any[]) => R, b: any[]): () => R {
   switch (b.length) {
     case 0: return () => func();
     case 1: return () => func(b[0]);
@@ -25,7 +23,7 @@ function bindB(func, b) {
  * I.e. optimizes `(arg) => func(arg, ...boundArgs)`.
  * It is faster on node6 by 0-92%.
  */
-function bindUB(func, b) {
+export function bindUB<U, R>(func: (arg: U, ...args: any[]) => R, b: any[]): (arg: U) => R {
   switch (b.length) {
     case 0: return (arg) => func(arg);
     case 1: return (arg) => func(arg, b[0]);
@@ -45,7 +43,7 @@ function bindUB(func, b) {
  * I.e. optimizes `(arg) => func(...boundArgs, arg)`.
  * It is faster on node6 by 0-92%.
  */
-function bindBU(func, b) {
+export function bindBU<R>(func: (...args: any[]) => R, b: any[]): (arg: any) => R {
   switch (b.length) {
     case 0: return (arg) => func(arg);
     case 1: return (arg) => func(b[0], arg);
@@ -59,7 +57,3 @@ function bindBU(func, b) {
     default: return (arg) => func(...b, arg);
   }
 }
-
-exports.bindB = bindB;
-exports.bindUB = bindUB;
-exports.bindBU = bindBU;

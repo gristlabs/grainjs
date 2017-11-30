@@ -8,7 +8,7 @@ import {IDisposable} from './dispose';
 import {Observable} from './observable';
 import {UseCB} from './subscribe';
 
-type BindableValue<T> = Observable<T> | ComputedCallback<T> | T | IKnockoutObservable<T>;
+export type BindableValue<T> = Observable<T> | ComputedCallback<T> | T | IKnockoutObservable<T>;
 
 type ComputedCallback<T> = (use: UseCB, ...args: any[]) => T;
 

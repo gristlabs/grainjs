@@ -83,12 +83,12 @@ export function onDispose(disposerFunc: INodeFunc) {
  * @param {Element} elem: The element to own the disposable.
  * @param {Disposable} disposable: Anything with a .dispose() method.
  */
-export function autoDisposeElem(elem: Node, disposable: IDisposable) {
+export function autoDisposeElem(elem: Node, disposable: IDisposable|null) {
   if (disposable) {
     onDisposeElem(elem, () => disposable.dispose());
   }
 }
-export function autoDispose(disposable: IDisposable) {
+export function autoDispose(disposable: IDisposable|null) {
   if (disposable) {
     return (elem: Node) => autoDisposeElem(elem, disposable);
   }

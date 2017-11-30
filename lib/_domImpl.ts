@@ -14,9 +14,29 @@ import {G} from './browserGlobals';
 // is more flexible and robust, and only suffers from slightly more verbosity. E.g.
 // `dom('div', dom.attr('href', url))`.
 
-type DomArg = Node | string | object | IDomArgArray | DomMethod | null | undefined;
+export type DomMethod = (elem: Node) => DomArg|void;
+export type DomElementMethod = (elem: Element) => DomElementArg|void;
+
+interface IAttrObj {
+  [attrName: string]: string;
+}
+
+// Type of argument to dom-building functions, that work for any Node.
+export type DomArg = Node | string | IDomArgArray | DomMethod | void | null | undefined;
 interface IDomArgArray extends Array<DomArg> {}
-type DomMethod = (node: Node) => DomArg;
+
+// More options are allowed when dom-building functions are used on an Element.
+export type DomElementArg = DomArg | IAttrObj | IDomElementArgArray | DomElementMethod;
+interface IDomElementArgArray extends Array<DomElementArg> {}
+
+// The goal of the above declarations is to get help from TypeScript in detecting incorrect usage:
+//  import {text, hide} from './_domMethods';
+//  dom('div', text('hello'));        // OK
+//  dom('div', hide(true));           // OK
+//  dom('div', {title: 'hello'});     // OK
+//  frag(text('hello'));              // OK
+//  frag(hide(true));                 // Bad: DocumentFragment is not an Element
+//  frag({title: 'hello'});           // Bad: DocumentFragment is not an Element
 
 /**
  * dom('tag#id.class1.class2', ...args)
@@ -34,7 +54,7 @@ type DomMethod = (node: Node) => DomArg;
  *   "dom methods" - expressions such as `dom.attr('href', url)` or `dom.hide(obs)`, which
  *       are actually special cases of the "functions" category.
  */
-export function dom(tagString: string, ...args: DomArg[]): HTMLElement {
+export function dom(tagString: string, ...args: DomElementArg[]): HTMLElement {
   return _updateWithArgsOrDispose(_createFromTagString(_createElementHtml, tagString), args);
 }
 
@@ -42,7 +62,7 @@ export function dom(tagString: string, ...args: DomArg[]): HTMLElement {
  * svg('tag#id.class1.class2', ...args)
  *  Same as dom(...), but creates an SVG element.
  */
-export function svg(tagString: string, ...args: DomArg[]): SVGElement {
+export function svg(tagString: string, ...args: DomElementArg[]): SVGElement {
   return _updateWithArgsOrDispose(_createFromTagString(_createElementSvg, tagString), args);
 }
 
@@ -96,14 +116,18 @@ function _createFromTagString<E extends Element>(createFunc: (tag: string) => E,
 /**
  * Update an element with any number of arguments, as documented in dom().
  */
-export function update<E extends Node>(elem: E, ...args: DomArg[]): E {
+export function update<E extends Element>(elem: E, ...args: DomElementArg[]): E;
+export function update<E extends Node>(elem: E, ...args: DomArg[]): E;
+export function update(elem: any, ...args: DomElementArg[]): Node {
   return _updateWithArgs(elem, args);
 }
 
 /**
  * Update an element with an array of arguments.
  */
-function _updateWithArgs<E extends Node>(elem: E, args: DomArg[]): E {
+function _updateWithArgs<E extends Element>(elem: E, args: DomElementArg[]): E;
+function _updateWithArgs<E extends Node>(elem: E, args: DomArg[]): E;
+function _updateWithArgs(elem: any, args: DomElementArg[]): Node {
   for (const arg of args) {
     _updateWithArg(elem, arg);
   }
@@ -115,7 +139,9 @@ function _updateWithArgs<E extends Node>(elem: E, args: DomArg[]): E {
  * an internal helper to be used whenever elem is a newly-created element. If elem is an existing
  * element which the user already knows about, then _updateWithArgs should be called.
  */
-function _updateWithArgsOrDispose<E extends Node>(elem: E, args: DomArg[]): E {
+function _updateWithArgsOrDispose<E extends Element>(elem: E, args: DomElementArg[]): E;
+function _updateWithArgsOrDispose<E extends Node>(elem: E, args: DomArg[]): E;
+function _updateWithArgsOrDispose(elem: any, args: DomElementArg[]): Node {
   try {
     return _updateWithArgs(elem, args);
   } catch (e) {
@@ -124,12 +150,11 @@ function _updateWithArgsOrDispose<E extends Node>(elem: E, args: DomArg[]): E {
   }
 }
 
-/**
- * Update an element with a single argument.
- */
-function _updateWithArg<E extends Node>(elem: E, arg: DomArg): void {
+function _updateWithArg(elem: Element, arg: DomElementArg): void;
+function _updateWithArg(elem: Node, arg: DomArg): void;
+function _updateWithArg(elem: any, arg: DomElementArg): void {
   if (typeof arg === 'function') {
-    const value: DomArg = arg(elem);
+    const value: DomArg = (arg as DomMethod)(elem);
     // Skip the recursive call in the common case when the function returns nothing.
     if (value !== undefined && value !== null) {
       _updateWithArg(elem, value);

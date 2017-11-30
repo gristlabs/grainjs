@@ -2,7 +2,7 @@
 
 /* global describe, before, after, it */
 
-const dom = require('../lib/dom');
+const {dom} = require('../lib/dom');
 const {observable} = require('../lib/observable');
 const {computed} = require('../lib/computed');
 const {G, pushGlobals, popGlobals} = require('../lib/browserGlobals');
@@ -118,7 +118,7 @@ describe('dom', function() {
     });
   });
 
-  describe("dom.dispose", function() {
+  describe("dom.domDispose", function() {
     it("should call disposers on elem and descendants", function() {
       let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
       let div, span, b, u;
@@ -127,7 +127,7 @@ describe('dom', function() {
           b = dom('b', 'hello'),
           u = dom('u', 'world', dom.onDispose(spy3))));
 
-      dom.dispose(div);
+      dom.domDispose(div);
       sinon.assert.calledOnce(spy1);
       sinon.assert.calledWithExactly(spy1, div);
       sinon.assert.calledOnce(spy2);
@@ -144,7 +144,7 @@ describe('dom', function() {
       div = dom('div', dom.onDispose(spy1),
         span = dom('span', dom.onDispose(spy2), dom.onDispose(spy3)));
 
-      dom.dispose(div);
+      dom.domDispose(div);
       sinon.assert.calledOnce(spy1);
       sinon.assert.calledWithExactly(spy1, div);
       sinon.assert.calledOnce(spy2);
@@ -294,7 +294,7 @@ describe('dom', function() {
       obs1.set('foo');
       assert.strictEqual(dom.getData(elem, 'obs1'), 'foo');
 
-      dom.dispose(elem);
+      dom.domDispose(elem);
       obs1.set('bar');
       assert.strictEqual(dom.getData(elem, 'obs1'), undefined);
       assert.strictEqual(dom.getData(elem, 'obs2'), undefined);
@@ -334,7 +334,7 @@ describe('dom', function() {
       assertResetSingleCall(spy3, undefined, false);
 
       // Once disposed, check that computed-functions do not get called.
-      dom.dispose(elem);
+      dom.domDispose(elem);
       obs.set('foo');
       sinon.assert.notCalled(spy1);   // comp doesn't get called because of dom.autoDispose(comp).
       sinon.assert.notCalled(spy2);
@@ -376,7 +376,7 @@ describe('dom', function() {
       assertResetSingleCall(spies2.onConstruct, spies2, 'bar');
       assertResetSingleCall(spies1.onRender, undefined, sinon.match.has('className', 'FOO'));
       assertResetSingleCall(spies2.onRender, undefined, sinon.match.has('className', 'BAR'));
-      dom.dispose(elem);
+      dom.domDispose(elem);
       assertResetSingleCall(spies1.onDispose, spies1);
       assertResetSingleCall(spies2.onDispose, spies2);
       assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
@@ -467,7 +467,7 @@ describe('dom', function() {
       assert.isTrue(spies1.onRender.calledBefore(spy1));
       assertResetSingleCall(spies1.onRender, undefined, sinon.match.has('className', 'FOO'));
       assertResetSingleCall(spy1, undefined, sinon.match.instanceOf(Comp));
-      dom.dispose(elem);
+      dom.domDispose(elem);
       assertResetSingleCall(spies1.onDispose, spies1);
       assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
 
@@ -534,7 +534,7 @@ describe('dom', function() {
       sinon.assert.notCalled(spies1.onDomDispose);
 
       // If we dispose the parent, the DOM doesn't need to be modified, but disposers get called.
-      dom.dispose(elem);
+      dom.domDispose(elem);
       // Check that DOM isn't modified (that would be wasteful).
       assert.equal(elem.innerHTML, 'Hello<!--A--><div>(yy)</div><span>[YY]</span><!--B-->World');
       assertResetSingleCall(spies2.onDispose, spies2);
@@ -552,19 +552,19 @@ describe('dom', function() {
       const textareaHTML = '<!--a--><textarea></textarea><!--b-->';
       const inputHTML = '<!--a--><input><!--b-->';
 
-      // Example 1: Here dom.computed() listens to nlinesObs directly, but rebuilds DOM when it
+      // Example 1: Here dom.domComputed() listens to nlinesObs directly, but rebuilds DOM when it
       // changes between 2 and 3.
-      let elem1 = dom('div', dom.computed(nlinesObs, nlines => nlines > 1 ?
+      let elem1 = dom('div', dom.domComputed(nlinesObs, nlines => nlines > 1 ?
         dom('textarea', dom.onDispose(spy1)) : dom('input', dom.onDispose(spy1))));
 
-      // Example 2: The recommended way; dom.computed() takes a function whose value only
+      // Example 2: The recommended way; dom.domComputed() takes a function whose value only
       // changes when DOM needs to be rebuilt.
-      let elem2 = dom('div', dom.computed(use => use(nlinesObs) > 1, isTall => isTall ?
+      let elem2 = dom('div', dom.domComputed(use => use(nlinesObs) > 1, isTall => isTall ?
         dom('textarea', dom.onDispose(spy2)) : dom('input', dom.onDispose(spy2))));
 
       // Example 3: The computed returns DOM omitting last arg. Makes it too easy to do things
       // the wrong way, and suffers here from unnecessary rebuilding, as Example 1.
-      let elem3 = dom('div', dom.computed(use => use(nlinesObs) > 1 ?
+      let elem3 = dom('div', dom.domComputed(use => use(nlinesObs) > 1 ?
         dom('textarea', dom.onDispose(spy3)) : dom('input', dom.onDispose(spy3))));
 
       function checkDispose(spy, tagName) {
@@ -606,9 +606,9 @@ describe('dom', function() {
       checkAllDispose('TEXTAREA');
 
       // Check that disposing the parent calls disposers but doesn't change HTML.
-      dom.dispose(elem1);
-      dom.dispose(elem2);
-      dom.dispose(elem3);
+      dom.domDispose(elem1);
+      dom.domDispose(elem2);
+      dom.domDispose(elem3);
       checkAllHTML(inputHTML);
       checkAllDispose('INPUT');
 
@@ -626,7 +626,7 @@ describe('dom', function() {
       const inputHTML = '<!--a--><input><!--b-->';
       const divHTML = '<!--a--><div></div><!--b-->';
 
-      let elem = dom('div', dom.computed(use => use(readonlyObs) ?
+      let elem = dom('div', dom.domComputed(use => use(readonlyObs) ?
         dom('div', dom.onDispose(spy)) :
         (use(nlinesObs) > 1 ?
           dom('textarea', dom.onDispose(spy)) :
@@ -668,7 +668,7 @@ describe('dom', function() {
       checkDispose('DIV');
 
       // Check that disposing the parent calls disposers but doesn't change HTML.
-      dom.dispose(elem);
+      dom.domDispose(elem);
       checkHTML(inputHTML);
       checkDispose('INPUT');
 
@@ -681,12 +681,12 @@ describe('dom', function() {
     });
 
     it('should work for non-observable values', function() {
-      // This examples shows how to use dom.computed() for plain values, but recommeds against it.
-      // This example ALSO tests that the dom.computed() callback may return an array.
+      // This examples shows how to use dom.domComputed() for plain values, but recommeds against it.
+      // This example ALSO tests that the dom.domComputed() callback may return an array.
       let listValue = [1,2,3];
       let listObs = observable([1,2,3]);
-      let elem1 = dom('div', dom.computed(listObs,    list => list.map(x => dom('div', x))));
-      let elem2 = dom('div', dom.computed(listValue,  list => list.map(x => dom('div', x))));
+      let elem1 = dom('div', dom.domComputed(listObs,    list => list.map(x => dom('div', x))));
+      let elem2 = dom('div', dom.domComputed(listValue,  list => list.map(x => dom('div', x))));
       let elem3 = dom('div', listValue.map(x => dom('div', x)));
 
       let html = '<div>1</div><div>2</div><div>3</div>';
@@ -705,7 +705,7 @@ describe('dom', function() {
 
     it("should handle any number of children", function() {
       var obs = observable();
-      var elem = dom('div', 'Hello', dom.computed(obs), 'World');
+      var elem = dom('div', 'Hello', dom.domComputed(obs), 'World');
       assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
       obs.set("Foo");
       assert.equal(elem.innerHTML, 'Hello<!--a-->Foo<!--b-->World');
@@ -721,7 +721,7 @@ describe('dom', function() {
 
     it("should cope with children getting removed outside", function() {
       var obs = observable();
-      var elem = dom('div', 'Hello', dom.computed(obs), 'World');
+      var elem = dom('div', 'Hello', dom.domComputed(obs), 'World');
       assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->World');
 
       obs.set(dom.frag(dom('div', 'Foo'), dom('div', 'Bar')));

@@ -20,7 +20,6 @@
  * always passed to a computed's read() callback for this purpose. This makes it explicit when a
  * dependency is created, and which observables the dependency connects.
  */
-"use strict";
 
 import {compute, DepItem} from './_computed_queue';
 import {Emitter, Listener} from './emit';

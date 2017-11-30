@@ -202,7 +202,7 @@ export abstract class Disposable implements IDisposable {
    * calls to `this.autoDispose()` that happened before the exception will be honored.
    * Method create() is NOT intended to be called directly.
    */
-  protected abstract create(): void;
+  protected abstract create(...args: any[]): void;
 }
 
 /**

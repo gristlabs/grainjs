@@ -1,6 +1,4 @@
-"use strict";
-
-import * as _domDispose from './_domDispose';
+import {autoDisposeElem, domDispose, onDisposeElem} from './_domDispose';
 import {DomArg, DomElementMethod, DomMethod, frag} from './_domImpl';
 import {BindableValue, subscribe as subscribeBinding} from './binding';
 
@@ -19,7 +17,7 @@ const _dataMap: WeakMap<Node, {[key: string]: any}> = new WeakMap();
  */
 function _subscribe<T>(elem: Node, valueObs: BindableValue<T>,
                        callback: (newVal: T, oldVal?: T) => void): void {
-  _domDispose.autoDisposeElem(elem, subscribeBinding(valueObs, callback));
+  autoDisposeElem(elem, subscribeBinding(valueObs, callback));
 }
 
 /**
@@ -197,7 +195,7 @@ export function dataElem(elem: Node, key: string, value: any): void {
   if (obj) {
     obj[key] = value;
   } else {
-    _domDispose.onDisposeElem(elem, () => _dataMap.delete(elem));
+    onDisposeElem(elem, () => _dataMap.delete(elem));
     _dataMap.set(elem, {[key]: value});
   }
 }
@@ -209,14 +207,14 @@ export function getData(elem: Node, key: string) {
   return obj && obj[key];
 }
 
-// Helper for dom.computed(); replace content between markerPre and markerPost with the given DOM
+// Helper for domComputed(); replace content between markerPre and markerPost with the given DOM
 // content, running disposers if any on the removed content.
 function _replaceContent(elem: Node, markerPre: Node, markerPost: Node, content: DomArg): void {
   if (markerPre.parentNode === elem) {
     let next;
     for (let n = markerPre.nextSibling; n && n !== markerPost; n = next) {
       next = n.nextSibling;
-      _domDispose.dispose(n);
+      domDispose(n);
       elem.removeChild(n);
     }
     elem.insertBefore(frag(content), markerPost);
@@ -233,9 +231,9 @@ function _replaceContent(elem: Node, markerPre: Node, markerPost: Node, content:
  * changes, previous content is disposed and removed, and new content added in its place.
  *
  * These are roughly equivalent:
- *  (A) dom.computed(nlinesObs, nlines => nlines > 1 ? dom('textarea') : dom('input'));
- *  (B) dom.computed(use => use(nlinesObs) > 1, isTall => isTall ? dom('textarea') : dom('input'));
- *  (C) dom.computed(use => use(nlinesObs) > 1 ? dom('textarea') : dom('input'));
+ *  (A) domComputed(nlinesObs, nlines => nlines > 1 ? dom('textarea') : dom('input'));
+ *  (B) domComputed(use => use(nlinesObs) > 1, isTall => isTall ? dom('textarea') : dom('input'));
+ *  (C) domComputed(use => use(nlinesObs) > 1 ? dom('textarea') : dom('input'));
  *
  * Here, (B) is best. It encapsulates meaningful changes in the observable, and separates DOM
  * creation, so that DOM is only recreated when necessary. Between (A) and (C), (A) should be
@@ -245,13 +243,13 @@ function _replaceContent(elem: Node, markerPre: Node, markerPost: Node, content:
  * Syntax (C), without the last argument, may be useful in cases of DOM depending on several
  * observables, e.g.
  *
- *    dom.computed(use => use(readonlyObs) ? dom('div') :
+ *    domComputed(use => use(readonlyObs) ? dom('div') :
  *                          (use(nlinesObs) > 1 ? dom('textarea') : dom('input')));
  *
- * If the argument is not an observable, dom.computed() may but should not be used. The following
+ * If the argument is not an observable, domComputed() may but should not be used. The following
  * are equivalent:
  *
- *    dom(..., dom.computed(listValue, list => list.map(x => dom('div', x))), ...)
+ *    dom(..., domComputed(listValue, list => list.map(x => dom('div', x))), ...)
  *    dom(..., listValue.map(x => dom('div', x)), ...)
  *
  * In this case, the latter is preferred as the clearly simpler one.
@@ -261,9 +259,9 @@ function _replaceContent(elem: Node, markerPre: Node, markerPost: Node, content:
  * @param [Function] contentFunc: Function called with the result of valueObs as the input, and
  *    returning DOM as output. If omitted, defaults to the identity function.
  */
-export function computed<T extends DomArg>(valueObs: BindableValue<T>): DomMethod;
-export function computed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomMethod;
-export function computed<T>(valueObs: BindableValue<T>, contentFunc?: (val: T) => DomArg): DomMethod {
+export function domComputed<T extends DomArg>(valueObs: BindableValue<T>): DomMethod;
+export function domComputed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomMethod;
+export function domComputed<T>(valueObs: BindableValue<T>, contentFunc?: (val: T) => DomArg): DomMethod {
   const _contentFunc: (val: T) => DomArg = contentFunc || (identity as any);
   return (elem: Node) => {
     const markerPre = G.document.createComment('a');
@@ -288,7 +286,7 @@ function identity<T>(arg: T): T { return arg; }
  *
  *    dom.maybe(use => Boolean(use(fooObs)), () => dom(...));
  *
- * As with dom.computed(), dom.maybe() may but should not be used when the argument is not an
+ * As with domComputed(), dom.maybe() may but should not be used when the argument is not an
  * observable or function. The following are equivalent:
  *
  *    dom(..., dom.maybe(myValue, () => dom(...)));
@@ -302,5 +300,5 @@ function identity<T>(arg: T): T { return arg; }
  *    truthy. Should returning DOM as output.
  */
 export function maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomMethod {
-  return computed(boolValueObs, (value) => value ? contentFunc(value) : null);
+  return domComputed(boolValueObs, (value) => value ? contentFunc(value) : null);
 }

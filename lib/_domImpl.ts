@@ -1,4 +1,4 @@
-import {dispose as domDispose} from './_domDispose';
+import {domDispose} from './_domDispose';
 import {attrsElem} from './_domMethods';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.

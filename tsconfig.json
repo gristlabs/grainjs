@@ -10,7 +10,7 @@
     "allowJs": true
   },
   "include": [
-    "index.js",
+    "index.ts",
     "lib/",
     "test/"
   ]

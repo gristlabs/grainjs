@@ -52,16 +52,16 @@ function _disposeElem(elem: Node): void {
  *
  * @param {Element} elem: The element to run disposers on.
  */
-export function dispose(elem: Node): void {
+export function domDispose(elem: Node): void {
   _walkDom(elem, _disposeElem);
 }
 
 /**
  * Associate a disposerFunc with a DOM element. It will be called when the element is disposed
- * using dom.dispose() on it or any of its parents. If onDispose is called multiple times, all
+ * using domDispose() on it or any of its parents. If onDispose is called multiple times, all
  * disposerFuncs will be called in reverse order.
  * @param {Element} elem: The element to associate the disposer with.
- * @param {Function} disposerFunc(elem): Will be called when dom.dispose() is called on the
+ * @param {Function} disposerFunc(elem): Will be called when domDispose() is called on the
  *    element or its ancestor.
  * Note that it is not necessary usually to dispose event listeners attached to an element (e.g.
  * with dom.on()) since their lifetime is naturally limited to the lifetime of the element.
@@ -78,7 +78,7 @@ export function onDispose(disposerFunc: INodeFunc) {
 }
 
 /**
- * Make the given element own the disposable, and call its dispose method when dom.dispose() is
+ * Make the given element own the disposable, and call its dispose method when domDispose() is
  * called on the element or any of its parents.
  * @param {Element} elem: The element to own the disposable.
  * @param {Disposable} disposable: Anything with a .dispose() method.

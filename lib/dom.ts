@@ -18,7 +18,7 @@
  */
 
 // We keep various dom-related functions organized in private modules, but they are exposed here.
-export * from './_domImpl';
+export {DomMethod, DomElementMethod, DomArg, DomElementArg, svg, update, frag, find, findAll} from './_domImpl';
 export * from './_domComponent';
 export * from './_domDispose';
 export * from './_domMethods';
@@ -31,51 +31,56 @@ import * as _domMethods from './_domMethods';
 import * as domevent from './domevent';
 
 // Additionally export all methods as properties of dom() function.
-const dom: any = _domImpl.dom;
-dom.svg             = _domImpl.svg;
-dom.frag            = _domImpl.frag;
-dom.update          = _domImpl.update;
-dom.find            = _domImpl.find;
-dom.findAll         = _domImpl.findAll;
+const domMethods = {
+  svg             : _domImpl.svg,
+  frag            : _domImpl.frag,
+  update          : _domImpl.update,
+  find            : _domImpl.find,
+  findAll         : _domImpl.findAll,
 
-dom.domDispose      = _domDispose.domDispose;
-dom.onDisposeElem   = _domDispose.onDisposeElem;
-dom.onDispose       = _domDispose.onDispose;
-dom.autoDisposeElem = _domDispose.autoDisposeElem;
-dom.autoDispose     = _domDispose.autoDispose;
+  domDispose      : _domDispose.domDispose,
+  onDisposeElem   : _domDispose.onDisposeElem,
+  onDispose       : _domDispose.onDispose,
+  autoDisposeElem : _domDispose.autoDisposeElem,
+  autoDispose     : _domDispose.autoDispose,
 
-dom.attrsElem       = _domMethods.attrsElem;
-dom.attrs           = _domMethods.attrs;
-dom.attrElem        = _domMethods.attrElem;
-dom.attr            = _domMethods.attr;
-dom.boolAttrElem    = _domMethods.boolAttrElem;
-dom.boolAttr        = _domMethods.boolAttr;
-dom.textElem        = _domMethods.textElem;
-dom.text            = _domMethods.text;
-dom.styleElem       = _domMethods.styleElem;
-dom.style           = _domMethods.style;
-dom.propElem        = _domMethods.propElem;
-dom.prop            = _domMethods.prop;
-dom.showElem        = _domMethods.showElem;
-dom.show            = _domMethods.show;
-dom.hideElem        = _domMethods.hideElem;
-dom.hide            = _domMethods.hide;
-dom.toggleClassElem = _domMethods.toggleClassElem;
-dom.toggleClass     = _domMethods.toggleClass;
-dom.cssClassElem    = _domMethods.cssClassElem;
-dom.cssClass        = _domMethods.cssClass;
-dom.dataElem        = _domMethods.dataElem;
-dom.data            = _domMethods.data;
-dom.getData         = _domMethods.getData;
-dom.domComputed     = _domMethods.domComputed;
-dom.maybe           = _domMethods.maybe;
+  attrsElem       : _domMethods.attrsElem,
+  attrs           : _domMethods.attrs,
+  attrElem        : _domMethods.attrElem,
+  attr            : _domMethods.attr,
+  boolAttrElem    : _domMethods.boolAttrElem,
+  boolAttr        : _domMethods.boolAttr,
+  textElem        : _domMethods.textElem,
+  text            : _domMethods.text,
+  styleElem       : _domMethods.styleElem,
+  style           : _domMethods.style,
+  propElem        : _domMethods.propElem,
+  prop            : _domMethods.prop,
+  showElem        : _domMethods.showElem,
+  show            : _domMethods.show,
+  hideElem        : _domMethods.hideElem,
+  hide            : _domMethods.hide,
+  toggleClassElem : _domMethods.toggleClassElem,
+  toggleClass     : _domMethods.toggleClass,
+  cssClassElem    : _domMethods.cssClassElem,
+  cssClass        : _domMethods.cssClass,
+  dataElem        : _domMethods.dataElem,
+  data            : _domMethods.data,
+  getData         : _domMethods.getData,
+  domComputed     : _domMethods.domComputed,
+  maybe           : _domMethods.maybe,
 
-dom.Component       = _domComponent.Component;
-dom.createElem      = _domComponent.createElem;
-dom.create          = _domComponent.create;
-dom.createInit      = _domComponent.createInit;
+  Component       : _domComponent.Component,
+  createElem      : _domComponent.createElem,
+  create          : _domComponent.create,
+  createInit      : _domComponent.createInit,
 
-dom.onElem          = domevent.onElem;
-dom.on              = domevent.on;
-dom.onMatchElem     = domevent.onMatchElem;
-dom.onMatch         = domevent.onMatch;
+  onElem          : domevent.onElem,
+  on              : domevent.on,
+  onMatchElem     : domevent.onMatchElem,
+  onMatch         : domevent.onMatch,
+};
+
+// Rather than re-export dom() from _domImpl, we define it here to be that function with all DOM
+// methods available as its properties.
+export const dom: typeof _domImpl.dom & typeof domMethods = Object.assign(_domImpl.dom, domMethods);

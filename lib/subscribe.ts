@@ -36,10 +36,13 @@ interface IListenerWithInUse extends Listener {
   _inUse: boolean;
 }
 
+// Constant empty array, which we use to avoid allocating new read-only empty arrays.
+const emptyArray: ReadonlyArray<any> = [];
+
 export class Subscription {
-  private _depItem: DepItem;
-  private _dependencies: ISubscribable[];
-  private _depListeners: Listener[];
+  private readonly _depItem: DepItem;
+  private readonly _dependencies: ReadonlyArray<ISubscribable>;
+  private readonly _depListeners: ReadonlyArray<Listener>;
   private _dynDeps: Map<ISubscribable, IListenerWithInUse>;
   private _readArgs: any[];
   private _read: () => void;
@@ -49,8 +52,8 @@ export class Subscription {
    */
   constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ISubscribable[]) {
     this._depItem = new DepItem(this._evaluate, this);
-    this._dependencies = dependencies || [];
-    this._depListeners = this._dependencies.map((obs) => this._subscribeTo(obs));
+    this._dependencies = dependencies.length > 0 ? dependencies : emptyArray;
+    this._depListeners = dependencies.length > 0 ? dependencies.map((obs) => this._subscribeTo(obs)) : emptyArray;
     this._dynDeps = new Map();   // Maps dependent observable to its Listener object.
 
     const useFunc = ((obs: ISubscribable) => this._useDependency(obs));

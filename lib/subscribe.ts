@@ -21,7 +21,6 @@
 import {DepItem} from './_computed_queue';
 import {Listener} from './emit';
 import {Observable} from './observable';
-import {bindB} from './util';
 
 export interface ISubscribable {
   _getDepItem(): DepItem|null;
@@ -44,8 +43,8 @@ export class Subscription {
   private readonly _dependencies: ReadonlyArray<ISubscribable>;
   private readonly _depListeners: ReadonlyArray<Listener>;
   private _dynDeps: Map<ISubscribable, IListenerWithInUse>;
-  private _readArgs: any[];
-  private _read: () => void;
+  private _callback: (use: UseCB, ...args: any[]) => void;
+  private _useFunc: (obs: ISubscribable) => any;
 
   /**
    * Internal constructor for a Subscription. You should use subscribe() function instead.
@@ -55,11 +54,8 @@ export class Subscription {
     this._dependencies = dependencies.length > 0 ? dependencies : emptyArray;
     this._depListeners = dependencies.length > 0 ? dependencies.map((obs) => this._subscribeTo(obs)) : emptyArray;
     this._dynDeps = new Map();   // Maps dependent observable to its Listener object.
-
-    const useFunc = ((obs: ISubscribable) => this._useDependency(obs));
-    this._readArgs = Array(this._dependencies.length + 1);
-    this._readArgs[0] = useFunc;
-    this._read = bindB(callback, this._readArgs);
+    this._callback = callback;
+    this._useFunc = this._useDependency.bind(this);
 
     this._evaluate();
   }
@@ -101,12 +97,14 @@ export class Subscription {
    */
   private _evaluate() {
     try {
-      // Note that this is optimized for speed.
+      // Note that this is faster than using .map().
+      const readArgs = [this._useFunc];
       for (let i = 0, len = this._dependencies.length; i < len; i++) {
-        this._readArgs[i + 1] = this._dependencies[i].get();
+        readArgs[i + 1] = this._dependencies[i].get();
         this._depItem.useDep(this._dependencies[i]._getDepItem());
       }
-      return this._read();
+      return this._callback.apply(undefined, readArgs);
+
     } finally {
       this._dynDeps.forEach((listener, obs) => {
         if (listener._inUse) {

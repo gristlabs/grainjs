@@ -36,7 +36,7 @@ function _noWrite(): never {
 }
 
 export class Computed<T> extends Observable<T> {
-  private _read: (use: UseCB, ...args: ISubscribable[]) => void;
+  private _callback: (use: UseCB, ...args: any[]) => T;
   private _write: (value: T) => void;
   private _sub: Subscription;
 
@@ -47,9 +47,9 @@ export class Computed<T> extends Observable<T> {
     // At initialization we force an undefined value even though it's not of type T: it gets set
     // to a proper value during the creation of new Subscription, which calls this._read.
     super(undefined as any);
-    this._read = (use, ...args) => super.set(callback(use, ...args));
+    this._callback = callback;
     this._write = _noWrite;
-    this._sub = new Subscription(this._read, dependencies);
+    this._sub = new Subscription(this._read.bind(this), dependencies);
   }
 
   /**
@@ -81,6 +81,10 @@ export class Computed<T> extends Observable<T> {
   public dispose() {
     this._sub.dispose();
     super.dispose();
+  }
+
+  private _read(use: any, ...args: any[]): void {
+    super.set(this._callback(use, ...args));
   }
 }
 

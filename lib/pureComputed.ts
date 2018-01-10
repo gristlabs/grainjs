@@ -13,7 +13,6 @@
 import {DepItem} from './_computed_queue';
 import {Observable} from './observable';
 import {ISubscribable, Subscription, UseCB} from './subscribe';
-import {bindB} from './util';
 
 function _noWrite(): never {
   throw new Error("Can't write to non-writable pureComputed");
@@ -23,32 +22,29 @@ function _useFunc<T>(obs: Observable<T>): T {
   return obs.get();
 }
 
+// Constant empty array, which we use to avoid allocating new read-only empty arrays.
+const emptyArray: ReadonlyArray<any> = [];
+
 export class PureComputed<T> extends Observable<T> {
-  private _read: (use: UseCB, ...args: ISubscribable[]) => void;
+  private _callback: (use: UseCB, ...args: any[]) => T;
   private _write: (value: T) => void;
   private _sub: Subscription|null;
-  private _dependencies: ISubscribable[];
-  private _readArgs: any[];
-  private _directRead: () => T;
+  private readonly _dependencies: ReadonlyArray<ISubscribable>;
   private _inCall: boolean;
 
   /**
    * Internal constructor for a PureComputed. You should use pureComputed() function instead.
    */
-  constructor(callback: (use: UseCB, ...args: any[]) => T, dependencies: ISubscribable[]) {
+  constructor(callback: (use: UseCB, ...args: any[]) => T, dependencies: ReadonlyArray<ISubscribable>) {
     // At initialization we force an undefined value even though it's not of type T: it's not
     // actually used as get() is overridden.
     super(undefined as any);
+    this._callback = callback;
     this._write = _noWrite;
-    this._dependencies = dependencies || [];
-    this._read = (use, ...args) => super.set(callback(use, ...args));
+    this._dependencies = dependencies.length > 0 ? dependencies : emptyArray;
     this._sub = null;
-    this.setListenerChangeCB((hasListeners) => hasListeners ? this._activate() : this._deactivate());
-
-    this._readArgs = Array(this._dependencies.length + 1);
-    this._readArgs[0] = _useFunc;
-    this._directRead = bindB(callback, this._readArgs);
     this._inCall = false;
+    this.setListenerChangeCB(this._onListenerChange, this);
   }
 
   public _getDepItem(): DepItem {
@@ -61,11 +57,12 @@ export class PureComputed<T> extends Observable<T> {
       // _inCall member prevents infinite recursion.
       this._inCall = true;
       try {
+        const readArgs: any[] = [_useFunc];
         // Note that this attempts to optimize for speed.
         for (let i = 0, len = this._dependencies.length; i < len; i++) {
-          this._readArgs[i + 1] = this._dependencies[i].get();
+          readArgs[i + 1] = this._dependencies[i].get();
         }
-        super.set(this._directRead());
+        super.set(this._callback.apply(undefined, readArgs));
       } finally {
         this._inCall = false;
       }
@@ -104,15 +101,21 @@ export class PureComputed<T> extends Observable<T> {
 
   private _activate(): void {
     if (!this._sub) {
-      this._sub = new Subscription(this._read, this._dependencies);
+      this._sub = new Subscription(this._read.bind(this), this._dependencies);
     }
   }
 
-  private _deactivate(): void {
-    if (this._sub) {
+  private _onListenerChange(hasListeners: boolean): void {
+    if (hasListeners) {
+      this._activate();
+    } else if (this._sub) {
       this._sub.dispose();
       this._sub = null;
     }
+  }
+
+  private _read(use: any, ...args: any[]): void {
+    super.set(this._callback(use, ...args));
   }
 }
 

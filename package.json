@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "mocha -R list --harmony -gc test",
+    "test-timing": "TIMING_TESTS=1 mocha -R list --harmony test",
     "dist": "bash build.sh",
     "build-demo": "browserify demo/celsius_grain/index.js -d | uglifyjs --source-map 'content=inline,url=build-index.js.map' -o demo/celsius_grain/build-index.js"
   },

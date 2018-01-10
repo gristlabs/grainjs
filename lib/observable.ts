@@ -83,8 +83,8 @@ export class Observable<T> {
    *    removed. It's called with a boolean indicating whether this observable has any listeners.
    *    Pass in `null` to unset the callback.
    */
-  public setListenerChangeCB(changeCB: (hasListeners: boolean) => void): void {
-    this._onChange.setChangeCB(changeCB);
+  public setListenerChangeCB(changeCB: (hasListeners: boolean) => void, optContext?: any): void {
+    this._onChange.setChangeCB(changeCB, optContext);
   }
 
   /**

@@ -22,26 +22,29 @@ function _useFunc<T>(obs: Observable<T>): T {
   return obs.get();
 }
 
+// Constant empty array, which we use to avoid allocating new read-only empty arrays.
+const emptyArray: ReadonlyArray<any> = [];
+
 export class PureComputed<T> extends Observable<T> {
   private _callback: (use: UseCB, ...args: any[]) => T;
   private _write: (value: T) => void;
   private _sub: Subscription|null;
-  private _dependencies: ISubscribable[];
+  private readonly _dependencies: ReadonlyArray<ISubscribable>;
   private _inCall: boolean;
 
   /**
    * Internal constructor for a PureComputed. You should use pureComputed() function instead.
    */
-  constructor(callback: (use: UseCB, ...args: any[]) => T, dependencies: ISubscribable[]) {
+  constructor(callback: (use: UseCB, ...args: any[]) => T, dependencies: ReadonlyArray<ISubscribable>) {
     // At initialization we force an undefined value even though it's not of type T: it's not
     // actually used as get() is overridden.
     super(undefined as any);
     this._callback = callback;
     this._write = _noWrite;
-    this._dependencies = dependencies || [];
+    this._dependencies = dependencies.length > 0 ? dependencies : emptyArray;
     this._sub = null;
-    this.setListenerChangeCB((hasListeners) => hasListeners ? this._activate() : this._deactivate());
     this._inCall = false;
+    this.setListenerChangeCB(this._onListenerChange, this);
   }
 
   public _getDepItem(): DepItem {
@@ -102,8 +105,10 @@ export class PureComputed<T> extends Observable<T> {
     }
   }
 
-  private _deactivate(): void {
-    if (this._sub) {
+  private _onListenerChange(hasListeners: boolean): void {
+    if (hasListeners) {
+      this._activate();
+    } else if (this._sub) {
       this._sub.dispose();
       this._sub = null;
     }

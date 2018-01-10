@@ -49,7 +49,7 @@ export class Subscription {
   /**
    * Internal constructor for a Subscription. You should use subscribe() function instead.
    */
-  constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ISubscribable[]) {
+  constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ReadonlyArray<ISubscribable>) {
     this._depItem = new DepItem(this._evaluate, this);
     this._dependencies = dependencies.length > 0 ? dependencies : emptyArray;
     this._depListeners = dependencies.length > 0 ? dependencies.map((obs) => this._subscribeTo(obs)) : emptyArray;

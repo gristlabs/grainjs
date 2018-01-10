@@ -88,6 +88,7 @@ export class LLink {
 
 export class Emitter extends LLink {
   private _changeCB: ChangeCB = _noop;
+  private _changeCBContext: any = undefined;
 
   /**
    * Constructs an Emitter object.
@@ -117,15 +118,16 @@ export class Emitter extends LLink {
    *    removed. It's called with a boolean indicating whether this Emitter has any listeners.
    *    Pass in `null` to unset the callback.
    */
-  public setChangeCB(changeCB: ChangeCB): void {
+  public setChangeCB(changeCB: ChangeCB, optContext?: any): void {
     this._changeCB = changeCB || _noop;
+    this._changeCBContext = optContext;
   }
 
   /**
    * Helper used by Listener class, but not intended for public usage.
    */
   public _triggerChangeCB(): void {
-    this._changeCB.call(undefined, this.hasListeners());
+    this._changeCB.call(this._changeCBContext, this.hasListeners());
   }
 
   /**
@@ -142,6 +144,7 @@ export class Emitter extends LLink {
   public dispose(): void {
     this._disposeList();
     this._changeCB = _noop;
+    this._changeCBContext = undefined;
   }
 }
 

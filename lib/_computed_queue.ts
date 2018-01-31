@@ -69,7 +69,6 @@ export class DepItem {
     }
   }
 }
-exports.DepItem = DepItem;
 
 // The main compute queue.
 const queue = new FastPriorityQueue(DepItem.isPrioritySmaller);

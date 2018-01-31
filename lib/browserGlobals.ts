@@ -37,7 +37,7 @@ function _updateGlobals(dest: IBrowserGlobals, source: IBrowserGlobals): void {
 
 // The initial IBrowserGlobals object.
 const initial: IBrowserGlobals = {} as IBrowserGlobals;
-_updateGlobals(initial, global as any);
+_updateGlobals(initial, (typeof window !== 'undefined' ? window as any : {}));
 
 // The globals G object strats out with a copy of `initial`.
 export const G: IBrowserGlobals = { ...initial };

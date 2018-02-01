@@ -30,57 +30,59 @@ import * as _domImpl from './_domImpl';
 import * as _domMethods from './_domMethods';
 import * as domevent from './domevent';
 
+// We just want to re-export _domImpl.dom, but to allow adding methods to it in a typesafe way,
+// TypeScript wants us to declare a real function in the same file.
+export function dom(tagString: string, ...args: _domImpl.DomElementArg[]): HTMLElement {
+  return _domImpl.dom(tagString, ...args);
+}
+
 // Additionally export all methods as properties of dom() function.
-const domMethods = {
-  svg             : _domImpl.svg,
-  frag            : _domImpl.frag,
-  update          : _domImpl.update,
-  find            : _domImpl.find,
-  findAll         : _domImpl.findAll,
+export namespace dom {      // tslint:disable-line:no-namespace
+  export const svg             = _domImpl.svg;
+  export const frag            = _domImpl.frag;
+  export const update          = _domImpl.update;
+  export const find            = _domImpl.find;
+  export const findAll         = _domImpl.findAll;
 
-  domDispose      : _domDispose.domDispose,
-  onDisposeElem   : _domDispose.onDisposeElem,
-  onDispose       : _domDispose.onDispose,
-  autoDisposeElem : _domDispose.autoDisposeElem,
-  autoDispose     : _domDispose.autoDispose,
+  export const domDispose      = _domDispose.domDispose;
+  export const onDisposeElem   = _domDispose.onDisposeElem;
+  export const onDispose       = _domDispose.onDispose;
+  export const autoDisposeElem = _domDispose.autoDisposeElem;
+  export const autoDispose     = _domDispose.autoDispose;
 
-  attrsElem       : _domMethods.attrsElem,
-  attrs           : _domMethods.attrs,
-  attrElem        : _domMethods.attrElem,
-  attr            : _domMethods.attr,
-  boolAttrElem    : _domMethods.boolAttrElem,
-  boolAttr        : _domMethods.boolAttr,
-  textElem        : _domMethods.textElem,
-  text            : _domMethods.text,
-  styleElem       : _domMethods.styleElem,
-  style           : _domMethods.style,
-  propElem        : _domMethods.propElem,
-  prop            : _domMethods.prop,
-  showElem        : _domMethods.showElem,
-  show            : _domMethods.show,
-  hideElem        : _domMethods.hideElem,
-  hide            : _domMethods.hide,
-  toggleClassElem : _domMethods.toggleClassElem,
-  toggleClass     : _domMethods.toggleClass,
-  cssClassElem    : _domMethods.cssClassElem,
-  cssClass        : _domMethods.cssClass,
-  dataElem        : _domMethods.dataElem,
-  data            : _domMethods.data,
-  getData         : _domMethods.getData,
-  domComputed     : _domMethods.domComputed,
-  maybe           : _domMethods.maybe,
+  export const attrsElem       = _domMethods.attrsElem;
+  export const attrs           = _domMethods.attrs;
+  export const attrElem        = _domMethods.attrElem;
+  export const attr            = _domMethods.attr;
+  export const boolAttrElem    = _domMethods.boolAttrElem;
+  export const boolAttr        = _domMethods.boolAttr;
+  export const textElem        = _domMethods.textElem;
+  export const text            = _domMethods.text;
+  export const styleElem       = _domMethods.styleElem;
+  export const style           = _domMethods.style;
+  export const propElem        = _domMethods.propElem;
+  export const prop            = _domMethods.prop;
+  export const showElem        = _domMethods.showElem;
+  export const show            = _domMethods.show;
+  export const hideElem        = _domMethods.hideElem;
+  export const hide            = _domMethods.hide;
+  export const toggleClassElem = _domMethods.toggleClassElem;
+  export const toggleClass     = _domMethods.toggleClass;
+  export const cssClassElem    = _domMethods.cssClassElem;
+  export const cssClass        = _domMethods.cssClass;
+  export const dataElem        = _domMethods.dataElem;
+  export const data            = _domMethods.data;
+  export const getData         = _domMethods.getData;
+  export const domComputed     = _domMethods.domComputed;
+  export const maybe           = _domMethods.maybe;
 
-  Component       : _domComponent.Component,
-  createElem      : _domComponent.createElem,
-  create          : _domComponent.create,
-  createInit      : _domComponent.createInit,
+  export const Component       = _domComponent.Component;
+  export const createElem      = _domComponent.createElem;
+  export const create          = _domComponent.create;
+  export const createInit      = _domComponent.createInit;
 
-  onElem          : domevent.onElem,
-  on              : domevent.on,
-  onMatchElem     : domevent.onMatchElem,
-  onMatch         : domevent.onMatch,
-};
-
-// Rather than re-export dom() from _domImpl, we define it here to be that function with all DOM
-// methods available as its properties.
-export const dom: typeof _domImpl.dom & typeof domMethods = Object.assign(_domImpl.dom, domMethods);
+  export const onElem          = domevent.onElem;
+  export const on              = domevent.on;
+  export const onMatchElem     = domevent.onMatchElem;
+  export const onMatch         = domevent.onMatch;
+}

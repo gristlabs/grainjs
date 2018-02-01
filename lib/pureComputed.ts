@@ -119,42 +119,38 @@ export class PureComputed<T> extends Observable<T> {
   }
 }
 
-type Obs<T> = Observable<T>;
-
 /**
  * This is the type-checking interface for pureComputed(), which allows TypeScript to do helpful
  * type-checking when using it. We can only support a fixed number of argumnets (explicit
  * dependencies), but 5 should almost always be enough.
  */
-interface IPureComputed {
-  <T>(cb: (use: UseCB) => T): PureComputed<T>;
+export function pureComputed<T>(cb: (use: UseCB) => T): PureComputed<T>;
 
-  <A, T>(
-    a: Obs<A>,
+export function pureComputed<A, T>(
+    a: Observable<A>,
     cb: (use: UseCB, a: A) => T): PureComputed<T>;
 
-  <A, B, T>(
-    a: Obs<A>, b: Obs<B>,
+export function pureComputed<A, B, T>(
+    a: Observable<A>, b: Observable<B>,
     cb: (use: UseCB, a: A, b: B) => T): PureComputed<T>;
 
-  <A, B, C, T>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>,
+export function pureComputed<A, B, C, T>(
+    a: Observable<A>, b: Observable<B>, c: Observable<C>,
     cb: (use: UseCB, a: A, b: B, c: C) => T): PureComputed<T>;
 
-  <A, B, C, D, T>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
+export function pureComputed<A, B, C, D, T>(
+    a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>,
     cb: (use: UseCB, a: A, b: B, c: C, d: D) => T): PureComputed<T>;
 
-  <A, B, C, D, E, T>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
+export function pureComputed<A, B, C, D, E, T>(
+    a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>, e: Observable<E>,
     cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): PureComputed<T>;
-}
 
 /**
  * Creates and returns a new PureComputed. The interface is identical to that of a Computed.
  */
-export const pureComputed: IPureComputed = function(...args: any[]): PureComputed<any> {
+export function pureComputed(...args: any[]): PureComputed<any> {
   const readCb = args.pop();
   // The cast helps ensure that Observable is compatible with ISubscribable abstraction that we use.
   return new PureComputed<any>(readCb, args);
-};
+}

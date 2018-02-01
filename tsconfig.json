@@ -6,12 +6,11 @@
     "module": "commonjs",
     "baseUrl": ".",
     "rootDir": ".",
-    "outDir": "build",
-    "allowJs": true
+    "outDir": "dist",
+    "declaration": true
   },
   "include": [
     "index.ts",
-    "lib/",
-    "test/"
+    "lib/"
   ]
 }

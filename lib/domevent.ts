@@ -81,7 +81,7 @@ class DomEventMatchListener extends DomEventListener {
   }
 }
 
-type DomMethod = (e: Element) => IDisposable;
+export type DomMethod = (e: Element) => IDisposable;
 
 /**
  * Listen to a DOM event. The `on()` variant takes no `elem` argument, and may be used as an

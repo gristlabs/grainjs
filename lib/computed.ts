@@ -88,36 +88,32 @@ export class Computed<T> extends Observable<T> {
   }
 }
 
-type Obs<T> = Observable<T>;
-
 /**
  * This is the type-checking interface for computed(), which allows TypeScript to do helpful
  * type-checking when using it. We can only support a fixed number of argumnets (explicit
  * dependencies), but 5 should almost always be enough.
  */
-interface IComputed {
-  <T>(cb: (use: UseCB) => T): Computed<T>;
+export function computed<T>(cb: (use: UseCB) => T): Computed<T>;
 
-  <A, T>(
-    a: Obs<A>,
-    cb: (use: UseCB, a: A) => T): Computed<T>;
+export function computed<A, T>(
+  a: Observable<A>,
+  cb: (use: UseCB, a: A) => T): Computed<T>;
 
-  <A, B, T>(
-    a: Obs<A>, b: Obs<B>,
-    cb: (use: UseCB, a: A, b: B) => T): Computed<T>;
+export function computed<A, B, T>(
+  a: Observable<A>, b: Observable<B>,
+  cb: (use: UseCB, a: A, b: B) => T): Computed<T>;
 
-  <A, B, C, T>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>,
-    cb: (use: UseCB, a: A, b: B, c: C) => T): Computed<T>;
+export function computed<A, B, C, T>(
+  a: Observable<A>, b: Observable<B>, c: Observable<C>,
+  cb: (use: UseCB, a: A, b: B, c: C) => T): Computed<T>;
 
-  <A, B, C, D, T>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
-    cb: (use: UseCB, a: A, b: B, c: C, d: D) => T): Computed<T>;
+export function computed<A, B, C, D, T>(
+  a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>,
+  cb: (use: UseCB, a: A, b: B, c: C, d: D) => T): Computed<T>;
 
-  <A, B, C, D, E, T>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
-    cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
-}
+export function computed<A, B, C, D, E, T>(
+  a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>, e: Observable<E>,
+  cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
 
 /**
  * Creates a new Computed.
@@ -129,10 +125,10 @@ interface IComputed {
  *    immediately and whenever any dependency changes.
  * @returns {Computed} The newly created computed observable.
  */
-export const computed: IComputed = function(...args: any[]): Computed<any> {
+export function computed(...args: any[]): Computed<any> {
   const readCb = args.pop();
   return new Computed<any>(readCb, args);
-};
+}
 
 // TODO Consider mplementing .singleUse() method.
 // An open question is in how to pass e.g. kd.hide(computed(x, x => !x)) in such a way that

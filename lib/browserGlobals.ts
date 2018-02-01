@@ -19,7 +19,7 @@
  *    });
  */
 
-interface IBrowserGlobals {
+export interface IBrowserGlobals {
   DocumentFragment: typeof DocumentFragment;
   Element: typeof Element;
   Node: typeof Node;

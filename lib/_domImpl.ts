@@ -17,17 +17,17 @@ import {G} from './browserGlobals';
 export type DomMethod = (elem: Node) => DomArg|void;
 export type DomElementMethod = (elem: Element) => DomElementArg|void;
 
-interface IAttrObj {
+export interface IAttrObj {
   [attrName: string]: string;
 }
 
 // Type of argument to dom-building functions, that work for any Node.
 export type DomArg = Node | string | IDomArgArray | DomMethod | void | null | undefined;
-interface IDomArgArray extends Array<DomArg> {}
+export interface IDomArgArray extends Array<DomArg> {}
 
 // More options are allowed when dom-building functions are used on an Element.
 export type DomElementArg = DomArg | IAttrObj | IDomElementArgArray | DomElementMethod;
-interface IDomElementArgArray extends Array<DomElementArg> {}
+export interface IDomElementArgArray extends Array<DomElementArg> {}
 
 // The goal of the above declarations is to get help from TypeScript in detecting incorrect usage:
 //  import {text, hide} from './_domMethods';

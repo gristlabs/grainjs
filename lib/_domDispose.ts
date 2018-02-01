@@ -13,7 +13,7 @@ import {IDisposable} from './dispose';
  */
 const _disposeMap: WeakMap<Node|INodeFunc, INodeFunc> = new WeakMap();
 
-type INodeFunc = (node: Node) => void;
+export type INodeFunc = (node: Node) => void;
 
 // Internal helper to walk the DOM tree, calling visitFunc(elem) on all descendants of elem.
 // Descendants are processed first.

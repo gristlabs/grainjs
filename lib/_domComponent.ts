@@ -80,7 +80,7 @@ export class Component extends Disposable {
   }
 }
 
-type ComponentClassType = typeof Component;
+export type ComponentClassType = typeof Component;
 
 /**
  * Construct and insert a UI component into the given DOM element. The component must extend

@@ -2,31 +2,52 @@
   "name": "grainjs",
   "version": "0.0.1",
   "description": "JS library from Grist Labs",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
+  "main": "dist/index",
+  "typings": "dist/index",
   "scripts": {
-    "test": "mocha -R list --harmony -gc test",
-    "test-timing": "TIMING_TESTS=1 mocha -R list --harmony test",
-    "dist": "bash build.sh",
-    "build-demo": "browserify demo/celsius_grain/index.js -d | uglifyjs --source-map 'content=inline,url=build-index.js.map' -o demo/celsius_grain/build-index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gristlabs/grainjs.git"
+    "build": "bash build.sh",
+    "watch": "tsc -w",
+    "test": "nyc mocha -R list -gc test/",
+    "test-timing": "TIMING_TESTS=1 mocha -R list test/",
+    "build-demo": "browserify demo/celsius_grain/index.js -d | uglifyjs --source-map 'content=inline,url=build-index.js.map' -o demo/celsius_grain/build-index.js",
+    "preversion": "npm test",
+    "version": "npm run build && git add dist/"
   },
   "keywords": [
     "grist",
     "gristlabs",
-    "javascript"
+    "javascript",
+    "typescript",
+    "dom",
+    "observable",
+    "disposable"
+  ],
+  "files": [
+    "dist",
+    "lib"
   ],
   "author": "Grist Labs",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gristlabs/grainjs.git"
+  },
   "bugs": {
     "url": "https://github.com/gristlabs/grainjs/issues"
   },
   "homepage": "https://github.com/gristlabs/grainjs#readme",
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ]
+  },
+  "dependencies": {
+    "fastpriorityqueue": "^0.3.1",
+    "lodash": "^4.15.0"
+  },
   "devDependencies": {
     "browserify": "^14.4.0",
     "chai": "^4.1.0",
@@ -34,14 +55,11 @@
     "jsdom": "^11.3.0",
     "knockout": "^3.4.2",
     "mocha": "^3.0.1",
+    "nyc": "^11.4.1",
     "sinon": "^4.0.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1",
     "uglify-es": "^3.2.0"
-  },
-  "dependencies": {
-    "fastpriorityqueue": "^0.3.1",
-    "lodash": "^4.15.0"
   }
 }

@@ -136,36 +136,32 @@ export class Subscription {
   }
 }
 
-type Obs<T> = Observable<T>;
-
 /**
  * This is the type-checking interface for subscribe(), which allows TypeScript to do helpful
  * type-checking when using it. We can only support a fixed number of argumnets (explicit
  * dependencies), but 5 should almost always be enough.
  */
-interface ISubscribe {
-  (cb: (use: UseCB) => void): Subscription;
+export function subscribe(cb: (use: UseCB) => void): Subscription;
 
-  <A>(
-    a: Obs<A>,
+export function subscribe<A>(
+    a: Observable<A>,
     cb: (use: UseCB, a: A) => void): Subscription;
 
-  <A, B>(
-    a: Obs<A>, b: Obs<B>,
+export function subscribe<A, B>(
+    a: Observable<A>, b: Observable<B>,
     cb: (use: UseCB, a: A, b: B) => void): Subscription;
 
-  <A, B, C>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>,
+export function subscribe<A, B, C>(
+    a: Observable<A>, b: Observable<B>, c: Observable<C>,
     cb: (use: UseCB, a: A, b: B, c: C) => void): Subscription;
 
-  <A, B, C, D>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
+export function subscribe<A, B, C, D>(
+    a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>,
     cb: (use: UseCB, a: A, b: B, c: C, d: D) => void): Subscription;
 
-  <A, B, C, D, E>(
-    a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
+export function subscribe<A, B, C, D, E>(
+    a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>, e: Observable<E>,
     cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => void): Subscription;
-}
 
 /**
  * Creates a new Subscription.
@@ -177,8 +173,8 @@ interface ISubscribe {
  *    This callback is called immediately, and whenever any dependency changes.
  * @returns {Subscription} The new subscription which may be disposed to unsubscribe.
  */
-export const subscribe: ISubscribe = function(...args: any[]): Subscription {
+export function subscribe(...args: any[]): Subscription {
   const cb = args.pop();
   // The cast helps ensure that Observable is compatible with ISubscribable abstraction that we use.
   return new Subscription(cb, args as Array<Observable<any>>);
-};
+}

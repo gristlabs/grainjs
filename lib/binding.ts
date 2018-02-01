@@ -10,9 +10,9 @@ import {UseCB} from './subscribe';
 
 export type BindableValue<T> = Observable<T> | ComputedCallback<T> | T | IKnockoutObservable<T>;
 
-type ComputedCallback<T> = (use: UseCB, ...args: any[]) => T;
+export type ComputedCallback<T> = (use: UseCB, ...args: any[]) => T;
 
-interface IKnockoutObservable<T> {
+export interface IKnockoutObservable<T> {
   (): T;
   peek(): T;
   subscribe(callback: (newValue: T) => void, target?: any, event?: "change"): IDisposable;

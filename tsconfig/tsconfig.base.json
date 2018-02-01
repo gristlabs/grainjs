@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "declaration": false,
+    "baseUrl": "..",
+    "rootDir": "..",
+    "outDir": "../dist"
+  },
+  "include": [
+    "../index.ts",
+    "../lib/"
+  ]
+}

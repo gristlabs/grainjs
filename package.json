@@ -2,8 +2,9 @@
   "name": "grainjs",
   "version": "0.0.1",
   "description": "JS library from Grist Labs",
-  "main": "dist/index",
-  "typings": "dist/index",
+  "main": "dist/cjs/index",
+  "module": "dist/esm/index",
+  "types": "index.ts",
   "scripts": {
     "build": "bash build.sh",
     "watch": "tsc -w",

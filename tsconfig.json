@@ -1,16 +1,3 @@
 {
-  "compilerOptions": {
-    "target": "es2016",
-    "strict": true,
-    "noUnusedLocals": true,
-    "module": "commonjs",
-    "baseUrl": ".",
-    "rootDir": ".",
-    "outDir": "dist",
-    "declaration": true
-  },
-  "include": [
-    "index.ts",
-    "lib/"
-  ]
+  "extends": "./tsconfig/tsconfig.es2015.cjs.json"
 }

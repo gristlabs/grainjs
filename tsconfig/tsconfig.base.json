@@ -6,7 +6,7 @@
     "declaration": false,
     "baseUrl": "..",
     "rootDir": "..",
-    "outDir": "../dist"
+    "outDir": "../dist/base"
   },
   "include": [
     "../index.ts",

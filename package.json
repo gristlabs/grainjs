@@ -4,7 +4,7 @@
   "description": "JS library from Grist Labs",
   "main": "dist/cjs/index",
   "module": "dist/esm/index",
-  "types": "index.ts",
+  "types": "dist/cjs/index",
   "scripts": {
     "build": "bash build.sh",
     "watch": "tsc -w",
@@ -25,7 +25,8 @@
   ],
   "files": [
     "dist",
-    "lib"
+    "lib",
+    "index.ts"
   ],
   "author": "Grist Labs",
   "license": "Apache-2.0",

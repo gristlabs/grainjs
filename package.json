@@ -46,6 +46,10 @@
       "**/*.d.ts"
     ]
   },
+  "publishRelease": {
+    "owner": "gristlabs",
+    "repo": "grainjs"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.1.2",
@@ -61,6 +65,7 @@
     "lodash": "^4.17.4",
     "mocha": "^3.0.1",
     "nyc": "^11.4.1",
+    "publish-release": "^1.4.0",
     "sinon": "^4.0.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",

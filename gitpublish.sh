@@ -7,40 +7,27 @@ set -o errtrace  # same as set -E: inherit ERR trap in functions
 trap 'echo Error in line "${BASH_SOURCE}":"${LINENO}"; exit 1' ERR
 trap 'echo "Exiting on interrupt"; exit 1' INT
 
-
-if [[ "$#" -lt 1 ]]; then
-  echo "Usage: ./gitpublish.sh <master|branch|commit>"
-  echo "Builds dist/ in the given commit, and merges into gitpublish branch."
-  exit 2
+if ! git diff --quiet HEAD ; then
+  echo "Must be run in a clean checkout"
+  exit 1
 fi
 
-COMMIT="$1"
-export PAGER=cat
+BINDIR=./node_modules/.bin
+NEXT_BUILD_NUM=`git tag -l 'build-*' | awk -F- '{if($2>max){max=$2}}END{print max+1}'`
+TAG="build-${NEXT_BUILD_NUM}"
+RELEASE_NAME="grainjs-$TAG"
+TOKEN=`cat .publish-release-oauth-token`
 
-# Remember the branch we were on.
-branch=`git rev-parse --abbrev-ref HEAD`
-
-git checkout --detach -q "$COMMIT"
-echo "Switched to `git rev-parse --short HEAD` ($COMMIT)"
+echo "Building $TAG on `git rev-parse --abbrev-ref HEAD` for publishing"
 ./build.sh
+npm test
 
-sed -i "" -e '/^\/dist/d' .gitignore
-git add .gitignore dist/
-
-next_build_num=`git tag -l 'build/*' | awk -F/ '{if($2>max){max=$2}}END{print max+1}'`
-tag="build/${next_build_num}"
-
-git --no-pager diff --cached .gitignore
-git --no-pager status
-
-read -p "Commit as tag $tag and push (y/n)? " ANSWER
+read -p "Tag the build as $TAG and publish (y/n)? " ANSWER
 if [ "$ANSWER" != "y" ]; then
   echo "Aborted"
   exit 1
 fi
 
-git commit -m "Build dist/"
-git tag $tag
-git push origin $tag
-
-echo "Returning to $branch"
+ASSET=`npm pack`
+git tag $TAG
+$BINDIR/publish-release --token $TOKEN --notes "Build from master" --assets $ASSET --tag $TAG --name="$RELEASE_NAME"

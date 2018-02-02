@@ -16,7 +16,7 @@
  * call, or of bundleChanges() call, the queue gets processed in order of _priority.
  */
 
-import * as FastPriorityQueue from 'fastpriorityqueue';
+import {PriorityQueue} from './PriorityQueue';
 
 /**
  * DepItem is an item in a dependency relationship. It may depend on other DepItems. It is used
@@ -65,13 +65,13 @@ export class DepItem {
   public enqueue(): void {
     if (!this._enqueued) {
       this._enqueued = true;
-      queue.add(this);
+      queue.push(this);
     }
   }
 }
 
 // The main compute queue.
-const queue = new FastPriorityQueue(DepItem.isPrioritySmaller);
+const queue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
 
 // Array to keep track of items recomputed during this call to compute(). It could be a local
 // variable in compute(), but is made global to minimize allocations.
@@ -100,7 +100,7 @@ export function compute(): void {
     try {
       // We reuse _seen array to minimize allocations, but always leave it empty.
       do {
-        const item = queue.poll();
+        const item = queue.pop()!;
         _seen.push(item);
         item.recompute();
       } while (queue.size > 0);

@@ -7,7 +7,7 @@ BINDIR=./node_modules/.bin
 echo "Rebuilding typescript (commonjs)"
 rm -rf dist
 mkdir -p dist
-$BINDIR/tsc
+$BINDIR/tsc -p tsconfig/tsconfig.es2015.cjs.json
 
 echo "Rebuilding typescript (es2015 modules)"
 $BINDIR/tsc -p tsconfig/tsconfig.es2015.esm.json

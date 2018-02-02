@@ -130,7 +130,7 @@ export function computed(...args: any[]): Computed<any> {
   return new Computed<any>(readCb, args);
 }
 
-// TODO Consider mplementing .singleUse() method.
+// TODO Consider implementing .singleUse() method.
 // An open question is in how to pass e.g. kd.hide(computed(x, x => !x)) in such a way that
 // the temporary computed can be disposed when temporary, but not otherwise. A function-only
 // syntax is kd.hide(use => !use(x)), but prevents use of static subscriptions.

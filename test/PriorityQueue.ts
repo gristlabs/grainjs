@@ -1,6 +1,10 @@
 import {assert} from 'chai';
-import {min} from 'lodash';
+import {min, range} from 'lodash';
 import {PriorityQueue} from '../lib/PriorityQueue';
+
+// tslint:disable:no-var-requires
+const testutil = require('./testutil');
+const FastPriorityQueue  = require('fastpriorityqueue');
 
 describe('PriorityQueue', function() {
 
@@ -66,5 +70,77 @@ describe('PriorityQueue', function() {
     arr.sort((a, b) => a - b);
     assert.deepEqual(arr.map((i) => q.pop()), arr);
     assert.strictEqual(q.size, 0);
+  });
+
+  [10, 1000].forEach((queueSize: number) => {
+    describe(`Timing queue with ${queueSize} items`, function() {
+      // We create a PriorityQueue, and one from "fastpriorityqueue" library, and compare.
+      let priorityQueue: any;
+      let fastpriorityqueue: any;
+      let data: number[];
+      const compare = (a: number, b: number) => a < b;
+
+      before(function() {
+        priorityQueue = new PriorityQueue(compare);
+        fastpriorityqueue = new FastPriorityQueue(compare);
+        data = [];
+        for (let i = 0; i < queueSize; i++) {
+          data.push(pseudoRandom());
+        }
+      });
+
+      testutil.timeit("fill/drain fastpriorityqueue", () => {
+        for (const val of data) {
+          fastpriorityqueue.add(val);
+        }
+        while (fastpriorityqueue.size) {
+          fastpriorityqueue.poll();
+        }
+      }, 500);
+
+      testutil.timeit("fill/drain PriorityQueue", () => {
+        for (const val of data) {
+          priorityQueue.push(val);
+        }
+        while (priorityQueue.size) {
+          priorityQueue.pop();
+        }
+      }, 500, { compareToPrevious: true });
+    });
+  });
+
+  describe('memory', function() {
+    const compare = (a: number[], b: number[]) => a[0] < b[0];
+    this.timeout(10000);
+    before(function() { testutil.skipWithoutGC(this); });
+
+    // We check that the queue does not prevent garbage-collection of popped items. The
+    // fillDrain() function fills the queue with some biggish objects, and then pops them all.
+    function fillDrain(queue: any, pushMethod: string, popMethod: string): any {
+      const count = 200;
+      for (let i = 0; i < count; i++) {
+        queue[pushMethod](range(i, i + 100));    // the item is an array [i, ..., i + 99]
+      }
+      assert.strictEqual(queue.size, count);
+      for (let i = 0; i < count; i++) {
+        queue[popMethod]();
+      }
+      assert.strictEqual(queue.size, 0);
+      return queue;
+    }
+
+    const N = 500;
+    it('measure memory of drained fastpriorityqueue', function() {
+      return testutil.measureMemoryUsage(N, {
+        createItem: (i: number) => fillDrain(new FastPriorityQueue(compare), "add", "poll"),
+        test: this.test,
+      });
+    });
+    it('measure memory of drained PriorityQueue', function() {
+      return testutil.measureMemoryUsage(N, {
+        createItem: (i: number) => fillDrain(new PriorityQueue(compare), "push", "pop"),
+        test: this.test,
+      });
+    });
   });
 });

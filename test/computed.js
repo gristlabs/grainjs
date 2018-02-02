@@ -209,7 +209,7 @@ function testComputed(computed) {
     let z2 = computed(x, y, (use, x, y) => spy2(x + y));
 
     // First check that separate updates to x and y cause two updates to the computeds.
-    spy1.reset(); spy2.reset();
+    spy1.resetHistory(); spy2.resetHistory();
     x.set("x1");
     y.set("y1");
     assert.strictEqual(z1.get(), "x1y1");
@@ -218,7 +218,7 @@ function testComputed(computed) {
     assert.deepEqual(spy2.returnValues, ["x1y0", "x1y1"]);
 
     // Now check that with bundleChanges, there is a single update.
-    spy1.reset(); spy2.reset();
+    spy1.resetHistory(); spy2.resetHistory();
     bundleChanges(() => {
       x.set("x2");
       y.set("y2");

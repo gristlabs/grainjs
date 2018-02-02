@@ -2,6 +2,7 @@
 
 /* global it */
 
+const assert = require('chai').assert;
 const _ = require('lodash');
 const sinon = require('sinon');
 const mocha = require('mocha');
@@ -17,11 +18,7 @@ function assertResetSingleCall(spy, context, ...args) {
   sinon.assert.calledOnce(spy);
   sinon.assert.calledOn(spy, context);
   sinon.assert.calledWithExactly(spy, ...args);
-  if (typeof spy.resetHistory === 'function') {
-    spy.resetHistory();   // This is the appropriate method for stubs.
-  } else {
-    spy.reset();
-  }
+  spy.resetHistory();
 }
 exports.assertResetSingleCall = assertResetSingleCall;
 
@@ -163,6 +160,9 @@ function getMemUsage() {
  *      bytesAtFinish,      // delta between steps 1 and 4
  *    }
  *
+ * If spec.test is given, it should be currently running test case (this.test), whose title will
+ * be modified to include per-item memory usage.
+ *
  * Note that it is far from precise and may easily be slightly negative, but for large number of
  * objects, it should approach a meaningful number.
  *
@@ -177,7 +177,15 @@ function measureMemoryUsage(N, spec) {
   // Measure things twice, returning just the second measurement, which seems to reduce unexpected
   // memory effects when new code first runs.
   return _measureMemoryUsageImpl(N, spec)
-  .then(() => _measureMemoryUsageImpl(N, spec));
+  .then(() => _measureMemoryUsageImpl(N, spec))
+  .then((memUsage) => {
+    if (spec.test) {
+      assert.isBelow(memUsage.bytesAtFinish, 8);
+      const extra = memUsage.bytesDestroyed < 8 ? "" : `, ${memUsage.bytesDestroyed} leaked`;
+      spec.test.title += ` [MEM ${memUsage.bytesCreated} bytes/item${extra}]`;
+    }
+    return memUsage;
+  });
 }
 exports.measureMemoryUsage = measureMemoryUsage;
 

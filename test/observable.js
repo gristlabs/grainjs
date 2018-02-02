@@ -45,7 +45,7 @@ describe('observable', function() {
     obs.set("hello world");
     sinon.assert.calledOnce(spy1);
     sinon.assert.calledWithExactly(spy1, "hello world", "test1");
-    spy1.reset();
+    spy1.resetHistory();
 
     // When there are multiple listeners, all should get called.
     obs.addListener(spy2);

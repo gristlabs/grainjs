@@ -115,8 +115,8 @@ describe('dispose', function() {
     }
 
     afterEach(function() {
-      bar.dispose.reset();
-      baz.dispose.reset();
+      bar.dispose.resetHistory();
+      baz.dispose.resetHistory();
     });
 
     it("should dispose partially constructed objects", function() {
@@ -132,7 +132,7 @@ describe('dispose', function() {
       assert.strictEqual(foo, undefined);
       assert.equal(bar.dispose.callCount, 1);
       assert.equal(baz.dispose.callCount, 0);
-      bar.dispose.reset();
+      bar.dispose.resetHistory();
 
       // If we constructed two objects, both should have gotten disposed.
       assert.throws(function() { foo = new Foo(2); }, /test-error/);
@@ -140,8 +140,8 @@ describe('dispose', function() {
       assert.equal(bar.dispose.callCount, 1);
       assert.equal(baz.dispose.callCount, 1);
       assert(baz.dispose.calledBefore(bar.dispose));
-      bar.dispose.reset();
-      baz.dispose.reset();
+      bar.dispose.resetHistory();
+      baz.dispose.resetHistory();
 
       // If we don't throw, then nothing should get disposed until we call .dispose().
       assert.doesNotThrow(function() { foo = new Foo(3); });

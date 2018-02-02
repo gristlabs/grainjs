@@ -26,7 +26,7 @@ describe('subscribe', function() {
 
     // Check it got called immediately.
     assert.deepEqual(spy.args, [['x', 'y', 'cy', 'z', 'w']]);
-    spy.reset();
+    spy.resetHistory();
 
     // Change different observables, and ensure it reacts to each change.
     x.set('X');
@@ -39,7 +39,7 @@ describe('subscribe', function() {
       ['X', 'Y', 'cY', 'Z', 'w'],
       ['X', 'Y', 'cY', 'Z', 'W'],
     ]);
-    spy.reset();
+    spy.resetHistory();
 
     // Check that a set() call that causes no change, does not triggers the subscription callback.
     x.set('X');
@@ -60,7 +60,7 @@ describe('subscribe', function() {
     assert.deepEqual(spy.args, [['X', 'Y', 'cY', '', ''],
                                 ['X', 'Y', 'cY', 'hello', 'world'],
                                 ['X', 'Y', 'cY', 'hello', 'WORLD']]);
-    spy.reset();
+    spy.resetHistory();
 
     // Check that for bundled changes, subscription is only called once.
     bundleChanges(() => {
@@ -72,7 +72,7 @@ describe('subscribe', function() {
     y.set('Y');
     assert.deepEqual(spy.args, [['x', 'y', 'cy', 'z', 'w'],
                                 ['x', 'Y', 'cY', 'z', 'w']]);
-    spy.reset();
+    spy.resetHistory();
 
     // Verify that after disposal, it no longer reacts to dependencies.
     sub.dispose();

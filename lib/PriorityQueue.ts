@@ -23,7 +23,7 @@ export class PriorityQueue<T> {
     const items = this._items;
     const isPrior = this._isPrior;
 
-    let curIdx = items.length;
+    let curIdx = this._items.length;
     while (curIdx > 0) {
       // While we have a parent that is not prior to us, bubble up the "hole" at items.length.
       const parIdx = (curIdx - 1) >> 1;   // tslint:disable-line:no-bitwise
@@ -42,39 +42,26 @@ export class PriorityQueue<T> {
   }
 
   public pop(): T|undefined {
+    if (this._items.length <= 1) { return this._items.pop(); }
     const items = this._items;
     const isPrior = this._isPrior;
     const result = items[0];
-    if (items.length <= 1) {
-      items.length = 0;
-      return result;
-    }
 
     // Bubble the last item downwards from the root.
-    const size = items.length - 1;
-    const item = items[size];
-    items.length = size;
+    const item = items.pop()!;
+    const size = this._items.length;
     let curIdx = 0;
-    // Getting the "half" right is a bit tricky. It needs to be that
-    // (curIdx < half) is equivalent to (curIdx * 2 + 1 < size)
-    const half = size >> 1;     // tslint:disable-line:no-bitwise
-    while (curIdx < half) {
-      let bestIdx = curIdx * 2 + 1;
-      let bestItem = items[bestIdx];
-      const rightIdx = bestIdx + 1;
-      if (rightIdx < size) {
-        // If there is a second child too, pick the prior one for bubbling down.
-        const rightItem = items[rightIdx];
-        if (isPrior(rightItem, bestItem)) {
-          bestIdx = rightIdx;
-          bestItem = rightItem;
-        }
-      }
-      if (isPrior(item, bestItem)) {
+    let leftIdx = 1;
+    while (leftIdx < size) {
+      const rightIdx = leftIdx + 1;
+      const bestIdx = (rightIdx < size && isPrior(items[rightIdx], items[leftIdx])) ?
+        rightIdx : leftIdx;
+      if (isPrior(item, items[bestIdx])) {
         break;
       }
-      items[curIdx] = bestItem;
+      items[curIdx] = items[bestIdx];
       curIdx = bestIdx;
+      leftIdx = curIdx + curIdx + 1;
     }
     items[curIdx] = item;
     return result;

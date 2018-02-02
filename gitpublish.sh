@@ -20,8 +20,8 @@ export PAGER=cat
 # Remember the branch we were on.
 branch=`git rev-parse --abbrev-ref HEAD`
 
-git checkout "$COMMIT"
-echo "Switched to $COMMIT (`git rev-parse --short HEAD`)"
+git checkout --detach -q "$COMMIT"
+echo "Switched to `git rev-parse --short HEAD` ($COMMIT)"
 ./build.sh
 
 sed -i "" -e '/^\/dist/d' .gitignore

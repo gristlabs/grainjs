@@ -4,128 +4,151 @@
  *
  *    https://phab.getgrist.com/w/disposal/
  *
- * Disposable is a class for components that need cleanup (e.g. maintain DOM, listen to
- * events, subscribe to anything). It provides a .dispose() method that should be called to
- * destroy the component, and .autoDispose() family of methods that the component should use to
- * take responsibility for other pieces that require cleanup.
+ * Disposable is a class for components that need cleanup (e.g. maintain DOM, listen to events,
+ * subscribe to anything). It provides a .dispose() method that should be called to destroy the
+ * component, and .onDispose()/.autoDispose() methods that the component should use to take
+ * responsibility for other pieces that require cleanup.
  *
  * To define a disposable class:
- *    class Foo extends Disposable {
- *      create(...args) { ...constructor work... }      // Instead of constructor, if needed.
- *    }
+ *    class Foo extends Disposable { ... }
  *
  * To create Foo:
- *    let foo = new Foo(args...);
+ *    const foo = Foo.create(owner, ...args);
+ * This is better than `new Foo` for two reasons:
+ *    1. If Foo's constructor throws an exception, any disposals registered in that constructor
+ *       before the exception are honored.
+ *    2. It ensures you specify the owner of the new instance (but you can use null to skip it).
  *
- * Foo should do constructor work in its create() method (or rarely other methods), where it can
- * take ownership of other objects:
- *    this.bar = this.autoDispose(new Bar(...));
+ * In Foo's constructor (or rarely methods), take ownership of other Disposable objects:
+ *    this.bar = Bar.create(this, ...);
  *
- * Note that create() is automatically called at construction. Its advantage is that if it throws
- * an exception, any calls to .autoDispose() that happened before the exception are honored.
+ * For objects that are not instances of Disposable but have a .dispose() methods, use:
+ *    this.bar = this.autoDispose(createSomethingDisposable());
  *
- * For more customized disposal:
- *    this.baz = this.autoDisposeWithMethod('destroy', new Baz());
- *    this.elem = this.autoDisposeWith(ko.cleanNode, document.createElement(...));
- * When `this` is disposed, it will call this.baz.destroy(), and ko.cleanNode(this.elem).
+ * To call a function on disposal (e.g. to add custom disposal logic):
+ *    this.onDispose(() => this.myUnsubscribeAllMethod());
+ *    this.onDispose(this.myUnsubscribeAllMethod, this);    // slightly more efficient
  *
- * To call another method on disposal (e.g. to add custom disposal logic):
- *    this.autoDisposeCallback(this.myUnsubscribeAllMethod);
- * The method will be called with `this` as context, and no arguments.
- *
- * To wipe out this object on disposal (i.e. set all properties to null):
+ * To mark this object to be wiped out on disposal (i.e. set all properties to null):
  *    this.wipeOnDispose();
  * See the documentation of that method for more info.
  *
- * To dispose Foo:
+ * To dispose Foo directly:
  *    foo.dispose();
- * Owned objects will be disposed in reverse order from which `autoDispose` were called.
- *
- * To release an owned object:
- *    this.disposeRelease(this.bar);
- *
- * To dispose an owned object early:
- *    this.disposeDiscard(this.bar);
- *
  * To determine if an object has already been disposed:
  *    foo.isDisposed()
+ *
+ * If you need to replace an owned object, or release, or dispose it early, use a Holder:
+ *    this._holder = Holder.create(this);
+ *    Bar.create(this._holder, 1);      // creates new Bar(1)
+ *    Bar.create(this._holder, 2);      // creates new Bar(2) and disposes previous object
+ *    this._holder.clear();             // disposes contained object
+ *    this._holder.release();           // releases contained object
+ *
+ * If creating your own class with a dispose() method, do NOT throw exceptions from dispose().
+ * These cannot be handled properly in all cases. Read here about the same issue in C++:
+ *    http://bin-login.name/ftp/pub/docs/programming_languages/cpp/cffective_cpp/MAGAZINE/SU_FRAME.HTM#destruct
  */
 
+import {LLink} from './emit';
+
+/**
+ * Anything with a .dispose() method is a disposable object, and implements the IDisposable interface.
+ */
 export interface IDisposable {
   dispose(): void;
 }
 
-interface IDisposalEntry {
-  disposer: (obj: any) => void;
-  obj: any;
+/**
+ * Anything with .autoDispose() can be the owner of a disposable object.
+ */
+export interface IDisposableOwner {
+  autoDispose(obj: IDisposable): void;
 }
 
-export abstract class Disposable implements IDisposable {
-  private _disposalList: IDisposalEntry[];
+// Internal "owner" of disposable objects which doesn't actually dispose or keep track of them. It
+// is the effective owner when creating a Disposable with `new Foo()` rather than `Foo.create()`.
+const _noopOwner: IDisposableOwner = {
+  autoDispose(obj: IDisposable): void { /* noop */ },
+};
 
+// Newly-created Disposable instances will have this as their owner. This is not a constant, it
+// is used by create() for the safe creation of Disposables.
+let _defaultDisposableOwner = _noopOwner;
+
+/**
+ * Base class for disposable objects that can own other objects. See the module documentation.
+ */
+export abstract class Disposable implements IDisposable, IDisposableOwner {
   /**
-   * Constructor forwards arguments to  `this.create(...args)`, which is where subclasses should
-   * do any constructor work. This ensures that if create() throws an exception, dispose() gets
-   * called to clean up the partially-constructed object.
+   * Create Disposable instances using `Class.create(owner, ...)` rather than `new Class(...)`.
+   *
+   * This reminds you to provide an owner, and ensures that if the constructor throws an
+   * exception, dispose() gets called to clean up the partially-constructed object.
+   *
+   * Owner may be null if intend to ensure disposal some other way.
+   *
+   * TODO: create() needs more unittests, including to ensure that TypeScript types are done
+   * correctly.
    */
-  constructor(...args: any[]) {
-    this._disposalList = [];
-
+  // The complex-looking overloads are to ensure that it can do type-checking for constuctors of
+  // different arity. E.g. if Foo's constructor takes (number, string), we want Foo.create to
+  // require (owner, number, string) as arguments.
+  public static create<T>(this: new () => T, owner: IDisposableOwner|null): T;
+  public static create<T, A>(this: new (a: A) => T, owner: IDisposableOwner|null, a: A): T;
+  public static create<T, A, B>(this: new (a: A, b: B) => T, owner: IDisposableOwner|null, a: A, b: B): T;
+  public static create<T, A, B, C>(this: new (a: A, b: B, c: C) => T, owner: IDisposableOwner|null,
+                                   a: A, b: B, c: C): T;
+  public static create<T, A, B, C, D>(this: new (a: A, b: B, c: C, d: D) => T, owner: IDisposableOwner|null,
+                                      a: A, b: B, c: C, d: D): T;
+  public static create<T, A, B, C, D, E>(this: new (a: A, b: B, c: C, d: D, e: E) => T, owner: IDisposableOwner|null,
+                                         a: A, b: B, c: C, d: D, e: E): T;
+  public static create<T extends IDisposable>(this: new (...args: any[]) => T, owner: IDisposableOwner|null,
+                                              ...args: any[]): T {
+    const origDefaultOwner = _defaultDisposableOwner;
+    const holder = new Holder();
     try {
-      this.create(...args);
+      // The newly-created object will have holder as its owner.
+      _defaultDisposableOwner = holder;
+      return _autoDispose(owner, new this(...args));
     } catch (e) {
       try {
-        this.dispose();
-      } catch (e) {
+        // This calls dispose on the partially-constructed object
+        holder.clear();
+      } catch (e2) {
         // tslint:disable-next-line:no-console
-        console.error("Error disposing partially constructed %s:", this.constructor.name, e);
+        console.error("Error disposing partially constructed %s:", this.name, e2);
       }
       throw e;
+    } finally {
+      // On success, the new object has a new owner, and we release it from holder.
+      // On error, the holder has been cleared, and the release() is a no-op.
+      holder.release();
+      _defaultDisposableOwner = origDefaultOwner;
     }
   }
 
-  /**
-   * Take ownership of `obj`, and dispose it when `this.dispose` is called.
-   * @param {Object} obj: Disposable object to take ownership of.
-   * @returns {Object} obj
-   */
-  public autoDispose<T extends IDisposable>(obj: T): T {
-    return this.autoDisposeWith<T>(_defaultDisposer, obj);
+  private _disposalList: DisposalList = new DisposalList();
+
+  constructor() {
+    // This registers with a temp Holder when using create(), and is a no-op when using `new Foo`.
+    _defaultDisposableOwner.autoDispose(this);
   }
 
-  /**
-   * Take ownership of `obj`, and dispose it by calling the specified function.
-   * @param {Function} disposer: disposer(obj) will be called to dispose the object, with `this`
-   *    as the context.
-   * @param {Object} obj: Object to take ownership of, on which `disposer` will be called.
-   * @returns {Object} obj
-   */
-  public autoDisposeWith<T>(disposer: (obj: T) => void, obj: T): T {
-    this._disposalList.push({obj, disposer});
+  /** Take ownership of obj, and dispose it when this.dispose() is called. */
+  public autoDispose<T extends IDisposable>(obj: T): T {
+    this.onDispose(obj.dispose, obj);
     return obj;
   }
 
-  /**
-   * Take ownership of `obj`, and dispose it with `obj[methodName]()`.
-   * @param {String} methodName: method name to call on obj when it's time to dispose it.
-   * @returns {Object} obj
-   */
-  public autoDisposeWithMethod<T>(methodName: string, obj: T): T {
-    return this.autoDisposeWith((_obj: any) => _obj[methodName](), obj);
-  }
-
-  /**
-   * Adds the given callback to be called when `this.dispose` is called.
-   * @param {Function} callback: Called on disposal with `this` as the context and no arguments.
-   * @returns nothing
-   */
-  public autoDisposeCallback(callback: () => void): void {
-    this.autoDisposeWith(_callFuncHelper, callback);
+  /** Call the given callback when this.dispose() is called. */
+  public onDispose<T>(callback: (this: T) => void, context?: T): void {
+    this._disposalList.addListener(callback, context);
   }
 
   /**
    * Wipe out this object when it is disposed, i.e. set all its properties to null. It is
-   * recommended to call this early in the constructor. It's safe to call multiple times.
+   * recommended to call this early in the constructor.
    *
    * This makes disposal more costly, but has certain benefits:
    * - If anything still refers to the object and uses it, we'll get an early error, rather than
@@ -139,36 +162,7 @@ export abstract class Disposable implements IDisposable {
    * which are numerous and short-lived (and less likely to be referenced from unexpected places).
    */
   public wipeOnDispose(): void {
-    this.autoDisposeWith(_wipeOutObject, this);
-  }
-
-  /**
-   * Remove `obj` from the list of owned objects; it will not be disposed on `this.dispose`.
-   * @param {Object} obj: Object to release.
-   * @returns {Object} obj
-   */
-  public disposeRelease<T extends IDisposable>(obj: T): T {
-    const list = this._disposalList;
-    const index = list.findIndex((entry) => (entry.obj === obj));
-    if (index !== -1) {
-      list.splice(index, 1);
-    }
-    return obj;
-  }
-
-  /**
-   * Dispose an owned object `obj` now, and remove it from the list of owned objects.
-   * @param {Object} obj: Object to release.
-   * @returns nothing
-   */
-  public disposeDiscard(obj: IDisposable) {
-    const list = this._disposalList;
-    const index = list.findIndex((entry) => (entry.obj === obj));
-    if (index !== -1) {
-      const entry = list[index];
-      list.splice(index, 1);
-      entry.disposer.call(this, obj);
-    }
+    this.onDispose(this._wipeOutObject, this);
   }
 
   /**
@@ -179,65 +173,77 @@ export abstract class Disposable implements IDisposable {
   }
 
   /**
-   * Clean up `this` by disposing all owned objects, and calling `stopListening()` if defined.
+   * Clean up `this` by disposing all owned objects, and calling onDispose() callbacks, in reverse
+   * order to that in which they were added.
    */
   public dispose(): void {
-    const list = this._disposalList;
-    if (list) {
-      // This makes isDisposed() true, and the object is no longer valid (in particular,
-      // this._disposalList no longer satisfies its declared type).
-      (this._disposalList as any) = null;
-
-      // Go backwards through the disposal list, and dispose everything.
-      for (let i = list.length - 1; i >= 0; i--) {
-        const entry: IDisposalEntry = list[i];
-        _disposeHelper(this, entry.disposer, entry.obj);
-      }
-    }
+    const disposalList = this._disposalList;
+    this._disposalList = null!;
+    disposalList.callAndDispose(this);
   }
 
   /**
-   * Called during construction. Implement this in subclasses to do constructor work safely. If
-   * this throws an exception, the partially-constructed object will get cleaned up -- i.e. any
-   * calls to `this.autoDispose()` that happened before the exception will be honored.
-   * Method create() is NOT intended to be called directly.
+   * Wipe out this object by setting each property to null. This is helpful for objects that are
+   * disposed and should be ready to be garbage-collected.
    */
-  protected abstract create(...args: any[]): void;
-}
-
-/**
- * Internal helper to allow adding cleanup callbacks to the disposalList. It acts as the
- * "disposer" for callback, by simply calling them with the same context that it is called with.
- */
-function _callFuncHelper(this: Disposable, callback: () => void): void {
-  callback.call(this);
-}
-
-/**
- * Wipe out the given object by setting each property to a dummy sentinel value. This is helpful
- * for objects that are disposed and should be ready to be garbage-collected.
- *
- * The sentinel value doesn't have to be null, but some values cause more helpful errors than
- * others. E.g. if a.x = "disposed", then a.x.foo() throws "undefined is not a function", while
- * when a.x = null, a.x.foo() throws "Cannot read property 'foo' of null", which is more helpful.
- */
-function _wipeOutObject(obj: {[key: string]: any}) {
-  Object.keys(obj).forEach((k) => (obj[k] = null));
-}
-
-/**
- * Internal helper to call a disposer on an object. It swallows errors (but reports them) to make
- * sure that when we dispose an object, an error in disposing one owned part doesn't stop
- * the disposal of the other parts.
- */
-function _disposeHelper(owner: Disposable, disposer: (obj: any) => void, obj: any) {
-  try {
-    disposer.call(owner, obj);
-  } catch (e) {
-    // tslint:disable-next-line:no-console
-    console.error("While disposing %s, error disposing %s: %s",
-      _describe(owner), _describe(obj), e);
+  private _wipeOutObject(): void {
+    // The sentinel value doesn't have to be null, but some values cause more helpful errors than
+    // others. E.g. if a.x = "disposed", then a.x.foo() throws "undefined is not a function", but
+    // when a.x = null, a.x.foo() throws a more helpful "Cannot read property 'foo' of null".
+    for (const k of Object.keys(this)) {
+      (this as any)[k] = null;
+    }
   }
+}
+
+/**
+ * Holder keeps a single disposable object. If given responsibility for another object using
+ * holder.autoDispose() or Foo.create(holder, ...), it automatically disposes the currently held
+ * object. It also disposes it when the holder itself is disposed.
+ *
+ * TODO Holder needs unittests.
+ */
+export class Holder implements IDisposable, IDisposableOwner {
+  public static create(owner: IDisposableOwner|null): Holder {
+    return _autoDispose(owner, new Holder());
+  }
+
+  private _owned: IDisposable|null = null;
+
+  /** Take ownership of a new object, disposing the previously held one. */
+  public autoDispose<T extends IDisposable>(obj: T): T {
+    if (this._owned) { this._owned.dispose(); }
+    this._owned = obj;
+    return obj;
+  }
+
+  /** Releases the held object without disposing it, emptying the holder. */
+  public release(): IDisposable|null {
+    const ret = this._owned;
+    this._owned = null;
+    return ret;
+  }
+
+  /** Disposes the held object and empties the holder. */
+  public clear(): void {
+    if (this._owned) {
+      this._owned.dispose();
+      this._owned = null;
+    }
+  }
+
+  /** When the holder is disposed, it disposes the held object if any. */
+  public dispose(): void {
+    this.clear();
+  }
+}
+
+/**
+ * Helper for more concise implementations of the `create(owner)` interface.
+ */
+function _autoDispose<T extends IDisposable>(owner: IDisposableOwner|null, obj: T): T {
+  if (owner) { owner.autoDispose(obj); }
+  return obj;
 }
 
 /**
@@ -248,8 +254,47 @@ function _describe(obj: any) {
 }
 
 /**
- * Helper disposer that simply invokes the .dispose() method.
+ * DisposalList is an internal class mimicking emit.Emitter. The difference is that callbacks are
+ * called in reverse order, and exceptions in callbacks are reported and swallowed.
  */
-function _defaultDisposer(obj: IDisposable) {
-  obj.dispose();
+class DisposalList extends LLink {
+  constructor() { super(); }
+
+  public addListener<T>(callback: (this: T) => void, optContext?: T): void {
+    const lis = new DisposeListener(callback, optContext);
+    this._insertBefore(this._next!, lis);
+  }
+
+  /**
+   * Call all callbacks and dispose this object. The owner is required for better reporting of
+   * errors if any callback throws.
+   */
+  public callAndDispose(owner: Disposable): void {
+    try {
+      DisposeListener.callAll(this._next!, this, owner);
+    } finally {
+      this._disposeList();
+    }
+  }
+}
+
+/**
+ * Internal class that keeps track of one item of the DisposalList. It mimicks emit.Listener, but
+ * reports and swallows erros when it calls the callbacks in the list.
+ */
+class DisposeListener extends LLink {
+  public static callAll(begin: LLink, end: LLink, owner: Disposable): void {
+    while (begin !== end) {
+      const lis = begin as DisposeListener;
+      try {
+        lis.callback.call(lis.context);
+      } catch (e) {
+        // tslint:disable-next-line:no-console
+        console.error("While disposing %s, error disposing %s: %s", _describe(owner), _describe(this), e);
+      }
+      begin = lis._next!;
+    }
+  }
+
+  constructor(private callback: () => void, private context?: any) { super(); }
 }

@@ -5,7 +5,7 @@
 
 import {domDispose, onDisposeElem} from './_domDispose';
 import {DomElementArg, DomElementMethod, update} from './_domImpl';
-import {Disposable} from './dispose';
+import {Disposable, IDisposableOwner} from './dispose';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';
@@ -18,9 +18,20 @@ import {G} from './browserGlobals';
  * In addition, a "class" component may be disposed to remove it from the DOM, although this is
  * uncommon since a UI component is normally owned by its containing DOM.
  */
-export class Component extends Disposable {
+export abstract class Component extends Disposable {
   private _markerPre: Node|undefined;
   private _markerPost: Node|undefined;
+
+  /**
+   * Component should implement render(). If overriding constructor, remember to pass along
+   * arguments, and keep in mind that render() will be called before additional constructor code.
+   * TODO This should have typescript overloads to ensure that it takes the same arguments as
+   * render().
+   */
+  constructor(elem: Element, ...args: any[]) {
+    super();
+    this._mount(elem, this.render(...args));
+  }
 
   /**
    * Components must extend this class and implement a `render()` method, which is called at
@@ -32,16 +43,13 @@ export class Component extends Disposable {
    * DOM element, a string, null, or an array. The returned DOM is automatically owned by the
    * component, so do not wrap it in `this.autoDispose()`.
    */
-  public render(...args: any[]): DomElementArg {
-    throw new Error("Not implemented");
-  }
+  public abstract render(...args: any[]): DomElementArg;
 
   /**
-   * This is not intended to be called directly or overridden. Instead, implement render().
+   * Inserts the content into DOM, arranging for it to be disposed when this Component is, and to
+   * dispose the Component when the parent element gets disposed.
    */
-  protected create(elem: Element, ...args: any[]) {
-    const content: DomElementArg = this.render(...args);
-
+  private _mount(elem: Element, content: DomElementArg): void {
     this._markerPre = G.document.createComment('A');
     this._markerPost = G.document.createComment('B');
 
@@ -55,7 +63,7 @@ export class Component extends Disposable {
 
     // When the component is disposed, unmount the DOM we created (i.e. dispose and remove).
     // Except that we skip this as unnecessary when the disposal is triggered by containing DOM.
-    this.autoDisposeWith(this._unmount, this);
+    this.onDispose(this._unmount, this);
 
     // Insert the result of render() into the given parent element.
     update(elem, this._markerPre, content, this._markerPost);
@@ -64,8 +72,9 @@ export class Component extends Disposable {
   /**
    * Detaches and disposes the DOM created and attached in _mount().
    */
-  private _unmount() {
-    // Dispose the owned content, and remove it from the DOM.
+  private _unmount(): void {
+    // Dispose the owned content, and remove it from the DOM. The conditional skips the work when
+    // the unmounting is triggered by the disposal of the containing DOM.
     if (this._markerPre && this._markerPre.parentNode) {
       let next;
       const elem = this._markerPre.parentNode;
@@ -80,11 +89,14 @@ export class Component extends Disposable {
   }
 }
 
-export type ComponentClassType = typeof Component;
+export interface IComponentClassType<T> {
+  new (...args: any[]): T;
+  create(owner: IDisposableOwner|null, ...args: any[]): T;
+}
 
 /**
  * Construct and insert a UI component into the given DOM element. The component must extend
- * dom.Component(...), and must implement a `render(...)` method which should do any constructor
+ * dom.Component, and must implement a `render(...)` method which should do any rendering work
  * work and return DOM. DOM may be any type value accepted by dom() as an argument, including a
  * DOM element, string, null, or array. The returned DOM is automatically owned by the component.
  *
@@ -110,13 +122,12 @@ export type ComponentClassType = typeof Component;
  *    dom.Component(...) and implement the render() method.
  * @param {Objects} ...args: Arguments to the constructor which passes them to the render method.
  */
-export function createElem(elem: Element, ComponentClass: ComponentClassType, ...args: any[]) {
-  // tslint:disable-next-line:no-unused-expression
-  new ComponentClass(elem, ...args);
+export function createElem<T extends Component>(elem: Element, cls: IComponentClassType<T>, ...args: any[]): T {
+  return cls.create(null, elem, ...args);
 }
-export function create(ComponentClass: ComponentClassType, ...args: any[]): DomElementMethod {
+export function create<T extends Component>(cls: IComponentClassType<T>, ...args: any[]): DomElementMethod {
   // tslint:disable-next-line:no-unused-expression
-  return (elem) => { new ComponentClass(elem, ...args); };
+  return (elem) => { cls.create(null, elem, ...args); };
 }
 
 /**
@@ -131,10 +142,10 @@ export function create(ComponentClass: ComponentClassType, ...args: any[]): DomE
  * soon as it's created, so an exception in the init function or later among dom()'s arguments
  * will trigger a cleanup.
  */
-export function createInit(ComponentClass: ComponentClassType, ...args: any[]): DomElementMethod {
+export function createInit<T>(cls: IComponentClassType<T>, ...args: any[]): DomElementMethod {
   return (elem) => {
-    const initFunc: (c: Component) => void = args.pop();
-    const c = new ComponentClass(elem, ...args);
+    const initFunc: (c: T) => void = args.pop();
+    const c = cls.create(null, elem, ...args);
     initFunc(c);
   };
 }

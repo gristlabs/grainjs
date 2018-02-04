@@ -346,7 +346,7 @@ describe('dom', function() {
     class Comp extends dom.Component {
       render(arg, spies) {
         spies.onConstruct(arg);
-        this.autoDisposeCallback(() => spies.onDispose());
+        this.onDispose(() => spies.onDispose());
         this.fakeAttr = "fakeAttr";   // This should NOT become an attribute.
         return dom('div', dom.toggleClass(arg.toUpperCase(), true),
           spies.onRender,
@@ -423,12 +423,11 @@ describe('dom', function() {
       // Simulate the explanatory example in the comment to createElem() to show the problem, and
       // compare with the previous test case. The approach here is to create a class that can be
       // separately created and inserted into DOM by reusing the code for a real Component. So we
-      // override create() to call Comp's render but do nothing else. Then mount() finishes the
-      // work that Component's own create() normally does.
+      // override _mount() to do nothing, and call the original _mount() separately.
       class Comp2 extends Comp {
-        create(...args) { this._content = super.render(...args); }
-        render() { return this._content; }
-        mount(elem) { super.create(elem); }
+        constructor(...args) { super(null, ...args); }
+        _mount(elem, content) { this._content = content; }
+        mount(elem) { super._mount(elem, this._content); }
       }
       function _insert_(component) {
         return elem => component.mount(elem);
@@ -497,7 +496,7 @@ describe('dom', function() {
       class Comp extends dom.Component {
         render(arg, spies) {
           spies.onConstruct(arg);
-          this.autoDisposeCallback(() => spies.onDispose());
+          this.onDispose(() => spies.onDispose());
           components.push(this);
           return [
             dom('div', '(', dom.text(arg.toLowerCase()), ')'),

@@ -542,6 +542,35 @@ describe('dom', function() {
     });
   });
 
+  describe('replaceContent', function() {
+    it('should replace and dispose old content', function() {
+      let a, b;
+      let spy = sinon.spy(), spyOuter = sinon.spy();
+      let elem = dom('div', a = dom('span', 'a'), b = dom('span', 'b'), dom.onDispose(spyOuter));
+      assert.equal(elem.innerHTML, '<span>a</span><span>b</span>');
+      dom.replaceContent(a, b, ['x', 'y', dom('span', dom.onDispose(spy), 'z')]);
+      assert.equal(elem.innerHTML, '<span>a</span>xy<span>z</span><span>b</span>');
+
+      sinon.assert.notCalled(spy);
+      dom.replaceContent(a, b, dom('p', dom.onDispose(spy), 'X'));
+      assertResetSingleCall(spy, undefined, sinon.match.has('tagName', 'SPAN'));
+      assert.equal(elem.innerHTML, '<span>a</span><p>X</p><span>b</span>');
+
+      sinon.assert.notCalled(spy);
+      dom.replaceContent(a, b, null);
+      assertResetSingleCall(spy, undefined, sinon.match.has('tagName', 'P'));
+      assert.equal(elem.innerHTML, '<span>a</span><span>b</span>');
+
+      dom.replaceContent(a, b, dom.frag('x', 'y', dom('br', dom.onDispose(spy))));
+      assert.equal(elem.innerHTML, '<span>a</span>xy<br><span>b</span>');
+
+      sinon.assert.notCalled(spy);
+      dom.domDispose(elem);
+      assert(spy.calledBefore(spyOuter));
+      assertResetSingleCall(spy, undefined, sinon.match.has('tagName', 'BR'));
+      assertResetSingleCall(spyOuter, undefined, sinon.match.has('tagName', 'DIV'));
+    });
+  });
 
   describe('computed', function() {
 

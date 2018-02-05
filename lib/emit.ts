@@ -38,7 +38,7 @@
 
 function _noop() { /* noop */}
 
-export type ListenerCB = (...args: any[]) => void;
+export type ListenerCB<T> = (this: T, ...args: any[]) => void;
 export type ChangeCB = (hasListeners: boolean) => void;
 
 /**
@@ -101,7 +101,7 @@ export class Emitter extends LLink {
    * @param {Object} optContext: Context for the function.
    * @returns {Listener} Listener object. Its dispose() method removes the callback from the list.
    */
-  public addListener(callback: ListenerCB, optContext?: object): Listener {
+  public addListener<T>(callback: ListenerCB<T>, optContext?: T): Listener {
     return new Listener(this, callback, optContext);
   }
 
@@ -162,8 +162,8 @@ export class Listener extends LLink {
   }
 
   constructor(private emitter: Emitter,
-              private callback: ListenerCB,
-              private context?: object) {
+              private callback: ListenerCB<any>,
+              private context?: any) {
     super();
     this._insertBefore(emitter, this);
     emitter._triggerChangeCB();

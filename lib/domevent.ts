@@ -20,10 +20,10 @@
  *
  *    listener.dispose();
  *
- * Disposing the listener returned by .on() is the only way to stop listening to an event. You can
- * use autoDispose to stop listening automatically when subscribing in a Disposable object:
+ * Disposing the listener returned by .onElem() is the only way to stop listening to an event. You
+ * can use autoDispose to stop listening automatically when subscribing in a Disposable object:
  *
- *    this.autoDispose(domevent.on(document, 'mouseup', callback));
+ *    this.autoDispose(domevent.onElem(document, 'mouseup', callback));
  *
  * To listen to descendants of an element matching the given selector (what JQuery calls
  * "delegated events", see http://api.jquery.com/on/):

@@ -8,7 +8,8 @@
   "scripts": {
     "build": "bash build.sh",
     "watch": "tsc -w",
-    "test": "nyc mocha -R list -gc test/",
+    "test": "nyc mocha -R list test/",
+    "test-memory": "mocha -R list -gc test/",
     "test-timing": "TIMING_TESTS=1 mocha -R list test/",
     "build-demo": "browserify demo/celsius_grain/index.js -d | uglifyjs --source-map 'content=inline,url=build-index.js.map' -o demo/celsius_grain/build-index.js",
     "preversion": "npm test",

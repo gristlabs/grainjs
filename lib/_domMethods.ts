@@ -207,17 +207,23 @@ export function getData(elem: Node, key: string) {
   return obj && obj[key];
 }
 
-// Helper for domComputed(); replace content between markerPre and markerPost with the given DOM
-// content, running disposers if any on the removed content.
-function _replaceContent(elem: Node, markerPre: Node, markerPost: Node, content: DomArg): void {
-  if (markerPre.parentNode === elem) {
+/**
+ * Replaces the content between nodeBefore and nodeAfter, which should be two siblings within the
+ * same parent node. New content may be anything allowed as an argument to dom(), including null
+ * to insert nothing. Runs disposers, if any, on all removed content.
+ */
+export function replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomArg): void {
+  const elem = nodeBefore.parentNode;
+  if (elem) {
     let next;
-    for (let n = markerPre.nextSibling; n && n !== markerPost; n = next) {
+    for (let n = nodeBefore.nextSibling; n && n !== nodeAfter; n = next) {
       next = n.nextSibling;
       domDispose(n);
       elem.removeChild(n);
     }
-    elem.insertBefore(frag(content), markerPost);
+    if (content) {
+      elem.insertBefore(content instanceof G.Node ? content : frag(content), nodeAfter);
+    }
   }
 }
 
@@ -269,7 +275,7 @@ export function domComputed<T>(valueObs: BindableValue<T>, contentFunc?: (val: T
     elem.appendChild(markerPre);
     elem.appendChild(markerPost);
     _subscribe(elem, valueObs,
-      (value) => _replaceContent(elem, markerPre, markerPost, _contentFunc(value)));
+      (value) => replaceContent(markerPre, markerPost, _contentFunc(value)));
   };
 }
 

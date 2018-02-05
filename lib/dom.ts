@@ -73,11 +73,11 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const dataElem        = _domMethods.dataElem;
   export const data            = _domMethods.data;
   export const getData         = _domMethods.getData;
+  export const replaceContent  = _domMethods.replaceContent;
   export const domComputed     = _domMethods.domComputed;
   export const maybe           = _domMethods.maybe;
 
   export const Component       = _domComponent.Component;
-  export const createElem      = _domComponent.createElem;
   export const create          = _domComponent.create;
   export const createInit      = _domComponent.createInit;
 

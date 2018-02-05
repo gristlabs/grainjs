@@ -35,7 +35,8 @@ function TemperatureInput(temperature, scaleName) {
 }
 
 class Calculator extends dom.Component {
-  render() {
+  constructor() {
+    super();
     this._temp = observable('');
     this._scale = observable('c');
 
@@ -43,11 +44,11 @@ class Calculator extends dom.Component {
     const fahrenheit = this.autoDispose(this._makeScaleTemp('f', toFahrenheit));
     const celsiusValue = this.autoDispose(computed(use => parseFloat(use(celsius))));
 
-    return dom('div',
+    this.setContent(dom('div',
       TemperatureInput(celsius, 'Celsius'),
       TemperatureInput(fahrenheit, 'Fahrenheit'),
       BoilingVerdict(celsiusValue)
-    );
+    ));
   }
 
   _makeScaleTemp(toScale, converter) {

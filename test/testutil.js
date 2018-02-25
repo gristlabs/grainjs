@@ -23,6 +23,15 @@ function assertResetSingleCall(spy, context, ...args) {
 exports.assertResetSingleCall = assertResetSingleCall;
 
 /**
+ * Assert the list of first args with which the given spy was called; then resets its history.
+ */
+function assertResetFirstArgs(spy, ...expFirstArgs) {
+  assert.deepEqual(spy.args.map((callArgs) => callArgs[0]), expFirstArgs);
+  spy.resetHistory();
+}
+exports.assertResetFirstArgs = assertResetFirstArgs;
+
+/**
  * Times a single call of func in microseconds, wrapping it in an `it(desc, ...)` call, with
  * timing info appended to the test's title. The test takes between msec/2 and msec to run.
  *

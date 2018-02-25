@@ -21,11 +21,13 @@
 export {DomMethod, DomElementMethod, DomArg, DomElementArg, svg, update, frag, find, findAll} from './_domImpl';
 export * from './_domComponent';
 export * from './_domDispose';
+export * from './_domForEach';
 export * from './_domMethods';
 export * from './domevent';
 
 import * as _domComponent from './_domComponent';
 import * as _domDispose from './_domDispose';
+import * as _domForEach from './_domForEach';
 import * as _domImpl from './_domImpl';
 import * as _domMethods from './_domMethods';
 import * as domevent from './domevent';
@@ -76,6 +78,8 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const replaceContent  = _domMethods.replaceContent;
   export const domComputed     = _domMethods.domComputed;
   export const maybe           = _domMethods.maybe;
+
+  export const forEach         = _domForEach.forEach;
 
   export const Component       = _domComponent.Component;
   export const create          = _domComponent.create;

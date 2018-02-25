@@ -110,7 +110,7 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
     try {
       // The newly-created object will have holder as its owner.
       _defaultDisposableOwner = holder;
-      return _autoDispose(owner, new this(...args));
+      return setDisposeOwner(owner, new this(...args));
     } catch (e) {
       try {
         // This calls dispose on the partially-constructed object
@@ -205,7 +205,7 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
  */
 export class Holder implements IDisposable, IDisposableOwner {
   public static create(owner: IDisposableOwner|null): Holder {
-    return _autoDispose(owner, new Holder());
+    return setDisposeOwner(owner, new Holder());
   }
 
   private _owned: IDisposable|null = null;
@@ -239,9 +239,9 @@ export class Holder implements IDisposable, IDisposableOwner {
 }
 
 /**
- * Helper for more concise implementations of the `create(owner)` interface.
+ * Sets owner of obj (i.e. calls owner.autoDispose(obj)) unless owner is null. Returns obj.
  */
-function _autoDispose<T extends IDisposable>(owner: IDisposableOwner|null, obj: T): T {
+export function setDisposeOwner<T extends IDisposable>(owner: IDisposableOwner|null, obj: T): T {
   if (owner) { owner.autoDispose(obj); }
   return obj;
 }

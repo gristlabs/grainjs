@@ -46,13 +46,14 @@ export class Observable<T> {
   public get(): T { return this._value; }
 
   /**
-   * Sets the value of the observable. If the value differs from the previously set one, then
-   * listeners to this observable will get called with (newValue, oldValue) as arguments.
+   * Sets the value of the observable. If the value differs from the previously set one (and even
+   * if identitcal if it's a non-primitive value), then listeners to this observable will get
+   * called with (newValue, oldValue) as arguments.
    * @param {Object} value: The new value to set.
    */
   public set(value: T): void {
     const prev = this._value;
-    if (value !== prev) {
+    if (value !== prev || !isPrimitive(value)) {
       this._value = value;
       this._onChange.emit(value, prev);
       compute();
@@ -108,6 +109,31 @@ export class Observable<T> {
    */
   public isDisposed(): boolean {
     return this._onChange.isDisposed();
+  }
+
+  /**
+   * Allow derived classes to emit change events with an additional third argument describing the
+   * change. It always emits the event without checking for value equality.
+   */
+  protected _setWithArg(value: T, arg: any) {
+    const prev = this._value;
+    this._value = value;
+    this._onChange.emit(value, prev, arg);
+    compute();
+  }
+}
+
+// Taken from https://github.com/jonschlinkert/is-primitive
+function isPrimitive(val: any): boolean {
+  switch (typeof val) {
+    case 'boolean':
+    case 'number':
+    case 'string':
+    case 'symbol':
+    case 'undefined':
+      return true;
+    default:
+      return val === null;
   }
 }
 

@@ -3,7 +3,7 @@
 /* global describe, it */
 
 const {observable} = require('../lib/observable');
-const { assertResetSingleCall } = require('./testutil');
+const { assertResetSingleCall } = require('./testutil2');
 
 const assert = require('assert');
 const sinon = require('sinon');

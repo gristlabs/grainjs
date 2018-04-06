@@ -5,7 +5,7 @@
 const binding = require('../lib/binding');
 const {computed} = require('../lib/computed');
 const {observable} = require('../lib/observable');
-const { assertResetSingleCall } = require('./testutil');
+const { assertResetSingleCall } = require('./testutil2');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');

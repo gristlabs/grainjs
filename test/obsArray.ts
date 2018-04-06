@@ -1,7 +1,7 @@
 import {computed} from '../lib/computed';
 import {computedArray, makeLiveIndex, MutableObsArray, ObsArray, obsArray} from '../lib/obsArray';
 import {bundleChanges, Observable, observable} from '../lib/observable';
-import {assertResetFirstArgs, assertResetSingleCall} from './testutil';
+import {assertResetFirstArgs, assertResetSingleCall} from './testutil2';
 
 import {assert} from 'chai';
 import * as sinon from 'sinon';

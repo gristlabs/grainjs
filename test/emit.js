@@ -3,7 +3,7 @@
 /* global describe, before, it */
 
 const emit = require('../lib/emit');
-const { assertResetSingleCall } = require('./testutil');
+const { assertResetSingleCall } = require('./testutil2');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');

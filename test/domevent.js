@@ -3,7 +3,7 @@
 /* global describe, before, it */
 
 const domevent = require('../lib/domevent');
-const { assertResetSingleCall } = require('./testutil');
+const { assertResetSingleCall } = require('./testutil2');
 
 const assert = require('assert');
 const { JSDOM } = require('jsdom');

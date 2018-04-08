@@ -30,6 +30,7 @@
 import {DepItem} from './_computed_queue';
 import {Observable} from './observable';
 import {ISubscribable, Subscription, UseCB} from './subscribe';
+export {UseCB} from './subscribe';
 
 function _noWrite(): never {
   throw new Error("Can't write to non-writable computed");
@@ -49,7 +50,7 @@ export class Computed<T> extends Observable<T> {
     super(undefined as any);
     this._callback = callback;
     this._write = _noWrite;
-    this._sub = new Subscription(this._read.bind(this), dependencies);
+    this._sub = new Subscription(this._read.bind(this), dependencies, this);
   }
 
   /**
@@ -83,8 +84,10 @@ export class Computed<T> extends Observable<T> {
     super.dispose();
   }
 
+  protected baseSet(value: T): void { super.set(value); }
+
   private _read(use: any, ...args: any[]): void {
-    super.set(this._callback(use, ...args));
+    this.baseSet(this._callback(use, ...args));
   }
 }
 

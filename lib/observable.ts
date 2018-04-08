@@ -22,13 +22,21 @@
  */
 
 import {compute, DepItem} from './_computed_queue';
+import {IDisposable, IDisposableOwnerT} from './dispose';
 import {Emitter, Listener} from './emit';
 
 export {bundleChanges} from './_computed_queue';
 
-export class Observable<T> {
+export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
+  public static holder<T>(value: T & IDisposable): Observable<T> {
+    const obs = new Observable<T>(value);
+    obs._owned = value;
+    return obs;
+  }
+
   private _onChange: Emitter;
   private _value: T;
+  private _owned?: T & IDisposable = undefined;
 
   /**
    * Internal constructor for an Observable. You should use observable() function instead.
@@ -46,18 +54,27 @@ export class Observable<T> {
   public get(): T { return this._value; }
 
   /**
-   * Sets the value of the observable. If the value differs from the previously set one (and even
-   * if identitcal if it's a non-primitive value), then listeners to this observable will get
-   * called with (newValue, oldValue) as arguments.
+   * Sets the value of the observable. If the value differs from the previously set one, then
+   * listeners to this observable will get called with (newValue, oldValue) as arguments.
    * @param {Object} value: The new value to set.
    */
   public set(value: T): void {
-    const prev = this._value;
-    if (value !== prev || !isPrimitive(value)) {
-      this._value = value;
-      this._onChange.emit(value, prev);
-      compute();
+    if (value !== this._value) {
+      this._setWithArg(value);
     }
+  }
+
+  /**
+   * Sets the value of the observable AND calls listeners even if the value is unchanged.
+   */
+  public setAndTrigger(value: T) {
+    this._setWithArg(value);
+  }
+
+  // TODO: add comments.
+  public autoDispose(value: T & IDisposable): void {
+    this._setWithArg(value);
+    this._owned = value;
   }
 
   /**
@@ -100,6 +117,10 @@ export class Observable<T> {
    * Disposes the observable.
    */
   public dispose(): void {
+    if (this._owned) {
+      this._owned.dispose();
+      this._owned = undefined;
+    }
     this._onChange.dispose();
     (this._value as any) = undefined;
   }
@@ -115,25 +136,15 @@ export class Observable<T> {
    * Allow derived classes to emit change events with an additional third argument describing the
    * change. It always emits the event without checking for value equality.
    */
-  protected _setWithArg(value: T, arg: any) {
+  protected _setWithArg(value: T, ...args: any[]) {
     const prev = this._value;
     this._value = value;
-    this._onChange.emit(value, prev, arg);
+    this._onChange.emit(value, prev, ...args);
+    if (this._owned) {
+      this._owned.dispose();
+      this._owned = undefined;
+    }
     compute();
-  }
-}
-
-// Taken from https://github.com/jonschlinkert/is-primitive
-function isPrimitive(val: any): boolean {
-  switch (typeof val) {
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'symbol':
-    case 'undefined':
-      return true;
-    default:
-      return val === null;
   }
 }
 

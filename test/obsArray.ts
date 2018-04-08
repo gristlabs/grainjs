@@ -74,6 +74,18 @@ describe('obsArray', function() {
       assert.equal(m.unshift("a", "b"), 2);
       assert.deepEqual(m.get(), ["a", "b"]);
       assertResetSingleCall(spy, undefined, m.get(), m.get(), {start: 0, numAdded: 2, deleted: []});
+
+      // Set a new array.
+      m.set(["x", "y"]);
+      assert.deepEqual(m.get(), ["x", "y"]);
+      assertResetSingleCall(spy, undefined, m.get(), ["a", "b"]);
+
+      // Modify and set the same array.
+      const arr = m.get();
+      arr.push("g");
+      m.set(arr);
+      assert.deepEqual(m.get(), ["x", "y", "g"]);
+      assertResetSingleCall(spy, undefined, m.get(), m.get());
     });
   });
 

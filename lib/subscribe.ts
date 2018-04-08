@@ -29,7 +29,10 @@ export interface ISubscribable {
 }
 
 // The generic type for the use() function that callbacks get.
-export type UseCB = <T>(obs: Observable<T>) => T;
+export interface UseCB {    // tslint:disable-line:interface-name
+  <T>(obs: Observable<T>): T;
+  owner: Subscription;
+}
 
 interface IListenerWithInUse extends Listener {
   _inUse: boolean;
@@ -44,18 +47,19 @@ export class Subscription {
   private readonly _depListeners: ReadonlyArray<Listener>;
   private _dynDeps: Map<ISubscribable, IListenerWithInUse>;
   private _callback: (use: UseCB, ...args: any[]) => void;
-  private _useFunc: (obs: ISubscribable) => any;
+  private _useFunc: UseCB;
 
   /**
    * Internal constructor for a Subscription. You should use subscribe() function instead.
    */
-  constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ReadonlyArray<ISubscribable>) {
+  constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ReadonlyArray<ISubscribable>, owner?: any) {
     this._depItem = new DepItem(this._evaluate, this);
     this._dependencies = dependencies.length > 0 ? dependencies : emptyArray;
     this._depListeners = dependencies.length > 0 ? dependencies.map((obs) => this._subscribeTo(obs)) : emptyArray;
     this._dynDeps = new Map();   // Maps dependent observable to its Listener object.
     this._callback = callback;
     this._useFunc = this._useDependency.bind(this);
+    this._useFunc.owner = owner;
 
     this._evaluate();
   }

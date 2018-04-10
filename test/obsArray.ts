@@ -1,4 +1,5 @@
 import {computed} from '../lib/computed';
+import {Disposable} from '../lib/dispose';
 import {computedArray, makeLiveIndex, MutableObsArray, ObsArray, obsArray} from '../lib/obsArray';
 import {bundleChanges, Observable, observable} from '../lib/observable';
 import {assertResetFirstArgs, assertResetSingleCall} from './testutil2';
@@ -363,6 +364,95 @@ describe('obsArray', function() {
       arr.splice(0, 0, 5, 6);
       assert.deepEqual(arr.get(), [5, 6, 1, 2, 3]);
       assert.equal(index.get(), 0);     // Unchanged.
+    });
+  });
+
+  describe("disposable items", function() {
+    const fooConstruct = sinon.spy();
+    const fooDispose = sinon.spy();
+
+    class Foo extends Disposable {
+      constructor(...args: any[]) {
+        super();
+        fooConstruct.call(this, ...args);
+        this.onDispose(() => fooDispose.call(this, ...args));
+      }
+    }
+
+    beforeEach(function() {
+      fooConstruct.resetHistory();
+      fooDispose.resetHistory();
+    });
+
+    it('should dispose items it owns', function() {
+      const arr = obsArray<Foo>();
+      const initial = [Foo.create(arr, 10), Foo.create(arr, 20), Foo.create(arr, 30)];
+      arr.push(...initial);
+
+      // Just to check what's in the array to start with.
+      assert.lengthOf(arr.get(), 3);
+      assert.deepEqual(arr.get(), initial);
+      assert.notStrictEqual(arr.get(), initial);
+      assertResetFirstArgs(fooConstruct, 10, 20, 30);
+      sinon.assert.notCalled(fooDispose);
+
+      // Delete two elements: they should get disposed, but the remaining one should not.
+      const x = arr.splice(0, 2);
+      assert.lengthOf(arr.get(), 1);
+      assert.deepEqual(arr.get(), [initial[2]]);
+      assert.lengthOf(x, 2);
+      sinon.assert.calledOn(fooDispose.getCall(0), initial[0]);
+      sinon.assert.calledOn(fooDispose.getCall(1), initial[1]);
+      assertResetFirstArgs(fooDispose, 10, 20);
+      assert.isTrue(initial[0].isDisposed());
+      assert.isTrue(initial[1].isDisposed());
+      assert.isFalse(initial[2].isDisposed());
+
+      // Reassign: the remaining element should now also get disposed.
+      let objects: Foo[];
+      arr.set(objects = [Foo.create(arr, 40), Foo.create(arr, 50)]);
+      assert.lengthOf(arr.get(), 2);
+      assert.deepEqual(arr.get(), objects);
+      assertResetFirstArgs(fooConstruct, 40, 50);
+      assertResetSingleCall(fooDispose, initial[2], 30);
+      assert.isTrue(initial[2].isDisposed());
+      assert.isFalse(objects[0].isDisposed());
+      assert.isFalse(objects[1].isDisposed());
+
+      // Dispose the entire array: previously assigned elements should be disposed.
+      arr.dispose();
+      sinon.assert.notCalled(fooConstruct);
+      assertResetFirstArgs(fooDispose, 40, 50);
+      assert.isTrue(objects[0].isDisposed());
+      assert.isTrue(objects[1].isDisposed());
+    });
+
+    it("should dispose computed disposable items", function() {
+      const valArr = obsArray(["1", "2", "3"]);
+      const mapped = computedArray(valArr, (val, i, arr) => Foo.create(arr, val));
+      assertResetFirstArgs(fooConstruct, "1", "2", "3");
+      sinon.assert.notCalled(fooDispose);
+
+      valArr.splice(1, 0, "4", "5");
+      assert.deepEqual(valArr.get(), ["1", "4", "5", "2", "3"]);
+      assert.lengthOf(mapped.get(), 5);
+      assertResetFirstArgs(fooConstruct, "4", "5");
+      sinon.assert.notCalled(fooDispose);
+
+      valArr.splice(0, 2);
+      assert.deepEqual(valArr.get(), ["5", "2", "3"]);
+      assert.lengthOf(mapped.get(), 3);
+      sinon.assert.notCalled(fooConstruct);
+      assertResetFirstArgs(fooDispose, "1", "4");
+
+      valArr.set(["a", "b", "c"]);
+      assertResetFirstArgs(fooConstruct, "a", "b", "c");
+      // Note that order of disposal is not guaranteed; here happens to be the order of creation.
+      assertResetFirstArgs(fooDispose, "2", "3", "5");
+
+      mapped.dispose();
+      sinon.assert.notCalled(fooConstruct);
+      assertResetFirstArgs(fooDispose, "a", "b", "c");
     });
   });
 });

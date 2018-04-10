@@ -27,17 +27,9 @@ import {Emitter, Listener} from './emit';
 
 export {bundleChanges} from './_computed_queue';
 
-export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
-  // See module-level holder() function below for documentation.
-  public static holder<T>(value: T & IDisposable): Observable<T> {
-    const obs = new Observable<T>(value);
-    obs._owned = value;
-    return obs;
-  }
-
+export class BaseObservable<T> {
   private _onChange: Emitter;
   private _value: T;
-  private _owned?: T & IDisposable = undefined;
 
   /**
    * Internal constructor for an Observable. You should use observable() function instead.
@@ -70,21 +62,6 @@ export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
    */
   public setAndTrigger(value: T) {
     this._setWithArg(value);
-  }
-
-  /**
-   * The use an observable for a disposable object, use it a DisposableOwner:
-   *
-   *    D.create(obs, ...args)                      // Preferred
-   *    obs.autoDispose(D.create(null, ...args))    // Equivalent
-   *
-   * Either of these usages will set the observable to the newly created value. The observable
-   * will dispose the owned value when it's set to another value, or when it itself is disposed.
-   */
-  public autoDispose(value: T & IDisposable): T & IDisposable {
-    this._setWithArg(value);
-    this._owned = value;
-    return value;
   }
 
   /**
@@ -127,10 +104,7 @@ export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
    * Disposes the observable.
    */
   public dispose(): void {
-    if (this._owned) {
-      this._owned.dispose();
-      this._owned = undefined;
-    }
+    this._disposeOwned();
     this._onChange.dispose();
     (this._value as any) = undefined;
   }
@@ -142,6 +116,8 @@ export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
     return this._onChange.isDisposed();
   }
 
+  protected _disposeOwned(...args: any[]) { /* noop */ }
+
   /**
    * Allow derived classes to emit change events with an additional third argument describing the
    * change. It always emits the event without checking for value equality.
@@ -150,11 +126,41 @@ export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
     const prev = this._value;
     this._value = value;
     this._onChange.emit(value, prev, ...args);
+    this._disposeOwned(...args);
+    compute();
+  }
+}
+
+export class Observable<T> extends BaseObservable<T> implements IDisposableOwnerT<T & IDisposable> {
+  // See module-level holder() function below for documentation.
+  public static holder<T>(value: T & IDisposable): Observable<T> {
+    const obs = new Observable<T>(value);
+    obs._owned = value;
+    return obs;
+  }
+
+  private _owned?: T & IDisposable = undefined;
+
+  /**
+   * The use an observable for a disposable object, use it a DisposableOwner:
+   *
+   *    D.create(obs, ...args)                      // Preferred
+   *    obs.autoDispose(D.create(null, ...args))    // Equivalent
+   *
+   * Either of these usages will set the observable to the newly created value. The observable
+   * will dispose the owned value when it's set to another value, or when it itself is disposed.
+   */
+  public autoDispose(value: T & IDisposable): T & IDisposable {
+    this._setWithArg(value);
+    this._owned = value;
+    return value;
+  }
+
+  protected _disposeOwned() {
     if (this._owned) {
       this._owned.dispose();
       this._owned = undefined;
     }
-    compute();
   }
 }
 

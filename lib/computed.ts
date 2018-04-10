@@ -36,7 +36,7 @@
 
 import {DepItem} from './_computed_queue';
 import {IDisposableOwner} from './dispose';
-import {Observable} from './observable';
+import {BaseObservable as Obs, Observable} from './observable';
 import {ISubscribable, Subscription} from './subscribe';
 
 function _noWrite(): never {
@@ -45,7 +45,7 @@ function _noWrite(): never {
 
 // The generic type for the use() function that callbacks get.
 export interface UseCB {    // tslint:disable-line:interface-name
-  <U>(obs: Observable<U>): U;
+  <U>(obs: Obs<U>): U;
   owner: IDisposableOwner;
 }
 
@@ -110,23 +110,23 @@ export class Computed<T> extends Observable<T> {
 export function computed<T>(cb: (use: UseCB) => T): Computed<T>;
 
 export function computed<T, A>(
-  a: Observable<A>,
+  a: Obs<A>,
   cb: (use: UseCB, a: A) => T): Computed<T>;
 
 export function computed<T, A, B>(
-  a: Observable<A>, b: Observable<B>,
+  a: Obs<A>, b: Obs<B>,
   cb: (use: UseCB, a: A, b: B) => T): Computed<T>;
 
 export function computed<T, A, B, C>(
-  a: Observable<A>, b: Observable<B>, c: Observable<C>,
+  a: Obs<A>, b: Obs<B>, c: Obs<C>,
   cb: (use: UseCB, a: A, b: B, c: C) => T): Computed<T>;
 
 export function computed<T, A, B, C, D>(
-  a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>,
+  a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
   cb: (use: UseCB, a: A, b: B, c: C, d: D) => T): Computed<T>;
 
 export function computed<T, A, B, C, D, E>(
-  a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>, e: Observable<E>,
+  a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
   cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
 
 /**

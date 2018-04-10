@@ -13,13 +13,27 @@
  * There is no need or benefit in using computedArray() if you have a computed() that returns a
  * plain array. It is specifically for the case when you want to preserve the efficiency of
  * ObsArray when you map its values.
+ *
+ * Both ObsArray and ComputedArray may be used with disposable elements as their owners. E.g.
+ *
+ *    const arr = obsArray<D>();
+ *    arr.push(D.create(arr, "x"), D.create(arr, "y"));
+ *    arr.pop();      // Element "y" gets disposed.
+ *    arr.dispose();  // Element "x" gets disposed.
+ *
+ *    const values = obsArray<string>();
+ *    const compArr = computedArray<D>(values, (val, i, compArr) => D.create(compArr, val));
+ *    values.push("foo", "bar");      // D("foo") and D("bar") get created
+ *    values.pop();                   // D("bar") gets disposed.
+ *    compArr.dispose();              // D("foo") gets disposed.
+ *
+ * Note that only the pattern above works: obsArray (or compArray) may only be used to take
+ * ownership of those disposables that are added to it as array elements.
  */
 
-// tslint:disable:no-shadowed-variable
-
-import {IDisposableOwner, setDisposeOwner} from './dispose';
+import {IDisposable, IDisposableOwner, setDisposeOwner} from './dispose';
 import {Listener} from './emit';
-import {Observable} from './observable';
+import {BaseObservable, Observable} from './observable';
 import {subscribe, Subscription} from './subscribe';
 
 /**
@@ -36,18 +50,63 @@ export interface IObsArraySplice<T> {
 export type ISpliceListener<T, C>  = (this: C, val: T[], prev: T[], change?: IObsArraySplice<T>) => void;
 
 /**
- * ObsArray<T> is nothing more than an array-valued observable. This class only specifies more
- * precisely the types of some methods.
+ * ObsArray<T> is essentially an array-valued observable. The main difference is that it may be
+ * used as an owner for disposable array elements.
  */
-export class ObsArray<T> extends Observable<T[]> {
+export class ObsArray<T> extends BaseObservable<T[]> {
+  private _ownedItems?: Set<T & IDisposable> = undefined;
+
   public addListener(callback: ISpliceListener<T, void>): Listener;
   public addListener<C>(callback: ISpliceListener<T, C>, context: C): Listener;
   public addListener(callback: ISpliceListener<T, any>, optContext?: any): Listener {
     return super.addListener(callback, optContext);
   }
 
+  public autoDispose(value: T & IDisposable): T & IDisposable {
+    if (!this._ownedItems) { this._ownedItems = new Set<T & IDisposable>(); }
+    this._ownedItems.add(value);
+    return value;
+  }
+
+  public dispose(): void {
+    if (this._ownedItems) {
+      for (const item of this.get() as Array<T & IDisposable>) {
+        if (this._ownedItems.delete(item)) {
+          item.dispose();
+        }
+      }
+      this._ownedItems = undefined;
+    }
+    super.dispose();
+  }
+
   protected _setWithSplice(value: T[], splice: IObsArraySplice<T>): void {
     return this._setWithArg(value, splice);
+  }
+
+  protected _disposeOwned(splice?: IObsArraySplice<T>): void {
+    if (!this._ownedItems) { return; }
+    if (splice) {
+      for (const item of splice.deleted as Array<T & IDisposable>) {
+        if (this._ownedItems.delete(item)) {
+          item.dispose();
+        }
+      }
+    } else {
+      const oldOwnedItems = this._ownedItems;
+
+      // Rebuild the _ownedItems array to have only the current items that were owned from before.
+      this._ownedItems = new Set<T & IDisposable>();
+      for (const item of this.get() as Array<T & IDisposable>) {
+        if (oldOwnedItems.delete(item)) {
+          this._ownedItems.add(item);
+        }
+      }
+      // After removing current items, dispose any remaining owned items.
+      for (const item of oldOwnedItems) {
+        item.dispose();
+      }
+    }
   }
 }
 
@@ -108,7 +167,7 @@ export function obsArray<T>(value: T[] = []): MutableObsArray<T> {
 /**
  * Returns true if val is an array-valued observable.
  */
-function isObsArray(val: Observable<any>): val is Observable<any[]> {
+function isObsArray(val: BaseObservable<any>): val is BaseObservable<any[]> {
   return Array.isArray(val.get());
 }
 
@@ -117,15 +176,18 @@ function isObsArray(val: Observable<any>): val is Observable<any[]> {
  */
 export class ComputedArray<T, U> extends ObsArray<U> {
   private _sub: Subscription;
-  private _source?: Observable<T[]>;
+  private _source?: BaseObservable<T[]>;
   private _listener?: Listener;
   private _lastSplice?: IObsArraySplice<T>|false;     // false is a marker that full rebuild is needed
 
-  constructor(obsArray: Observable<T[]> | Observable<Observable<T[]>>, private _mapper: (item: T) => U) {
+  constructor(
+    obsArr: BaseObservable<T[]> | Observable<BaseObservable<T[]>>,
+    private _mapper: (item: T, index: number, arr: ComputedArray<T, U>) => U,
+  ) {
     super([]);
-    this._sub = isObsArray(obsArray) ?
-      subscribe(obsArray, (use) => this._syncMap(obsArray)) :
-      subscribe(obsArray, (use, obsArrayValue) => { use(obsArrayValue); return this._syncMap(obsArrayValue); });
+    this._sub = isObsArray(obsArr) ?
+      subscribe(obsArr, (use) => this._syncMap(obsArr)) :
+      subscribe(obsArr, (use, obsArrayValue) => { use(obsArrayValue); return this._syncMap(obsArrayValue); });
   }
 
   public dispose() {
@@ -134,18 +196,18 @@ export class ComputedArray<T, U> extends ObsArray<U> {
     super.dispose();
   }
 
-  private _syncMap(obsArray: Observable<T[]>): void {
-    if (this._source !== obsArray) {
+  private _syncMap(obsArr: BaseObservable<T[]>): void {
+    if (this._source !== obsArr) {
       this._unsync();
-      this._listener = obsArray.addListener(this._recordChange, this);
-      this._source = obsArray;
-      this._rebuild(obsArray);
+      this._listener = obsArr.addListener(this._recordChange, this);
+      this._source = obsArr;
+      this._rebuild(obsArr);
     } else if (this._lastSplice) {
       // If we are syncing to the same array as before and recorded a single splice, apply it now.
-      this._applySplice(obsArray, this._lastSplice);
+      this._applySplice(obsArr, this._lastSplice);
     } else {
       // If the full array changed or we had multiple splices, give up and rebuild.
-      this._rebuild(obsArray);
+      this._rebuild(obsArr);
     }
     this._lastSplice = undefined;
   }
@@ -158,15 +220,15 @@ export class ComputedArray<T, U> extends ObsArray<U> {
     }
   }
 
-  private _rebuild(obsArray: Observable<T[]>) {
-    this.set(obsArray.get().map((item: T) => this._mapper.call(undefined, item)));
+  private _rebuild(obsArr: BaseObservable<T[]>) {
+    this.set(obsArr.get().map((item: T, i: number) => this._mapper.call(undefined, item, i, this)));
   }
 
-  private _applySplice(obsArray: Observable<T[]>, change: IObsArraySplice<T>) {
-    const sourceArray: T[] = obsArray.get();
+  private _applySplice(obsArr: BaseObservable<T[]>, change: IObsArraySplice<T>) {
+    const sourceArray: T[] = obsArr.get();
     const newItems: U[] = [];
     for (let i = change.start, n = 0; n < change.numAdded; i++, n++) {
-      newItems.push(this._mapper.call(undefined, sourceArray[i]));
+      newItems.push(this._mapper.call(undefined, sourceArray[i], i, this));
     }
     const items: U[] = this.get();
     const deleted = items.splice(change.start, change.deleted.length, ...newItems);
@@ -199,12 +261,18 @@ export class ComputedArray<T, U> extends ObsArray<U> {
  * The benefit of computedArray() is that a small change to the source array (e.g. one item
  * added or removed), causes a small change to the mapped array, rather than a full rebuild.
  *
- * This is intended for use with an ObsArray or with an observable whose value is an ObsArray, but
- * for consistency of interface, it may also be used with a plain array-valued observable.
+ * This is useful with an ObsArray or with an observable whose value is an ObsArray, and also
+ * when the computed array owns its disposable items.
+ *
+ * Note that the mapper function is called with (item, index, array) as for a standard
+ * array.map(), but that the index is only accurate at the time of the call, and will stop
+ * reflecting the true index if more items are inserted into the array later.
  */
-export function computedArray<T, U>(obsArray: Observable<T[]> | Observable<Observable<T[]>>,
-                                    mapper: (item: T) => U): ObsArray<U> {
-  return new ComputedArray<T, U>(obsArray, mapper);
+export function computedArray<T, U>(
+  obsArr: BaseObservable<T[]> | Observable<BaseObservable<T[]>>,
+  mapper: (item: T, index: number, arr: ComputedArray<T, U>) => U,
+): ObsArray<U> {
+  return new ComputedArray<T, U>(obsArr, mapper);
 }
 
 /**
@@ -217,9 +285,9 @@ export function computedArray<T, U>(obsArray: Observable<T[]> | Observable<Obser
  * The returned observable has an additional .setLive(bool) method. While set to false, the
  * observable will not be adjusted as the array changes, except to keep it valid.
  */
-export function makeLiveIndex<T>(owner: IDisposableOwner|null, obsArray: ObsArray<T>,
+export function makeLiveIndex<T>(owner: IDisposableOwner|null, obsArr: ObsArray<T>,
                                  initialIndex: number = 0): LiveIndex {
-  return setDisposeOwner(owner, new LiveIndex(obsArray, initialIndex));
+  return setDisposeOwner(owner, new LiveIndex(obsArr, initialIndex));
 }
 
 export class LiveIndex extends Observable<number|null> {
@@ -260,33 +328,3 @@ export class LiveIndex extends Observable<number|null> {
       idx);
   }
 }
-
-// TODO
-// Implement reuse of mapped items, as well as DOM nodes in case of dom.forEach, when an array
-//   change involves reuse of existing items. Tricky when items are not unique. It is rare and
-//   perhaps usually irrelevant, but should be handled reasonably.
-
-// DISPOSAL
-// 1. For any observable<D> where D is disposable, using .set(D.create(...)) should allow disposing
-//    the referenced value when .set() is called again or when the observable is disposed.
-// 2. Specifically, for computed<D>(use => D.create(...)) it is important to support disposal. This
-//    exists in Grist as computedAutoDispose() and the hard-to-use computedBuilder().
-// 3. For observable<D[]> and obsArray<D>, the items are what (MAY) need to be disposed whenever the
-//    array is reassigned, or some items are removed, or the observable is disposed. In Grist, it
-//    exists as .setAutoDispose() method on koArray.
-// 4. Specifically for computedArray(arr, item => D.create(...)), it is vital to support disposal.
-//
-// Given the ownership semantics (D.create(owner, args)), we could express everything above
-// elegantly with:
-// 1. obs.set(D.create(obs, ...)), i.e. allow using Observable as owner.
-//    Actually this IS awkward, because it's possible to use just `D.create(obs, ...)` and it's
-//    not clear what it means if obs.set() isn't called with it.
-// 2. computed<D>(use => D.create(use, ...)), i.e. allow using `use` function as owner. I don't
-//    think it would work to use the computed itself since the callback gets called immeduately
-//    before the assignment happens.
-// 3. obs.set(arr.map(item => D.create(obs, item))), i.e. use Observable as owner of array items.
-//    This is perhaps overly specific. Can instead offer DisposableArray<T> which has a .dispose()
-//    method that disposes all items, and use Observable<DisposableArray<T>> instead of
-//    Observable<T[]>.
-// 4. computedArray(arr, (item, i, obsArray) => D.create(obsArraay, ...)), i.e. pass the ObsArray
-//    to mapper and allow using it as owner of array items. Warn in usage that i is not stable.

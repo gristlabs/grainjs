@@ -53,7 +53,7 @@ export class BaseObservable<T> {
    */
   public set(value: T): void {
     if (value !== this._value) {
-      this._setWithArg(value);
+      this.setAndTrigger(value);
     }
   }
 
@@ -61,7 +61,11 @@ export class BaseObservable<T> {
    * Sets the value of the observable AND calls listeners even if the value is unchanged.
    */
   public setAndTrigger(value: T) {
-    this._setWithArg(value);
+    const prev = this._value;
+    this._value = value;
+    this._onChange.emit(value, prev);
+    this._disposeOwned();
+    compute();
   }
 
   /**
@@ -116,17 +120,17 @@ export class BaseObservable<T> {
     return this._onChange.isDisposed();
   }
 
-  protected _disposeOwned(...args: any[]) { /* noop */ }
+  protected _disposeOwned(arg?: any) { /* noop */ }
 
   /**
    * Allow derived classes to emit change events with an additional third argument describing the
    * change. It always emits the event without checking for value equality.
    */
-  protected _setWithArg(value: T, ...args: any[]) {
+  protected _setWithArg(value: T, arg: any) {
     const prev = this._value;
     this._value = value;
-    this._onChange.emit(value, prev, ...args);
-    this._disposeOwned(...args);
+    this._onChange.emit(value, prev, arg);
+    this._disposeOwned(arg);
     compute();
   }
 }
@@ -151,7 +155,7 @@ export class Observable<T> extends BaseObservable<T> implements IDisposableOwner
    * will dispose the owned value when it's set to another value, or when it itself is disposed.
    */
   public autoDispose(value: T & IDisposable): T & IDisposable {
-    this._setWithArg(value);
+    this.setAndTrigger(value);
     this._owned = value;
     return value;
   }

@@ -28,6 +28,7 @@ import {Emitter, Listener} from './emit';
 export {bundleChanges} from './_computed_queue';
 
 export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
+  // See module-level holder() function below for documentation.
   public static holder<T>(value: T & IDisposable): Observable<T> {
     const obs = new Observable<T>(value);
     obs._owned = value;
@@ -71,10 +72,19 @@ export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
     this._setWithArg(value);
   }
 
-  // TODO: add comments.
-  public autoDispose(value: T & IDisposable): void {
+  /**
+   * The use an observable for a disposable object, use it a DisposableOwner:
+   *
+   *    D.create(obs, ...args)                      // Preferred
+   *    obs.autoDispose(D.create(null, ...args))    // Equivalent
+   *
+   * Either of these usages will set the observable to the newly created value. The observable
+   * will dispose the owned value when it's set to another value, or when it itself is disposed.
+   */
+  public autoDispose(value: T & IDisposable): T & IDisposable {
     this._setWithArg(value);
     this._owned = value;
+    return value;
   }
 
   /**
@@ -155,4 +165,21 @@ export class Observable<T> implements IDisposableOwnerT<T & IDisposable> {
  */
 export function observable<T>(value: T): Observable<T> {
   return new Observable<T>(value);
+}
+
+/**
+ * Creates a new Observable with an initial disposable value owned by this observable, e.g.
+ *
+ *    const obs = obsHolder<D>(D.create(null, ...args));
+ *
+ * This is needed because using simply observable<D>(value) would not cause the observable to take
+ * ownership of value (i.e. to dispose it later). This function is a less hacky equivalent to:
+ *
+ *    const obs = observable<D>(null as any);
+ *    D.create(obs, ...args);
+ *
+ * To allow nulls, use observable<D|null>(null); then the obsHolder() constructor is not needed.
+ */
+export function obsHolder<T>(value: T & IDisposable): Observable<T> {
+  return Observable.holder<T>(value);
 }

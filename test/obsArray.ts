@@ -84,6 +84,8 @@ describe('obsArray', function() {
       const arr = m.get();
       arr.push("g");
       m.set(arr);
+      sinon.assert.notCalled(spy);
+      m.setAndTrigger(arr);
       assert.deepEqual(m.get(), ["x", "y", "g"]);
       assertResetSingleCall(spy, undefined, m.get(), m.get());
     });

@@ -46,8 +46,8 @@ export class ObsArray<T> extends Observable<T[]> {
     return super.addListener(callback, optContext);
   }
 
-  protected _setWithArg(value: T[], splice: IObsArraySplice<T>): void {
-    return super._setWithArg(value, splice);
+  protected _setWithSplice(value: T[], splice: IObsArraySplice<T>): void {
+    return this._setWithArg(value, splice);
   }
 }
 
@@ -60,7 +60,7 @@ export class MutableObsArray<T> extends ObsArray<T> {
     const value = this.get();
     const start = value.length;
     const newLen = value.push(...args);
-    this._setWithArg(value, {start, numAdded: args.length, deleted: []});
+    this._setWithSplice(value, {start, numAdded: args.length, deleted: []});
     return newLen;
   }
 
@@ -68,14 +68,14 @@ export class MutableObsArray<T> extends ObsArray<T> {
     const value = this.get();
     if (value.length === 0) { return undefined; }
     const ret = value.pop()!;
-    this._setWithArg(value, {start: value.length, numAdded: 0, deleted: [ret]});
+    this._setWithSplice(value, {start: value.length, numAdded: 0, deleted: [ret]});
     return ret;
   }
 
   public unshift(...args: T[]) {
     const value = this.get();
     const newLen = value.unshift(...args);
-    this._setWithArg(value, {start: 0, numAdded: args.length, deleted: []});
+    this._setWithSplice(value, {start: 0, numAdded: args.length, deleted: []});
     return newLen;
   }
 
@@ -83,7 +83,7 @@ export class MutableObsArray<T> extends ObsArray<T> {
     const value = this.get();
     if (value.length === 0) { return undefined; }
     const ret = value.shift()!;
-    this._setWithArg(value, {start: 0, numAdded: 0, deleted: [ret]});
+    this._setWithSplice(value, {start: 0, numAdded: 0, deleted: [ret]});
     return ret;
   }
 
@@ -92,7 +92,7 @@ export class MutableObsArray<T> extends ObsArray<T> {
     const len = value.length;
     start = Math.min(len, Math.max(0, start < 0 ? len + start : start));
     const deleted = value.splice(start, deleteCount, ...newValues);
-    this._setWithArg(value, {start, numAdded: newValues.length, deleted});
+    this._setWithSplice(value, {start, numAdded: newValues.length, deleted});
     return deleted;
   }
 }
@@ -159,9 +159,7 @@ export class ComputedArray<T, U> extends ObsArray<U> {
   }
 
   private _rebuild(obsArray: Observable<T[]>) {
-    const oldItems: U[] = this.get();
-    const newItems: U[] = obsArray.get().map((item: T) => this._mapper.call(undefined, item));
-    this._setWithArg(newItems, {start: 0, numAdded: newItems.length, deleted: oldItems});
+    this.set(obsArray.get().map((item: T) => this._mapper.call(undefined, item)));
   }
 
   private _applySplice(obsArray: Observable<T[]>, change: IObsArraySplice<T>) {
@@ -172,7 +170,7 @@ export class ComputedArray<T, U> extends ObsArray<U> {
     }
     const items: U[] = this.get();
     const deleted = items.splice(change.start, change.deleted.length, ...newItems);
-    this._setWithArg(items, {start: change.start, numAdded: newItems.length, deleted});
+    this._setWithSplice(items, {start: change.start, numAdded: newItems.length, deleted});
   }
 
   private _recordChange(newItems: T[], oldItems: T[], change?: IObsArraySplice<T>): void {

@@ -25,14 +25,28 @@
  *
  * Note that pureComputed.js offers a variation of computed() with the same interface, but which
  * stays unsubscribed from dependencies while it itself has no subscribers.
+ *
+ * A computed may be used with a disposable value using `use.owner` as the value's owner. E.g.
+ *    let val = computed((use) => Foo.create(use.owner, use(a), use(b)));
+ *
+ * When the computed() is re-evaluated, and when it itself is disposed, it disposes the previously
+ * owned value. Note that only the pattern above works, i.e. use.owner may only be used to take
+ * ownership of the same disposable that the callback returns.
  */
 
 import {DepItem} from './_computed_queue';
-import {Observable} from './observable';
-import {ISubscribable, Subscription, UseCB} from './subscribe';
+import {IDisposableOwner} from './dispose';
+import {BaseObservable as Obs, Observable} from './observable';
+import {ISubscribable, Subscription} from './subscribe';
 
 function _noWrite(): never {
   throw new Error("Can't write to non-writable computed");
+}
+
+// The generic type for the use() function that callbacks get.
+export interface UseCB {    // tslint:disable-line:interface-name
+  <U>(obs: Obs<U>): U;
+  owner: IDisposableOwner;
 }
 
 export class Computed<T> extends Observable<T> {
@@ -49,7 +63,7 @@ export class Computed<T> extends Observable<T> {
     super(undefined as any);
     this._callback = callback;
     this._write = _noWrite;
-    this._sub = new Subscription(this._read.bind(this), dependencies);
+    this._sub = new Subscription(this._read.bind(this), dependencies, this);
   }
 
   /**
@@ -84,7 +98,7 @@ export class Computed<T> extends Observable<T> {
   }
 
   private _read(use: any, ...args: any[]): void {
-    super.set(this._callback(use, ...args));
+    super.set(this._callback(use as UseCB, ...args));
   }
 }
 
@@ -95,24 +109,24 @@ export class Computed<T> extends Observable<T> {
  */
 export function computed<T>(cb: (use: UseCB) => T): Computed<T>;
 
-export function computed<A, T>(
-  a: Observable<A>,
+export function computed<T, A>(
+  a: Obs<A>,
   cb: (use: UseCB, a: A) => T): Computed<T>;
 
-export function computed<A, B, T>(
-  a: Observable<A>, b: Observable<B>,
+export function computed<T, A, B>(
+  a: Obs<A>, b: Obs<B>,
   cb: (use: UseCB, a: A, b: B) => T): Computed<T>;
 
-export function computed<A, B, C, T>(
-  a: Observable<A>, b: Observable<B>, c: Observable<C>,
+export function computed<T, A, B, C>(
+  a: Obs<A>, b: Obs<B>, c: Obs<C>,
   cb: (use: UseCB, a: A, b: B, c: C) => T): Computed<T>;
 
-export function computed<A, B, C, D, T>(
-  a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>,
+export function computed<T, A, B, C, D>(
+  a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
   cb: (use: UseCB, a: A, b: B, c: C, d: D) => T): Computed<T>;
 
-export function computed<A, B, C, D, E, T>(
-  a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>, e: Observable<E>,
+export function computed<T, A, B, C, D, E>(
+  a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
   cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
 
 /**

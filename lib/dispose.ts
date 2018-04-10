@@ -60,7 +60,15 @@ export interface IDisposable {
 }
 
 /**
- * Anything with .autoDispose() can be the owner of a disposable object.
+ * Anything with .autoDispose() can be the owner of a disposable object. This is a type-specific
+ * class that can only own a disposable object of type T.
+ */
+export interface IDisposableOwnerT<T extends IDisposable> {
+  autoDispose(obj: T): void;
+}
+
+/**
+ * Type that can own an object of any disposable type.
  */
 export interface IDisposableOwner {
   autoDispose(obj: IDisposable): void;
@@ -94,17 +102,21 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
   // The complex-looking overloads are to ensure that it can do type-checking for constuctors of
   // different arity. E.g. if Foo's constructor takes (number, string), we want Foo.create to
   // require (owner, number, string) as arguments.
-  public static create<T>(this: new () => T, owner: IDisposableOwner|null): T;
-  public static create<T, A>(this: new (a: A) => T, owner: IDisposableOwner|null, a: A): T;
-  public static create<T, A, B>(this: new (a: A, b: B) => T, owner: IDisposableOwner|null, a: A, b: B): T;
-  public static create<T, A, B, C>(this: new (a: A, b: B, c: C) => T, owner: IDisposableOwner|null,
-                                   a: A, b: B, c: C): T;
-  public static create<T, A, B, C, D>(this: new (a: A, b: B, c: C, d: D) => T, owner: IDisposableOwner|null,
-                                      a: A, b: B, c: C, d: D): T;
-  public static create<T, A, B, C, D, E>(this: new (a: A, b: B, c: C, d: D, e: E) => T, owner: IDisposableOwner|null,
-                                         a: A, b: B, c: C, d: D, e: E): T;
-  public static create<T extends IDisposable>(this: new (...args: any[]) => T, owner: IDisposableOwner|null,
-                                              ...args: any[]): T {
+  public static create<T extends IDisposable>(
+    this: new () => T, owner: IDisposableOwnerT<T>|null): T;
+  public static create<T extends IDisposable, A>(
+    this: new (a: A) => T, owner: IDisposableOwnerT<T>|null, a: A): T;
+  public static create<T extends IDisposable, A, B>(
+    this: new (a: A, b: B) => T, owner: IDisposableOwnerT<T>|null, a: A, b: B): T;
+  public static create<T extends IDisposable, A, B, C>(
+    this: new (a: A, b: B, c: C) => T, owner: IDisposableOwnerT<T>|null, a: A, b: B, c: C): T;
+  public static create<T extends IDisposable, A, B, C, D>(
+    this: new (a: A, b: B, c: C, d: D) => T, owner: IDisposableOwnerT<T>|null, a: A, b: B, c: C, d: D): T;
+  public static create<T extends IDisposable, A, B, C, D, E>(
+    this: new (a: A, b: B, c: C, d: D, e: E) => T, owner: IDisposableOwnerT<T>|null, a: A, b: B, c: C, d: D, e: E): T;
+  public static create<T extends IDisposable>(
+    this: new (...args: any[]) => T, owner: IDisposableOwnerT<T>|null, ...args: any[]): T {
+
     const origDefaultOwner = _defaultDisposableOwner;
     const holder = new Holder();
     try {
@@ -241,7 +253,7 @@ export class Holder implements IDisposable, IDisposableOwner {
 /**
  * Sets owner of obj (i.e. calls owner.autoDispose(obj)) unless owner is null. Returns obj.
  */
-export function setDisposeOwner<T extends IDisposable>(owner: IDisposableOwner|null, obj: T): T {
+export function setDisposeOwner<T extends IDisposable>(owner: IDisposableOwnerT<T>|null, obj: T): T {
   if (owner) { owner.autoDispose(obj); }
   return obj;
 }

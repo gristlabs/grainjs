@@ -75,8 +75,8 @@ describe('observable', function() {
     sinon.assert.calledOnce(spy1);
     sinon.assert.calledTwice(spy2);
     sinon.assert.calledTwice(spy3);
-    spy2.getCall(1).calledWithExactly("test3", "test2");
-    spy3.getCall(1).calledWithExactly("test3", "test2");
+    sinon.assert.calledWithExactly(spy2.getCall(1), "test3", "test2");
+    sinon.assert.calledWithExactly(spy3.getCall(1), "test3", "test2");
 
     // Once the observable is disposed, it should no longer work, and should not call listeners.
     obs.dispose();

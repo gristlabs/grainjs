@@ -22,11 +22,12 @@
  */
 
 import {compute, DepItem} from './_computed_queue';
+import {IDisposable, IDisposableOwnerT} from './dispose';
 import {Emitter, Listener} from './emit';
 
 export {bundleChanges} from './_computed_queue';
 
-export class Observable<T> {
+export class BaseObservable<T> {
   private _onChange: Emitter;
   private _value: T;
 
@@ -46,18 +47,25 @@ export class Observable<T> {
   public get(): T { return this._value; }
 
   /**
-   * Sets the value of the observable. If the value differs from the previously set one (and even
-   * if identitcal if it's a non-primitive value), then listeners to this observable will get
-   * called with (newValue, oldValue) as arguments.
+   * Sets the value of the observable. If the value differs from the previously set one, then
+   * listeners to this observable will get called with (newValue, oldValue) as arguments.
    * @param {Object} value: The new value to set.
    */
   public set(value: T): void {
-    const prev = this._value;
-    if (value !== prev || !isPrimitive(value)) {
-      this._value = value;
-      this._onChange.emit(value, prev);
-      compute();
+    if (value !== this._value) {
+      this.setAndTrigger(value);
     }
+  }
+
+  /**
+   * Sets the value of the observable AND calls listeners even if the value is unchanged.
+   */
+  public setAndTrigger(value: T) {
+    const prev = this._value;
+    this._value = value;
+    this._onChange.emit(value, prev);
+    this._disposeOwned();
+    compute();
   }
 
   /**
@@ -100,6 +108,7 @@ export class Observable<T> {
    * Disposes the observable.
    */
   public dispose(): void {
+    this._disposeOwned();
     this._onChange.dispose();
     (this._value as any) = undefined;
   }
@@ -111,6 +120,8 @@ export class Observable<T> {
     return this._onChange.isDisposed();
   }
 
+  protected _disposeOwned(arg?: any) { /* noop */ }
+
   /**
    * Allow derived classes to emit change events with an additional third argument describing the
    * change. It always emits the event without checking for value equality.
@@ -119,21 +130,41 @@ export class Observable<T> {
     const prev = this._value;
     this._value = value;
     this._onChange.emit(value, prev, arg);
+    this._disposeOwned(arg);
     compute();
   }
 }
 
-// Taken from https://github.com/jonschlinkert/is-primitive
-function isPrimitive(val: any): boolean {
-  switch (typeof val) {
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'symbol':
-    case 'undefined':
-      return true;
-    default:
-      return val === null;
+export class Observable<T> extends BaseObservable<T> implements IDisposableOwnerT<T & IDisposable> {
+  // See module-level holder() function below for documentation.
+  public static holder<T>(value: T & IDisposable): Observable<T> {
+    const obs = new Observable<T>(value);
+    obs._owned = value;
+    return obs;
+  }
+
+  private _owned?: T & IDisposable = undefined;
+
+  /**
+   * The use an observable for a disposable object, use it a DisposableOwner:
+   *
+   *    D.create(obs, ...args)                      // Preferred
+   *    obs.autoDispose(D.create(null, ...args))    // Equivalent
+   *
+   * Either of these usages will set the observable to the newly created value. The observable
+   * will dispose the owned value when it's set to another value, or when it itself is disposed.
+   */
+  public autoDispose(value: T & IDisposable): T & IDisposable {
+    this.setAndTrigger(value);
+    this._owned = value;
+    return value;
+  }
+
+  protected _disposeOwned() {
+    if (this._owned) {
+      this._owned.dispose();
+      this._owned = undefined;
+    }
   }
 }
 
@@ -144,4 +175,21 @@ function isPrimitive(val: any): boolean {
  */
 export function observable<T>(value: T): Observable<T> {
   return new Observable<T>(value);
+}
+
+/**
+ * Creates a new Observable with an initial disposable value owned by this observable, e.g.
+ *
+ *    const obs = obsHolder<D>(D.create(null, ...args));
+ *
+ * This is needed because using simply observable<D>(value) would not cause the observable to take
+ * ownership of value (i.e. to dispose it later). This function is a less hacky equivalent to:
+ *
+ *    const obs = observable<D>(null as any);
+ *    D.create(obs, ...args);
+ *
+ * To allow nulls, use observable<D|null>(null); then the obsHolder() constructor is not needed.
+ */
+export function obsHolder<T>(value: T & IDisposable): Observable<T> {
+  return Observable.holder<T>(value);
 }

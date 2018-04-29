@@ -213,19 +213,25 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
  * holder.autoDispose() or Foo.create(holder, ...), it automatically disposes the currently held
  * object. It also disposes it when the holder itself is disposed.
  *
+ * If the object is an instance of Disposable, the holder will also notice when the object gets
+ * disposed from outside of it, in which case the holder will become empty again.
+ *
  * TODO Holder needs unittests.
  */
-export class Holder implements IDisposable, IDisposableOwner {
-  public static create(owner: IDisposableOwner|null): Holder {
-    return setDisposeOwner(owner, new Holder());
+export class Holder<T extends IDisposable> implements IDisposable, IDisposableOwner {
+  public static create<T extends IDisposable>(owner: IDisposableOwner|null): Holder<T> {
+    return setDisposeOwner(owner, new Holder<T>());
   }
 
-  private _owned: IDisposable|null = null;
+  protected _owned: T|null = null;
 
   /** Take ownership of a new object, disposing the previously held one. */
-  public autoDispose<T extends IDisposable>(obj: T): T {
+  public autoDispose(obj: T): T {
     if (this._owned) { this._owned.dispose(); }
     this._owned = obj;
+    if (obj instanceof Disposable) {
+      obj.onDispose(this.release, this);
+    }
     return obj;
   }
 
@@ -244,10 +250,14 @@ export class Holder implements IDisposable, IDisposableOwner {
     }
   }
 
+  /** Returns the held object, or null if the Holder is empty. */
+  public get(): T|null { return this._owned; }
+
+  /** Returns whether the Holder is empty. */
+  public isEmpty(): boolean { return !this._owned; }
+
   /** When the holder is disposed, it disposes the held object if any. */
-  public dispose(): void {
-    this.clear();
-  }
+  public dispose(): void { this.clear(); }
 }
 
 /**

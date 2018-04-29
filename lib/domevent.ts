@@ -54,7 +54,7 @@ function _findMatch(inner: Element, outer: Element, selector: string): Element|n
 }
 
 class DomEventListener implements EventListenerObject, IDisposable {
-  constructor(protected elem: Element,
+  constructor(protected elem: EventTarget,
               protected eventType: string,
               protected callback: EventCB,
               protected useCapture: boolean,
@@ -64,7 +64,7 @@ class DomEventListener implements EventListenerObject, IDisposable {
 
   public handleEvent(event: Event) {
     const cb = this.callback;
-    cb(event, this.elem);
+    cb(event, this.elem as Element);
   }
 
   public dispose() {
@@ -74,7 +74,7 @@ class DomEventListener implements EventListenerObject, IDisposable {
 
 class DomEventMatchListener extends DomEventListener {
   public handleEvent(event: Event) {
-    const elem = _findMatch(event.target as Element, this.elem, this.selector!);
+    const elem = _findMatch(event.target as Element, this.elem as Element, this.selector!);
     if (elem) {
       const cb = this.callback;
       cb(event, elem);
@@ -92,7 +92,7 @@ class DomEventMatchListener extends DomEventListener {
  *    rarely be useful (e.g. JQuery doesn't even offer it as an option).
  * @returns {Object} Listener object whose .dispose() method will remove the event listener.
  */
-export function onElem(elem: Element, eventType: string, callback: EventCB,
+export function onElem(elem: EventTarget, eventType: string, callback: EventCB,
                        {useCapture = false} = {}): IDisposable {
   return new DomEventListener(elem, eventType, callback, useCapture);
 }
@@ -116,7 +116,7 @@ export function on(eventType: string, callback: EventCB, {useCapture = false} = 
  *    rarely be useful (e.g. JQuery doesn't even offer it as an option).
  * @returns {Object} Listener object whose .dispose() method will remove the event listener.
  */
-export function onMatchElem(elem: Element, selector: string, eventType: string,
+export function onMatchElem(elem: EventTarget, selector: string, eventType: string,
                             callback: EventCB, {useCapture = false} = {}): IDisposable {
   return new DomEventMatchListener(elem, eventType, callback, useCapture, selector);
 }

@@ -39,6 +39,7 @@
  *    let lis = domevent.onElem(elem, 'mouseup', e => { lis.dispose(); other_work(); });
  */
 
+import {DomElementMethod} from './_domImpl';
 import {IDisposable} from './dispose';
 
 export type EventCB = (this: void, event: Event, elem: Element) => void;
@@ -81,8 +82,6 @@ class DomEventMatchListener extends DomEventListener {
   }
 }
 
-export type DomMethod = (e: Element) => IDisposable;
-
 /**
  * Listen to a DOM event. The `on()` variant takes no `elem` argument, and may be used as an
  * argument to dom() function.
@@ -97,8 +96,9 @@ export function onElem(elem: Element, eventType: string, callback: EventCB,
                        {useCapture = false} = {}): IDisposable {
   return new DomEventListener(elem, eventType, callback, useCapture);
 }
-export function on(eventType: string, callback: EventCB, {useCapture = false} = {}): DomMethod {
-  return (elem) => new DomEventListener(elem, eventType, callback, useCapture);
+export function on(eventType: string, callback: EventCB, {useCapture = false} = {}): DomElementMethod {
+  // tslint:disable-next-line:no-unused-expression
+  return (elem) => { new DomEventListener(elem, eventType, callback, useCapture); };
 }
 
 /**
@@ -121,6 +121,7 @@ export function onMatchElem(elem: Element, selector: string, eventType: string,
   return new DomEventMatchListener(elem, eventType, callback, useCapture, selector);
 }
 export function onMatch(selector: string, eventType: string, callback: EventCB,
-                        {useCapture = false} = {}): DomMethod {
-  return (elem) => new DomEventMatchListener(elem, eventType, callback, useCapture, selector);
+                        {useCapture = false} = {}): DomElementMethod {
+  // tslint:disable-next-line:no-unused-expression
+  return (elem) => { new DomEventMatchListener(elem, eventType, callback, useCapture, selector); };
 }

@@ -1,8 +1,7 @@
 import {domDispose} from './_domDispose';
 import {DomMethod, frag} from './_domImpl';
 import {replaceContent} from './_domMethods';
-import {computedArray, ObsArray} from './obsArray';
-import {BaseObservable} from './observable';
+import {computedArray, MaybeObsArray, ObsArray} from './obsArray';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';
@@ -25,12 +24,17 @@ import {G} from './browserGlobals';
  * If you'd like to map the DOM node back to its source item, use dom.data() and dom.getData() in
  * itemCreateFunc().
  */
-export function forEach<T>(obsArray: BaseObservable<T[]>, itemCreateFunc: (item: T) => Node|null): DomMethod {
+export function forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T) => Node|null): DomMethod {
   return (elem: Node) => {
     const markerPre = G.document.createComment('a');
     const markerPost = G.document.createComment('b');
     elem.appendChild(markerPre);
     elem.appendChild(markerPost);
+
+    if (Array.isArray(obsArray)) {
+      replaceContent(markerPre, markerPost, obsArray.map(itemCreateFunc));
+      return;
+    }
 
     const nodes: ObsArray<Node|null> = computedArray(obsArray, itemCreateFunc);
     nodes.addListener((newArr: Array<Node|null>, oldArr: Array<Node|null>, splice?) => {

@@ -178,4 +178,16 @@ describe("foreach", function() {
     sinon.assert.calledOnce(spy);
     sinon.assert.calledWith(spy, "foo:CCC");
   });
+
+  it("should work with plain array", function() {
+    const model = ["a", "b", "c"];
+    const spy = sinon.spy((item: string) => dom('span', ':', item));
+
+    // Make sure the loop notices elements already in the model.
+    const elem = dom('div', "[", dom.forEach(model, spy), "]");
+
+    assert.equal(elem.textContent, "[:a:b:c]");
+    assertResetFirstArgs(spy, "a", "b", "c");
+  });
+
 });

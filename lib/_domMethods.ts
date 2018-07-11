@@ -1,5 +1,5 @@
 import {autoDisposeElem, domDispose, onDisposeElem} from './_domDispose';
-import {DomArg, DomElementMethod, DomMethod, frag} from './_domImpl';
+import {DomArg, DomElementMethod, DomMethod, frag, IAttrObj} from './_domImpl';
 import {BindableValue, subscribe as subscribeBinding} from './binding';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
@@ -22,14 +22,18 @@ function _subscribe<T>(elem: Node, valueObs: BindableValue<T>,
 
 /**
  * Sets multiple attributes of a DOM element. The `attrs()` variant takes no `elem` argument.
+ * Null and undefined values are omitted, and booleans are either omitted or set to empty string.
  * @param {Object} attrsObj: Object mapping attribute names to attribute values.
  */
-export function attrsElem(elem: Element, attrsObj: {[name: string]: string}): void {
+export function attrsElem(elem: Element, attrsObj: IAttrObj): void {
   for (const key of Object.keys(attrsObj)) {
-    elem.setAttribute(key, attrsObj[key]);
+    const val = attrsObj[key];
+    if (val != null && val !== false) {
+      elem.setAttribute(key, val === true ? '' : val);
+    }
   }
 }
-export function attrs(attrsObj: {[name: string]: string}): DomElementMethod {
+export function attrs(attrsObj: IAttrObj): DomElementMethod {
   return (elem) => attrsElem(elem, attrsObj);
 }
 
@@ -106,10 +110,10 @@ export function style(property: string, valueObs: BindableValue<string>): DomEle
  * @param {String} property: The name of the property to update, e.g. 'disabled'.
  * @param {Object} value: The value for the property.
  */
-export function propElem(elem: Node, property: string, value: any): void {
+export function propElem<T>(elem: Node, property: string, value: T): void {
   (elem as any)[property] = value;
 }
-export function prop(property: string, valueObs: BindableValue<any>): DomMethod {
+export function prop<T>(property: string, valueObs: BindableValue<T>): DomMethod {
   return (elem) => _subscribe(elem, valueObs, (val) => propElem(elem, property, val));
 }
 

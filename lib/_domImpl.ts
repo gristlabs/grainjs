@@ -18,7 +18,7 @@ export type DomMethod = (elem: Node) => DomArg|void;
 export type DomElementMethod = (elem: Element) => DomElementArg|void;
 
 export interface IAttrObj {
-  [attrName: string]: string;
+  [attrName: string]: string|boolean|null|undefined;
 }
 
 // Type of argument to dom-building functions, that work for any Node.

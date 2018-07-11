@@ -43,9 +43,19 @@ describe('dom', function() {
     });
 
     it("should set attributes", function() {
-      let elem = dom('a', { title: "foo", id: "bar" });
-      assert.equal(elem.title, "foo");
+      let elem = dom('a', { title: "foo", id: "bar", T: true, F: false, N: null, U: undefined });
       assert.equal(elem.id, "bar");
+      assert.equal(elem.title, "foo");
+      assert.equal(elem.hasAttribute('title'), true);
+      assert.equal(elem.getAttribute('title'), "foo");
+      assert.equal(elem.hasAttribute('T'), true);
+      assert.equal(elem.getAttribute('T'), '');
+      assert.equal(elem.hasAttribute('F'), false);
+      assert.equal(elem.getAttribute('F'), undefined);
+      assert.equal(elem.hasAttribute('N'), false);
+      assert.equal(elem.getAttribute('N'), undefined);
+      assert.equal(elem.hasAttribute('U'), false);
+      assert.equal(elem.getAttribute('U'), undefined);
     });
 
     it("should set children", function() {

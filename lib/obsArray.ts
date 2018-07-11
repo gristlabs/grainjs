@@ -37,6 +37,12 @@ import {BaseObservable, Observable} from './observable';
 import {subscribe, Subscription} from './subscribe';
 
 /**
+ * Either an observable or a plain array of T. This is useful for functions like dom.forEach()
+ * which are convenient to have available for both.
+ */
+export type MaybeObsArray<T> = BaseObservable<T[]> | T[];
+
+/**
  * Info about a modification to ObsArray contents. It is included as a third argument to change
  * listeners when available. When not available, listeners should assume that the array changed
  * completely.

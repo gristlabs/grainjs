@@ -71,6 +71,7 @@
     "nyc": "^11.4.1",
     "publish-release": "^1.4.0",
     "sinon": "^4.0.0",
+    "ts-loader": "^4.4.2",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1",

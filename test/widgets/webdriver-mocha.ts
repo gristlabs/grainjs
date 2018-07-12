@@ -2,7 +2,8 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as repl from 'repl';
 import * as webdriver from 'selenium-webdriver';
-import {By, logging, ThenableWebDriver, until, WebDriver, WebElementPromise} from 'selenium-webdriver';
+import {By, logging, ThenableWebDriver, until,
+        WebDriver, WebElement, WebElementPromise} from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
 import * as firefox from 'selenium-webdriver/firefox';
 
@@ -61,16 +62,40 @@ export interface IWebDriverPlus extends ThenableWebDriver {
    * Shorthand to wait for an element to be present, using a css selector.
    */
   findWait(timeoutSec: number, selector: string, message?: string): WebElementPromise;
+
+  /**
+   * Shorthand to find all element matching a css selector.
+   */
+  findAll(selector: string): Promise<WebElement[]>;
+
+  /**
+   * Find elements by a css selector, and filter by getText() matching the given regex.
+   */
+  findContent(selector: string, contentRE: RegExp): WebElementPromise;
 }
 
 // Implementation of the enhanced WebDriver interface.
 Object.assign(WebDriver.prototype, {
-  find(this: IWebDriverPlus, selector: string) {
+  find(this: IWebDriverPlus, selector: string): WebElementPromise {
     return this.findElement(By.css(selector));
   },
 
-  findWait(this: IWebDriverPlus, timeoutSec: number, selector: string, message?: string) {
+  findWait(this: IWebDriverPlus, timeoutSec: number, selector: string, message?: string): WebElementPromise {
     return this.wait(until.elementLocated(By.css(selector)), timeoutSec * 1000, message);
+  },
+
+  async findAll(this: IWebDriverPlus, selector: string): Promise<WebElement[]> {
+    return this.findElements(By.css(selector));
+  },
+
+  findContent(this: IWebDriverPlus, selector: string, contentRE: RegExp): WebElementPromise {
+    return new WebElementPromise(this, (async () => {
+      const elements = await this.findElements(By.css(selector));
+      const allText = await Promise.all(elements.map((e) => e.getText()));
+      const elem = elements.find((el, index) => contentRE.test(allText[index]));
+      if (!elem) { throw new Error(`None of ${elements.length} elements match ${contentRE}`); }
+      return elem;
+    })());
   },
 });
 

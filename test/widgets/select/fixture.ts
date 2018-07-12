@@ -16,10 +16,10 @@ function testDom() {
   const choices = obsArray<IOption<string>>(["acorn", "apple", "orange", "papaya"]);
 
   let textarea: HTMLTextAreaElement;
-  return dom('div',
+  return dom('div#test_select',
     select(value, choices, {defLabel: "Select a fruit:"}),
     dom('div', "Current value: ",
-      dom('input', {type: 'text'}, dom.prop('value', value),
+      dom('input#test_value', {type: 'text'}, dom.prop('value', value),
         dom.on('input', (e, elem) => value.set((elem as HTMLInputElement).value))),
     ),
     textarea = dom('textarea', {rows: "10"}, choices.get().join("\n")) as HTMLTextAreaElement,

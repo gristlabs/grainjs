@@ -7,7 +7,6 @@
     "noUnusedLocals": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "baseUrl": "../../.."
-  },
-  "include": [".", "app/projects/shareform"]
+    "baseUrl": "../.."
+  }
 }

@@ -45,8 +45,17 @@ declare module "selenium-webdriver" {
     doSubmit(): WebElementPromise;
     doClear(): WebElementPromise;
 
+    // Shortcut to getAttribute('value')
+    value(): promise.Promise<string>;
+
     // Returns a human-friendly description of this element.
     describe(): Promise<string>;
+  }
+
+  // These are just missing typings.
+  interface Capabilities {
+    getBrowserName(): string|undefined;
+    getPlatform(): string|undefined;
   }
 }
 
@@ -109,6 +118,10 @@ Object.assign(WebElement.prototype, {
   },
   doClear(this: WebElement): WebElementPromise {
     return new WebElementPromise(this.getDriver(), this.clear().then(() => this));
+  },
+
+  value(this: WebElement): promise.Promise<string> {
+    return this.getAttribute('value');
   },
 
   async describe(this: WebElement): Promise<string> {

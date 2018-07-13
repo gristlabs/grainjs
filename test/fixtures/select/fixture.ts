@@ -1,4 +1,4 @@
-import {IOption, IOptionFull, select} from 'lib/widgets/select/select';
+import {IOption, IOptionFull, select} from 'lib/widgets/select';
 import {dom, obsArray, observable} from '../../../index';
 
 function testDom() {

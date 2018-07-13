@@ -9,7 +9,7 @@ export class WebpackServer implements IMochaServer {
   private _server: any;
 
   public async start() {
-    const config = require('./webpack.config.js');
+    const config = require('../widgets/webpack.config.js');
     console.log("Starting webpack-serve");
     this._server = await serve({}, {
       config: merge(config, {

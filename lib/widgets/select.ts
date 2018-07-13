@@ -1,7 +1,7 @@
 /**
  * Select dropdown widget.
  */
-import {dom, MaybeObsArray, Observable, subscribe} from '../../../index';
+import {dom, MaybeObsArray, Observable, subscribe} from '../../index';
 
 export interface IOptionFull<T> {
   value: T;

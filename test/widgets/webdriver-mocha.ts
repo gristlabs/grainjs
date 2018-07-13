@@ -1,6 +1,7 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as Mocha from 'mocha';
+import * as path from 'path';
 import * as repl from 'repl';
 import {Builder, logging, WebDriver, WebElement} from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
@@ -57,6 +58,9 @@ before(async function() {
   // Set up browser options.
   const logPrefs = new logging.Preferences();
   logPrefs.setLevel(logging.Type.BROWSER, logging.Level.INFO);
+
+  // Prepend node_modules/.bin to PATH, for chromedriver/geckodriver to be found.
+  process.env.PATH = path.resolve("node_modules", ".bin") + ":" + process.env.PATH;
 
   driver = new Builder()
     .forBrowser('firefox')

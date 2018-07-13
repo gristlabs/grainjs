@@ -1,11 +1,11 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
+import * as Mocha from 'mocha';
 import * as repl from 'repl';
-import * as webdriver from 'selenium-webdriver';
-import {By, logging, ThenableWebDriver, until,
-        WebDriver, WebElement, WebElementPromise} from 'selenium-webdriver';
+import {Builder, logging, WebDriver, WebElement} from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome';
 import * as firefox from 'selenium-webdriver/firefox';
+import "./webdriver-plus";
 
 chai.use(chaiAsPromised);
 
@@ -16,9 +16,10 @@ chai.use(chaiAsPromised);
 export {assert} from 'chai';
 
 /**
- * Use `import {driver} from 'webdriver-mocha' to access a WebDriver with extra methods.
+ * Use `import {driver} from 'webdriver-mocha'. Note that it's already enhanced with extra methods
+ * by "webdriver-plus" module.
  */
-export let driver: IWebDriverPlus;
+export let driver: WebDriver;
 
 /**
  * Use useServer() from a test suite to start an implementation of IMochaServer with the test.
@@ -49,56 +50,6 @@ export function useServer(server: IMochaServer) {
 // mocha, and we use it too to start up a REPL when this option is used.
 const noexit: boolean = (process.argv.indexOf("--no-exit") !== -1);
 
-/**
- * Enhanced WebDriver interface.
- */
-export interface IWebDriverPlus extends ThenableWebDriver {
-  /**
-   * Shorthand to find element by css selector.
-   */
-  find(selector: string): WebElementPromise;
-
-  /**
-   * Shorthand to wait for an element to be present, using a css selector.
-   */
-  findWait(timeoutSec: number, selector: string, message?: string): WebElementPromise;
-
-  /**
-   * Shorthand to find all element matching a css selector.
-   */
-  findAll(selector: string): Promise<WebElement[]>;
-
-  /**
-   * Find elements by a css selector, and filter by getText() matching the given regex.
-   */
-  findContent(selector: string, contentRE: RegExp): WebElementPromise;
-}
-
-// Implementation of the enhanced WebDriver interface.
-Object.assign(WebDriver.prototype, {
-  find(this: IWebDriverPlus, selector: string): WebElementPromise {
-    return this.findElement(By.css(selector));
-  },
-
-  findWait(this: IWebDriverPlus, timeoutSec: number, selector: string, message?: string): WebElementPromise {
-    return this.wait(until.elementLocated(By.css(selector)), timeoutSec * 1000, message);
-  },
-
-  async findAll(this: IWebDriverPlus, selector: string): Promise<WebElement[]> {
-    return this.findElements(By.css(selector));
-  },
-
-  findContent(this: IWebDriverPlus, selector: string, contentRE: RegExp): WebElementPromise {
-    return new WebElementPromise(this, (async () => {
-      const elements = await this.findElements(By.css(selector));
-      const allText = await Promise.all(elements.map((e) => e.getText()));
-      const elem = elements.find((el, index) => contentRE.test(allText[index]));
-      if (!elem) { throw new Error(`None of ${elements.length} elements match ${contentRE}`); }
-      return elem;
-    })());
-  },
-});
-
 // Start up the webdriver and serve files that its browser will see.
 before(async function() {
   this.timeout(20000);      // Set a longer default timeout.
@@ -107,12 +58,12 @@ before(async function() {
   const logPrefs = new logging.Preferences();
   logPrefs.setLevel(logging.Type.BROWSER, logging.Level.INFO);
 
-  driver = new webdriver.Builder()
+  driver = new Builder()
     .forBrowser('firefox')
     .setLoggingPrefs(logPrefs)
     .setChromeOptions(new chrome.Options())
     .setFirefoxOptions(new firefox.Options())
-    .build() as IWebDriverPlus;
+    .build();
 });
 
 // Quit the webdriver and stop serving files, unless we failed and --no-exit is given.
@@ -120,7 +71,9 @@ after(async function() {
   let countFailed = 0;
   this.test.parent.eachTest((test: any) => { countFailed += test.state === 'failed' ? 1 : 0; });
   if (countFailed > 0 && noexit) {
-    startRepl();
+    const files = new Set<string>();
+    this.test.parent.eachTest((test: any) => { if (test.state === 'failed') { files.add(test.file); }});
+    startRepl(Array.from(files));
   } else {
     await cleanup();
   }
@@ -133,24 +86,41 @@ async function cleanup() {
   await Promise.all(Array.from(_servers, (server) => server.stop()));
 }
 
-async function startRepl() {
+async function startRepl(files: string[]) {
   // Wait a bit to let mocha print out its errors before REPL prints its prompts.
   await new Promise((resolve) => setTimeout(resolve, 50));
   // Continue running by keeping server and webdriver, and waiting for an hour.
   // tslint:disable:no-console
   console.log("Not exiting. Abort with Ctrl-C, or type '.exit'");
   console.log("You may interact with the browser here, e.g. driver.find('.css_selector')");
+  console.log("Failed tests; may rerun with rerun() function:");
+  for (const [i, file] of files.entries()) {
+    console.log(`  rerun(${i === 0 ? '' : i}): ${file}`);
+  }
+
   const replObj = repl.start({ prompt: "node> ", ignoreUndefined: true});
   enhanceRepl(replObj);
-  Object.assign(replObj.context, {driver});
+
+  // Here are the extra globals available in the REPL prompt.
+  Object.assign(replObj.context, {
+    driver,
+    rerun: rerun.bind(null, files),
+  });
   replObj.on('exit', cleanup);
 }
 
-// TODO: would like ability to re-run the failed test suite.
-// TODO: want the ability to use same webpack-serve without specifying WIDGET
+// Global REPL function that reruns the i-th failed test suite.
+function rerun(files: string[], i: number = 0) {
+  const file = files[i];
+  delete require.cache[file];
+  const mocha = new Mocha({bail: true});
+  mocha.addFile(file);
+  // This is the fromCallback() idiom without the fromCallback() helper.
+  return new Promise((resolve, reject) => mocha.run((err) => err ? reject(err) : resolve()));
+}
 
+// Replace REPL's eval with a version that resolves returned values and stringifies WebElements.
 function enhanceRepl(replObj: any): void {
-  // Replace eval with a version that resolves returned values and stringifies WebElements.
   const origEval = replObj.eval;
   replObj.eval = function(cmd: any, context: any, filename: any, callback: any) {
     origEval(cmd, context, filename, (err: any, value: any) => {
@@ -164,20 +134,11 @@ function enhanceRepl(replObj: any): void {
 }
 
 async function useElementDescriptions(obj: any): Promise<any> {
-  if (obj instanceof webdriver.WebElement) {
-    return await describeElement(obj);
+  if (obj instanceof WebElement) {
+    return await obj.describe();
   } else if (Array.isArray(obj)) {
     return await Promise.all(obj.map(useElementDescriptions));
   } else {
     return obj;
   }
-}
-
-async function describeElement(obj: webdriver.WebElement): Promise<string> {
-  const [elemId, id, tagName, classAttr] = await Promise.all([
-    obj.getId(), obj.getAttribute('id'), obj.getTagName(), obj.getAttribute('class'),
-  ]);
-  const idStr = id ? '#' + id : '';
-  const classes = classAttr ? '.' + classAttr.replace(/ /g, '.') : '';
-  return `${tagName}${idStr}${classes}[${elemId}]`;
 }

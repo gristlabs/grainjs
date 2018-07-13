@@ -43,7 +43,10 @@ declare module "selenium-webdriver" {
     doClick(): WebElementPromise;
     doSendKeys(): WebElementPromise;
     doSubmit(): WebElementPromise;
-    doSlear(): WebElementPromise;
+    doClear(): WebElementPromise;
+
+    // Returns a human-friendly description of this element.
+    describe(): Promise<string>;
   }
 }
 
@@ -106,5 +109,14 @@ Object.assign(WebElement.prototype, {
   },
   doClear(this: WebElement): WebElementPromise {
     return new WebElementPromise(this.getDriver(), this.clear().then(() => this));
+  },
+
+  async describe(this: WebElement): Promise<string> {
+    const [elemId, id, tagName, classAttr] = await Promise.all([
+      this.getId(), this.getAttribute('id'), this.getTagName(), this.getAttribute('class'),
+    ]);
+    const idStr = id ? '#' + id : '';
+    const classes = classAttr ? '.' + classAttr.replace(/ /g, '.') : '';
+    return `${tagName}${idStr}${classes}[${elemId}]`;
   },
 });

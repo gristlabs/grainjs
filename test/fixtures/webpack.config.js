@@ -14,7 +14,7 @@ const path = require('path');
 
 // Build each */fixture.ts as its own bundle.
 const entries = {};
-for (const fixture of glob.sync(`./test/fixtures/*/fixture.ts`)) {
+for (const fixture of glob.sync(`${__dirname}/*/fixture.ts`)) {
   entries[path.basename(path.dirname(fixture))] = fixture;
 }
 
@@ -40,7 +40,7 @@ module.exports = {
     ]
   },
   serve: {
-    content: [path.resolve(__dirname), "./test/fixtures"],
+    content: [path.resolve(__dirname)],
     port: 9000,
     open: { path: "/" },
 

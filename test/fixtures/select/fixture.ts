@@ -1,5 +1,5 @@
+import {dom, obsArray, observable} from 'index';
 import {IOption, IOptionFull, select} from 'lib/widgets/select';
-import {dom, obsArray, observable} from '../../../index';
 
 function testDom() {
   const value = observable("apple");

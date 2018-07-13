@@ -41,7 +41,7 @@ declare module "selenium-webdriver" {
    */
   interface WebElement extends IFindInterface {
     doClick(): WebElementPromise;
-    doSendKeys(): WebElementPromise;
+    doSendKeys(...args: string[]): WebElementPromise;
     doSubmit(): WebElementPromise;
     doClear(): WebElementPromise;
 
@@ -101,7 +101,7 @@ Object.assign(WebElement.prototype, {
   doClick(this: WebElement): WebElementPromise {
     return new WebElementPromise(this.getDriver(), this.click().then(() => this));
   },
-  doSendKeys(this: WebElement, ...args: any[]): WebElementPromise {
+  doSendKeys(this: WebElement, ...args: string[]): WebElementPromise {
     return new WebElementPromise(this.getDriver(), this.sendKeys(...args).then(() => this));
   },
   doSubmit(this: WebElement): WebElementPromise {

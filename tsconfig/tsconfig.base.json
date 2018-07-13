@@ -5,6 +5,7 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "declaration": false,
+    "sourceMap": true,
     "baseUrl": "..",
     "rootDir": "..",
     "noEmit": true

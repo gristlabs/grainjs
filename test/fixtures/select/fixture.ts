@@ -11,12 +11,12 @@ function testDom() {
     choices.set(textarea.value.trim().split("\n"));
   }
 
-  const richChoices: Array<IOptionFull<object>> = [
-    {value: {a: 1}, label: "A1"},
-    {value: {b: 2}, label: "B2", disabled: true},
-    {value: {c: 3}, label: "C3"},
+  const numChoices: Array<IOptionFull<number>> = [
+    {value: 1.5, label: "A1"},
+    {value: 2.1, label: "B2", disabled: true},
+    {value: 3.9, label: "C3"},
   ];
-  const richValue = observable(richChoices[2].value);
+  const numValue = observable(numChoices[2].value);
 
   return [
     dom('div#test_main',
@@ -34,13 +34,19 @@ function testDom() {
     ),
     dom('div#test_array',
       select(value, ["apple", "cherry", "tomato", "orange"]),
-      dom('div', "Current value: ", dom('br'),
-        dom('b', dom.text(value))),
     ),
-    dom('div#test_rich',
-      select(richValue, richChoices),
-      dom('div#test_rich_value', "Current value:", dom('br'),
-        dom('b', dom.text((use) => JSON.stringify(use(richValue))))),
+    dom('div#test_num',
+      select(numValue, numChoices),
+      dom('div', "Current value:", dom('br'),
+        dom('input#test_num_value', {type: 'text', size: "6"}, dom.prop('value', numValue),
+          dom.on('input', (e, elem) => {
+            const val = (elem as HTMLInputElement).value;
+            const n = parseFloat(val);
+            if (!isNaN(n)) { numValue.set(n); }
+          })),
+        " type: ",
+        dom('b#test_num_type', dom.text((use) => String(typeof use(numValue)))),
+      ),
     ),
   ];
 }

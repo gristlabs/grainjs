@@ -69,6 +69,7 @@ export class Subscription {
    * Disposes the computed, unsubscribing it from all observables it depends on.
    */
   public dispose() {
+    this._callback = null as any;
     for (const lis of this._depListeners) { lis.dispose(); }
     for (const lis of this._dynDeps.values()) { lis.dispose(); }
   }
@@ -101,6 +102,7 @@ export class Subscription {
    * I.e. adds dynamic subscriptions created via `use(obs)`, and disposes those no longer used.
    */
   private _evaluate() {
+    if (this._callback === null) { return; }      // Means this Subscription has been disposed.
     try {
       // Note that this is faster than using .map().
       const readArgs = [this._useFunc];

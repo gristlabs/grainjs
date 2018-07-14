@@ -7,7 +7,7 @@ describe('select', () => {
 
   before(async function() {
     this.timeout(20000);      // Set a longer default timeout.
-    await driver.get(`${server.getHost()}/input/fixture.html`);
+    await driver.get(`${server.getHost()}/input/`);
   });
 
   function getAllValues() {

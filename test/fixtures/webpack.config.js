@@ -12,9 +12,9 @@
 const glob = require('glob');
 const path = require('path');
 
-// Build each */fixture.ts as its own bundle.
+// Build each */index.ts as its own bundle.
 const entries = {};
-for (const fixture of glob.sync(`${__dirname}/*/fixture.ts`)) {
+for (const fixture of glob.sync(`${__dirname}/*/index.ts`)) {
   entries[path.basename(path.dirname(fixture))] = fixture;
 }
 
@@ -49,7 +49,7 @@ module.exports = {
       app.use((ctx, next) => {
         if (ctx.url === '/') {
           ctx.type = 'html';
-          ctx.body = Object.keys(entries).map((e) => `<a href="${e}/fixture.html">${e}</a><br>\n`).join('');
+          ctx.body = Object.keys(entries).map((e) => `<a href="${e}/">${e}</a><br>\n`).join('');
         }
         return next();
       });

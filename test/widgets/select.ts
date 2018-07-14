@@ -9,7 +9,7 @@ describe('select', () => {
 
   before(async function() {
     this.timeout(20000);      // Set a longer default timeout.
-    await driver.get(`${server.getHost()}/select/fixture.html`);
+    await driver.get(`${server.getHost()}/select/`);
   });
 
   it('should update observable when value is selected', async () => {

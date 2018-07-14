@@ -2,7 +2,7 @@ import {Key} from 'selenium-webdriver';
 import {assert, driver, useServer} from '../tools/webdriver-mocha';
 import {server} from '../tools/webpack-test-server';
 
-describe('select', () => {
+describe('input', () => {
   useServer(server);
 
   before(async function() {
@@ -39,15 +39,24 @@ describe('select', () => {
     assert.deepEqual(await getAllValues(), ['help', 'help', 'help']);
   });
 
-  it('should not update on invalid value when onlyIfValid', async () => {
+  it('should update isValid observable when set', async () => {
     await driver.find('#test2 input').doClear().sendKeys("user", Key.ENTER);
-    assert.deepEqual(await getAllValues(), ['', 'user', '']);
+    assert.deepEqual(await getAllValues(), ['user', 'user', 'user']);
+    assert.equal(await driver.find('#test2 b').getText(), 'false');
 
     await driver.find('#test2 input').sendKeys("@a.com", Key.ENTER);
     assert.deepEqual(await getAllValues(), ['user@a.com', 'user@a.com', 'user@a.com']);
+    assert.equal(await driver.find('#test2 b').getText(), 'true');
 
     await driver.find('#test2 input').sendKeys(".", Key.ENTER);
-    assert.deepEqual(await getAllValues(), ['user@a.com', 'user@a.com.', 'user@a.com']);
+    assert.deepEqual(await getAllValues(), ['user@a.com.', 'user@a.com.', 'user@a.com.']);
+    assert.equal(await driver.find('#test2 b').getText(), 'false');
+
+    // When we update another input, the observable changes, and we are testing that validity
+    // changes with it.
+    await driver.find('#test1 input').doClear().sendKeys("a@b.c", Key.ENTER);
+    assert.deepEqual(await getAllValues(), ['a@b.c', 'a@b.c', 'a@b.c']);
+    assert.equal(await driver.find('#test2 b').getText(), 'true');
   });
 
   it('should update on every keystroke with onInput', async () => {

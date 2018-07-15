@@ -8,7 +8,10 @@
     "sourceMap": true,
     "baseUrl": "..",
     "rootDir": "..",
-    "noEmit": true
+    "noEmit": true,
+    "plugins": [{
+      "name": "tslint-language-service"
+    }]
   },
   "include": [
     "../index.ts",

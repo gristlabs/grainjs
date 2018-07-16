@@ -45,10 +45,10 @@
 //  styled(select, `styles...`)
 //  styled(select, `${h2.css} styles...`)
 import {dom, DomElementArg, DomElementMethod} from 'index';
-type DomCreateFunc0 = (...args: DomElementArg[]) => Element;
-type DomCreateFunc1<T> = (a: T, ...args: DomElementArg[]) => Element;
-type DomCreateFunc2<T, U> = (a: T, b: U, ...args: DomElementArg[]) => Element;
-type DomCreateFunc3<T, U, W> = (a: T, b: U, c: W, ...args: DomElementArg[]) => Element;
+type DomCreateFunc0<R> = (...args: DomElementArg[]) => R;
+type DomCreateFunc1<R, T> = (a: T, ...args: DomElementArg[]) => R;
+type DomCreateFunc2<R, T, U> = (a: T, b: U, ...args: DomElementArg[]) => R;
+type DomCreateFunc3<R, T, U, W> = (a: T, b: U, c: W, ...args: DomElementArg[]) => R;
 
 export interface IClsName {
   className: string;
@@ -56,10 +56,13 @@ export interface IClsName {
 }
 
 // In os: export function dom(tagString: string, ...args: DomElementArg[]): HTMLElement {
-export function styled(tag: string|DomCreateFunc0, styles: string): DomCreateFunc0 & IClsName;
-export function styled<T>(creator: DomCreateFunc1<T>, styles: string): DomCreateFunc1<T> & IClsName;
-export function styled<T, U>(creator: DomCreateFunc2<T, U>, styles: string): DomCreateFunc2<T, U> & IClsName;
-export function styled<T, U, W>(creator: DomCreateFunc3<T, U, W>, styles: string): DomCreateFunc3<T, U, W> & IClsName;
+export function styled<R>(tag: string, styles: string): DomCreateFunc0<Element> & IClsName;
+export function styled<R>(creator: DomCreateFunc0<R>, styles: string): DomCreateFunc0<R> & IClsName;
+export function styled<R, T>(creator: DomCreateFunc1<R, T>, styles: string): DomCreateFunc1<R, T> & IClsName;
+export function styled<R, T, U>(
+  creator: DomCreateFunc2<R, T, U>, styles: string): DomCreateFunc2<R, T, U> & IClsName;
+export function styled<R, T, U, W>(
+  creator: DomCreateFunc3<R, T, U, W>, styles: string): DomCreateFunc3<R, T, U, W> & IClsName;
 export function styled(creator: any, styles: string): IClsName {
   const style = new StylePiece(styles);
   const newCreator = (typeof creator === 'string') ?
@@ -85,7 +88,7 @@ class StylePiece {
   private static _next: number = 1;
   private static _unmounted = new Set<StylePiece>();
 
-  private static _nextClassName() { return `_grist_class_${this._next++}`; }
+  private static _nextClassName() { return `_grain${this._next++}`; }
 
   private static _mountAll(): void {
     const sheet = Array.from(this._unmounted, (p) => createCssRules(p.className, p._styles))

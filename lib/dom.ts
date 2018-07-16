@@ -11,7 +11,7 @@
  *
  * DOM can also be created and modified inline during creation:
  *  dom('a#id.c1',
- *      dom.cssClass('c2'), dom.attr('href', url),
+ *      dom.cls('c2'), dom.attr('href', url),
  *      dom.text('Hello '), dom('span', dom.text('world')))
  *    creates Node <a id="link" class="c1 c2" href={{url}}Hello <span>world</span></a>,
  *    identical to the first example above.
@@ -68,10 +68,6 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const show            = _domMethods.show;
   export const hideElem        = _domMethods.hideElem;
   export const hide            = _domMethods.hide;
-  export const toggleClassElem = _domMethods.toggleClassElem;
-  export const toggleClass     = _domMethods.toggleClass;
-  export const cssClassElem    = _domMethods.cssClassElem;
-  export const cssClass        = _domMethods.cssClass;
   export const clsElem         = _domMethods.clsElem;
   export const cls             = _domMethods.cls;
   export const clsPrefix       = _domMethods.clsPrefix;

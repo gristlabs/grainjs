@@ -147,49 +147,6 @@ export function hide(boolValueObs: BindableValue<boolean>): DomElementMethod {
 }
 
 /**
- * Toggles a css class `className` according to a boolean value.
- * The `toggleClass()` variant takes no `elem`, and `boolValue` may be an observable or function.
- * @param {Element} elem: The element to update.
- * @param {String} className: The name of the class to toggle.
- * @param {Boolean} boolValue: Whether to add or remove the class.
- */
-export function toggleClassElem(elem: Element, className: string, boolValue: boolean): void {
-  elem.classList.toggle(className, Boolean(boolValue));
-}
-export function toggleClass(className: string, boolValueObs: BindableValue<boolean>): DomElementMethod {
-  return (elem) => _subscribe(elem, boolValueObs, (val) => toggleClassElem(elem, className, val));
-}
-
-/**
- * Adds a css class of the given name. A falsy name does not add any class. The `cssClass()`
- * variant takes no `elem`, and `className` may be an observable or function. In this case, when
- * the class name changes, the previously-set class name is removed.
- * @param {Element} elem: The element to update.
- * @param {String} className: The name of the class to add.
- */
-export function cssClassElem(elem: Element, className: string): void {
-  if (className) {
-    elem.classList.add(className);
-  }
-}
-export function cssClass(classNameObs: BindableValue<string>): DomElementMethod {
-  return (elem) => {
-    let prevClass: string|null = null;
-    _subscribe(elem, classNameObs, (name: string) => {
-      if (prevClass) {
-        elem.classList.remove(prevClass);
-      }
-      prevClass = name;
-      if (name) {
-        elem.classList.add(name);
-      }
-    });
-  };
-}
-
-// TODO: Remove toggleClass* and cssClass* methods. Single cls is simpler and only a
-// single-conditional more expensive than either.
-/**
  * Sets or toggles the given css class className.
  */
 export function clsElem(elem: Element, className: string, boolValue: boolean = true): void {
@@ -211,7 +168,7 @@ export function cls(className: string, boolValue?: BindableValue<boolean>): DomE
 export function cls(className: BindableValue<string>): DomElementMethod;
 export function cls(className: string|BindableValue<string>, boolValue?: BindableValue<boolean>): DomElementMethod {
   if (typeof className !== 'string') {
-    return _clsDynamic('', className);
+    return _clsDynamicPrefix('', className);
   } else if (!boolValue || typeof boolValue === 'boolean') {
     return (elem) => clsElem(elem, className, boolValue);
   } else {
@@ -227,13 +184,13 @@ export function clsPrefix(prefix: string, className: BindableValue<string>): Dom
 export function clsPrefix(prefix: string, className: string|BindableValue<string>,
                           boolValue?: BindableValue<boolean>): DomElementMethod {
   if (typeof className !== 'string') {
-    return _clsDynamic(prefix, className);
+    return _clsDynamicPrefix(prefix, className);
   } else {
     return cls(prefix + className, boolValue);
   }
 }
 
-function _clsDynamic(prefix: string, className: BindableValue<string>): DomElementMethod {
+function _clsDynamicPrefix(prefix: string, className: BindableValue<string>): DomElementMethod {
   return (elem) => {
     let prevClass: string|null = null;
     _subscribe(elem, className, (name: string) => {

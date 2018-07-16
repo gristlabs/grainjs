@@ -120,7 +120,7 @@ describe('domevent', function() {
 
   describe('onKeyPress', function() {
     it("should dispatch keypress event based on key", function() {
-      const elemA = document.getElementById('a'); 
+      const elemA = document.getElementById('a');
       const stubEnter = sinon.stub(), stubDel = sinon.stub();
 
       domevent.onKeyPressElem(elemA, {

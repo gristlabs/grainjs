@@ -505,7 +505,7 @@ describe('dom', function() {
       assertResetSingleCall(spies1.onDispose, spies1);
       assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
 
-      // Now check that in case of an exception, already-constructed parts get disposed. 
+      // Now check that in case of an exception, already-constructed parts get disposed.
       assert.throws(() =>
         dom('div', 'Hello',
           dom.createInit(Comp, 'foo', spies1, c => { spy1(c); }),

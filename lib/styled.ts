@@ -44,7 +44,7 @@
 //  h2 = styled('h2', `styles...`)
 //  styled(select, `styles...`)
 //  styled(select, `${h2.css} styles...`)
-import {dom, DomElementArg, DomElementMethod} from 'index';
+import {dom, DomElementArg, DomElementMethod} from './dom';
 type DomCreateFunc0<R> = (...args: DomElementArg[]) => R;
 type DomCreateFunc1<R, T> = (a: T, ...args: DomElementArg[]) => R;
 type DomCreateFunc2<R, T, U> = (a: T, b: U, ...args: DomElementArg[]) => R;

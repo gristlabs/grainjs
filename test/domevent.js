@@ -1,8 +1,10 @@
 "use strict";
 
-/* global describe, before, it */
+/* global describe, before, after, it */
 
 const domevent = require('../lib/domevent');
+const {dom} = require('../lib/dom');
+const {pushGlobals, popGlobals} = require('../lib/browserGlobals');
 const { assertResetSingleCall } = require('./testutil2');
 
 const assert = require('assert');
@@ -21,6 +23,11 @@ describe('domevent', function() {
       "</body></html>");
     window = jsdomDoc.window;
     document = window.document;
+    pushGlobals(jsdomDoc.window);
+  });
+
+  after(function() {
+    popGlobals();
   });
 
   function makeEvent(eventType) {
@@ -108,6 +115,44 @@ describe('domevent', function() {
       sinon.assert.notCalled(stubB);
       sinon.assert.notCalled(stubDelB);
       assertResetSingleCall(stubA, undefined, e4, elemA);
+    });
+  });
+
+  describe('onKeyPress', function() {
+    it("should dispatch keypress event based on key", function() {
+      const elemA = document.getElementById('a'); 
+      const stubEnter = sinon.stub(), stubDel = sinon.stub();
+
+      domevent.onKeyPressElem(elemA, {
+        Enter: stubEnter,
+        Delete: stubDel
+      });
+
+      const e1 = new window.KeyboardEvent('keypress', {key: 'Enter'});
+      elemA.dispatchEvent(e1);
+      assertResetSingleCall(stubEnter, undefined, e1, elemA);
+      sinon.assert.notCalled(stubDel);
+
+      const e2 = new window.KeyboardEvent('keypress', {key: 'Delete'});
+      elemA.dispatchEvent(e2);
+      sinon.assert.notCalled(stubEnter);
+      assertResetSingleCall(stubDel, undefined, e2, elemA);
+
+      const e3 = new window.KeyboardEvent('keypress', {key: 'Escape'});
+      elemA.dispatchEvent(e3);
+      sinon.assert.notCalled(stubEnter);
+      sinon.assert.notCalled(stubDel);
+    });
+
+    it("should work as a method to dom()", function() {
+      const stubEnter = sinon.stub(), stubDel = sinon.stub();
+      const elem = dom('input#test', {type: 'text'},
+        dom.onKeyPress({Enter: stubEnter, Delete: stubDel}));
+
+      const e1 = new window.KeyboardEvent('keypress', {key: 'Enter'});
+      elem.dispatchEvent(e1);
+      assertResetSingleCall(stubEnter, undefined, e1, elem);
+      sinon.assert.notCalled(stubDel);
     });
   });
 });

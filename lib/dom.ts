@@ -88,4 +88,6 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const on              = domevent.on;
   export const onMatchElem     = domevent.onMatchElem;
   export const onMatch         = domevent.onMatch;
+  export const onKeyPressElem  = domevent.onKeyPressElem;
+  export const onKeyPress      = domevent.onKeyPress;
 }

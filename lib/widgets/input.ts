@@ -46,8 +46,6 @@ export function input(obs: Observable<string>, options: IInputOptions, ...args: 
       null),
     options.onInput ? dom.on('input', (e, elem) => setValue(elem)) : null,
     dom.on('change', (e, elem) => setValue(elem)),
-    dom.on('keypress', (e, elem) => {
-      if ((e as KeyboardEvent).key === 'Enter') { setValue(elem); }
-    }),
+    dom.onKeyPress({Enter: (e, elem) => setValue(elem)}),
   ) as HTMLInputElement;
 }

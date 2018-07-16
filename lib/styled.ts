@@ -51,7 +51,8 @@ type DomCreateFunc2<T, U> = (a: T, b: U, ...args: DomElementArg[]) => Element;
 type DomCreateFunc3<T, U, W> = (a: T, b: U, c: W, ...args: DomElementArg[]) => Element;
 
 export interface IClsName {
-  cls: string;
+  className: string;
+  cls: typeof dom.cls;
 }
 
 // In os: export function dom(tagString: string, ...args: DomElementArg[]): HTMLElement {
@@ -59,12 +60,15 @@ export function styled(tag: string|DomCreateFunc0, styles: string): DomCreateFun
 export function styled<T>(creator: DomCreateFunc1<T>, styles: string): DomCreateFunc1<T> & IClsName;
 export function styled<T, U>(creator: DomCreateFunc2<T, U>, styles: string): DomCreateFunc2<T, U> & IClsName;
 export function styled<T, U, W>(creator: DomCreateFunc3<T, U, W>, styles: string): DomCreateFunc3<T, U, W> & IClsName;
-export function styled(creator: any, styles: string): any {
+export function styled(creator: any, styles: string): IClsName {
   const style = new StylePiece(styles);
-  return Object.assign((typeof creator === 'string') ?
+  const newCreator = (typeof creator === 'string') ?
     (...args: DomElementArg[]) => dom(creator, ...args, style.use()) :
-    (...args: any[]) => creator(...args, style.use()),
-    {cls: style.cls});
+    (...args: any[]) => creator(...args, style.use());
+  return Object.assign(newCreator, {
+    className: style.className,
+    cls: dom.clsPrefix.bind(null, style.className),
+  });
 }
 
 function createCssRules(className: string, styles: string) {
@@ -84,7 +88,7 @@ class StylePiece {
   private static _nextClassName() { return `_grist_class_${this._next++}`; }
 
   private static _mountAll(): void {
-    const sheet = Array.from(this._unmounted, (p) => createCssRules(p._className, p._styles))
+    const sheet = Array.from(this._unmounted, (p) => createCssRules(p.className, p._styles))
     .join('\n\n');
 
     document.head.appendChild(dom('style', sheet));
@@ -94,18 +98,16 @@ class StylePiece {
     this._unmounted.clear();
   }
 
-  private _className: string;
+  public readonly className: string;
   private _mounted: boolean = false;
 
   constructor(private _styles: string) {
-    this._className = StylePiece._nextClassName();
+    this.className = StylePiece._nextClassName();
     StylePiece._unmounted.add(this);
   }
 
   public use(): DomElementMethod {
     if (!this._mounted) { StylePiece._mountAll(); }
-    return (elem) => { elem.classList.add(this._className); };
+    return (elem) => { elem.classList.add(this.className); };
   }
-
-  public get cls(): string { return this._className; }
 }

@@ -187,6 +187,63 @@ export function cssClass(classNameObs: BindableValue<string>): DomElementMethod 
   };
 }
 
+// TODO: Remove toggleClass* and cssClass* methods. Single cls is simpler and only a
+// single-conditional more expensive than either.
+/**
+ * Sets or toggles the given css class className.
+ */
+export function clsElem(elem: Element, className: string, boolValue: boolean = true): void {
+  elem.classList.toggle(className, Boolean(boolValue));
+}
+
+/**
+ * Sets or toggles a css class className. If className is an observable, it will be replaced when
+ * the observable changes. If a plain string, then an optional second boolean observable may be
+ * given, which will toggle it.
+ *
+ *    dom.cls('foo')                                // Sets className 'foo'
+ *    dom.cls('foo', isFoo);                        // Toggles 'foo' className according to observable.
+ *    dom.cls('foo', (use) => use(isFoo));          // Toggles 'foo' className according to observable.
+ *    dom.cls(fooClass);                            // Sets className to the value of fooClass observable
+ *    dom.cls((use) => `prefix-${use(fooClass)}`);  // Sets className to prefix- plus fooClass observable.
+ */
+export function cls(className: string, boolValue?: BindableValue<boolean>): DomElementMethod;
+export function cls(className: BindableValue<string>): DomElementMethod;
+export function cls(className: string|BindableValue<string>, boolValue?: BindableValue<boolean>): DomElementMethod {
+  if (typeof className !== 'string') {
+    return _clsDynamic('', className);
+  } else if (!boolValue || typeof boolValue === 'boolean') {
+    return (elem) => clsElem(elem, className, boolValue);
+  } else {
+    return (elem) => _subscribe(elem, boolValue, (val) => clsElem(elem, className, val));
+  }
+}
+
+/**
+ * Just like cls() but prepends a prefix to className, including when it is an observable.
+ */
+export function clsPrefix(prefix: string, className: string, boolValue?: BindableValue<boolean>): DomElementMethod;
+export function clsPrefix(prefix: string, className: BindableValue<string>): DomElementMethod;
+export function clsPrefix(prefix: string, className: string|BindableValue<string>,
+                          boolValue?: BindableValue<boolean>): DomElementMethod {
+  if (typeof className !== 'string') {
+    return _clsDynamic(prefix, className);
+  } else {
+    return cls(prefix + className, boolValue);
+  }
+}
+
+function _clsDynamic(prefix: string, className: BindableValue<string>): DomElementMethod {
+  return (elem) => {
+    let prevClass: string|null = null;
+    _subscribe(elem, className, (name: string) => {
+      if (prevClass) { elem.classList.remove(prevClass); }
+      prevClass = name ? prefix + name : null;
+      if (prevClass) { elem.classList.add(prevClass); }
+    });
+  };
+}
+
 /**
  * Associate arbitrary data with a DOM element. The `data()` variant takes no `elem`, and `value`
  * may be an observable or function.

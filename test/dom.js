@@ -236,8 +236,8 @@ describe('dom', function() {
                      dom.prop('value', use => "prop" + use(obs) + use(width)),
                      dom.text(obs),
                      dom.style('width', use => use(width) + 'px'),
-                     dom.toggleClass('isbar', use => use(obs) === 'bar'),
-                     dom.cssClass(use => 'class' + use(obs)),
+                     dom.cls('isbar', use => use(obs) === 'bar'),
+                     dom.cls(use => 'class' + use(obs)),
                      child1 = dom('span', dom.hide(use => use(width) < 10)),
                      child2 = dom('span', dom.show(use => use(width) < 10)));
 
@@ -279,6 +279,36 @@ describe('dom', function() {
       assert.equal(elem.value, 'propbar5');
       assert.equal(child1.style.display, 'none');
       assert.equal(child2.style.display, '');
+    });
+
+    it('should support all variants of cls() and clsPrefix()', function() {
+      const isFoo = observable(false);
+      const fooClass = observable('bar');
+      const elem = dom('div',
+        // These are straight from documentation.
+        dom.cls('foo1'),                               // Sets className 'foo'
+        dom.cls('foo2', isFoo),                        // Toggles 'foo' className according to observable.
+        dom.cls('foo3', (use) => use(isFoo)),          // Toggles 'foo' className according to observable.
+        dom.cls(fooClass),                            // Sets className to the value of fooClass observable
+        dom.cls((use) => `prefix-${use(fooClass)}`),  // Sets className to prefix- plus fooClass observable.
+        dom.clsPrefix('x-', 'foo1'),
+        dom.clsPrefix('x-', 'foo2', isFoo),
+        dom.clsPrefix('x-', 'foo3', (use) => use(isFoo)),
+        dom.clsPrefix('x-', fooClass),
+        dom.clsPrefix('x-', (use) => `prefix-${use(fooClass)}`)
+      );
+      assert.sameMembers(elem.className.split(' '), 'foo1 bar prefix-bar x-foo1 x-bar x-prefix-bar'.split(' '));
+      isFoo.set(true);
+      assert.sameMembers(elem.className.split(' '),
+        'foo1 foo2 foo3 bar prefix-bar x-foo1 x-foo2 x-foo3 x-bar x-prefix-bar'.split(' '));
+      isFoo.set(false);
+      assert.sameMembers(elem.className.split(' '), 'foo1 bar prefix-bar x-foo1 x-bar x-prefix-bar'.split(' '));
+      fooClass.set('BAR');
+      assert.sameMembers(elem.className.split(' '), 'foo1 BAR prefix-BAR x-foo1 x-BAR x-prefix-BAR'.split(' '));
+      fooClass.set('');
+      assert.sameMembers(elem.className.split(' '), 'foo1 prefix- x-foo1 x-prefix-'.split(' '));
+      fooClass.set('bar');
+      assert.sameMembers(elem.className.split(' '), 'foo1 bar prefix-bar x-foo1 x-bar x-prefix-bar'.split(' '));
     });
 
     it('should support associating data with DOM', function() {
@@ -360,7 +390,7 @@ describe('dom', function() {
         spies.onConstruct(arg);
         this.onDispose(() => spies.onDispose());
         this.fakeAttr = "fakeAttr";   // This should NOT become an attribute.
-        this.setContent(dom('div', dom.toggleClass(arg.toUpperCase(), true),
+        this.setContent(dom('div', dom.cls(arg.toUpperCase(), true),
           spies.onRender,
           dom.onDispose(spies.onDomDispose)));
       }
@@ -475,7 +505,7 @@ describe('dom', function() {
       assertResetSingleCall(spies1.onDispose, spies1);
       assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('className', 'FOO'));
 
-      // Now check that in case of an exception, already-constructed parts get disposed. 
+      // Now check that in case of an exception, already-constructed parts get disposed.
       assert.throws(() =>
         dom('div', 'Hello',
           dom.createInit(Comp, 'foo', spies1, c => { spy1(c); }),

@@ -125,3 +125,28 @@ export function onMatch(selector: string, eventType: string, callback: EventCB,
   // tslint:disable-next-line:no-unused-expression
   return (elem) => { new DomEventMatchListener(elem, eventType, callback, useCapture, selector); };
 }
+
+/**
+ * Listen to key presses, with specified per-key callbacks. The `onKeyPress()` variant takes no
+ * `elem` argument, and may be used as an argument to dom().
+ *
+ * Key names are listed at https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+ *
+ * For example:
+ *
+ *    dom('input', ...
+ *      dom.onKeyPress({
+ *        Enter: (e, elem) => console.log("Enter pressed"),
+ *        Escape: (e, elem) => console.log("Escape pressed"),
+ *      })
+ *    )
+ */
+export function onKeyPressElem(elem: EventTarget, callbacks: {[key: string]: EventCB}): IDisposable {
+  return onElem(elem, 'keypress', (e, _elem) => {
+    const cb = callbacks[(e as KeyboardEvent).key];
+    if (cb) { cb(e, _elem); }
+  });
+}
+export function onKeyPress(callbacks: {[key: string]: EventCB}): DomElementMethod {
+  return (elem) => { onKeyPressElem(elem, callbacks); };
+}

@@ -147,42 +147,56 @@ export function hide(boolValueObs: BindableValue<boolean>): DomElementMethod {
 }
 
 /**
- * Toggles a css class `className` according to a boolean value.
- * The `toggleClass()` variant takes no `elem`, and `boolValue` may be an observable or function.
- * @param {Element} elem: The element to update.
- * @param {String} className: The name of the class to toggle.
- * @param {Boolean} boolValue: Whether to add or remove the class.
+ * Sets or toggles the given css class className.
  */
-export function toggleClassElem(elem: Element, className: string, boolValue: boolean): void {
+export function clsElem(elem: Element, className: string, boolValue: boolean = true): void {
   elem.classList.toggle(className, Boolean(boolValue));
-}
-export function toggleClass(className: string, boolValueObs: BindableValue<boolean>): DomElementMethod {
-  return (elem) => _subscribe(elem, boolValueObs, (val) => toggleClassElem(elem, className, val));
 }
 
 /**
- * Adds a css class of the given name. A falsy name does not add any class. The `cssClass()`
- * variant takes no `elem`, and `className` may be an observable or function. In this case, when
- * the class name changes, the previously-set class name is removed.
- * @param {Element} elem: The element to update.
- * @param {String} className: The name of the class to add.
+ * Sets or toggles a css class className. If className is an observable, it will be replaced when
+ * the observable changes. If a plain string, then an optional second boolean observable may be
+ * given, which will toggle it.
+ *
+ *    dom.cls('foo')                                // Sets className 'foo'
+ *    dom.cls('foo', isFoo);                        // Toggles 'foo' className according to observable.
+ *    dom.cls('foo', (use) => use(isFoo));          // Toggles 'foo' className according to observable.
+ *    dom.cls(fooClass);                            // Sets className to the value of fooClass observable
+ *    dom.cls((use) => `prefix-${use(fooClass)}`);  // Sets className to prefix- plus fooClass observable.
  */
-export function cssClassElem(elem: Element, className: string): void {
-  if (className) {
-    elem.classList.add(className);
+export function cls(className: string, boolValue?: BindableValue<boolean>): DomElementMethod;
+export function cls(className: BindableValue<string>): DomElementMethod;
+export function cls(className: string|BindableValue<string>, boolValue?: BindableValue<boolean>): DomElementMethod {
+  if (typeof className !== 'string') {
+    return _clsDynamicPrefix('', className);
+  } else if (!boolValue || typeof boolValue === 'boolean') {
+    return (elem) => clsElem(elem, className, boolValue);
+  } else {
+    return (elem) => _subscribe(elem, boolValue, (val) => clsElem(elem, className, val));
   }
 }
-export function cssClass(classNameObs: BindableValue<string>): DomElementMethod {
+
+/**
+ * Just like cls() but prepends a prefix to className, including when it is an observable.
+ */
+export function clsPrefix(prefix: string, className: string, boolValue?: BindableValue<boolean>): DomElementMethod;
+export function clsPrefix(prefix: string, className: BindableValue<string>): DomElementMethod;
+export function clsPrefix(prefix: string, className: string|BindableValue<string>,
+                          boolValue?: BindableValue<boolean>): DomElementMethod {
+  if (typeof className !== 'string') {
+    return _clsDynamicPrefix(prefix, className);
+  } else {
+    return cls(prefix + className, boolValue);
+  }
+}
+
+function _clsDynamicPrefix(prefix: string, className: BindableValue<string>): DomElementMethod {
   return (elem) => {
     let prevClass: string|null = null;
-    _subscribe(elem, classNameObs, (name: string) => {
-      if (prevClass) {
-        elem.classList.remove(prevClass);
-      }
-      prevClass = name;
-      if (name) {
-        elem.classList.add(name);
-      }
+    _subscribe(elem, className, (name: string) => {
+      if (prevClass) { elem.classList.remove(prevClass); }
+      prevClass = name ? prefix + name : null;
+      if (prevClass) { elem.classList.add(prevClass); }
     });
   };
 }

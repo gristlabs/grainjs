@@ -60,10 +60,10 @@
 import {G} from './browserGlobals';
 import {dom, DomElementArg, DomElementMethod} from './dom';
 
-type DomCreateFunc0<R> = (...args: DomElementArg[]) => R;
-type DomCreateFunc1<R, T> = (a: T, ...args: DomElementArg[]) => R;
-type DomCreateFunc2<R, T, U> = (a: T, b: U, ...args: DomElementArg[]) => R;
-type DomCreateFunc3<R, T, U, W> = (a: T, b: U, c: W, ...args: DomElementArg[]) => R;
+export type DomCreateFunc0<R> = (...args: DomElementArg[]) => R;
+export type DomCreateFunc1<R, T> = (a: T, ...args: DomElementArg[]) => R;
+export type DomCreateFunc2<R, T, U> = (a: T, b: U, ...args: DomElementArg[]) => R;
+export type DomCreateFunc3<R, T, U, W> = (a: T, b: U, c: W, ...args: DomElementArg[]) => R;
 
 // The value returned by styled() matches the input (first argument), and also implements IClsName
 // interface.

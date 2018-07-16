@@ -77,6 +77,9 @@ after(async function() {
   if (countFailed > 0 && noexit) {
     const files = new Set<string>();
     this.test.parent.eachTest((test: any) => { if (test.state === 'failed') { files.add(test.file); }});
+
+    // Wait a bit to let mocha print out its errors before REPL prints its prompts.
+    await new Promise((resolve) => setTimeout(resolve, 50));
     startRepl(Array.from(files));
   } else {
     await cleanup();
@@ -90,9 +93,7 @@ async function cleanup() {
   await Promise.all(Array.from(_servers, (server) => server.stop()));
 }
 
-async function startRepl(files: string[]) {
-  // Wait a bit to let mocha print out its errors before REPL prints its prompts.
-  await new Promise((resolve) => setTimeout(resolve, 50));
+function startRepl(files: string[]) {
   // Continue running by keeping server and webdriver, and waiting for an hour.
   // tslint:disable:no-console
   console.log("Not exiting. Abort with Ctrl-C, or type '.exit'");

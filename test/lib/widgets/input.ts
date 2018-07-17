@@ -1,6 +1,5 @@
-import {Key} from 'selenium-webdriver';
-import {assert, driver, useServer} from '../tools/webdriver-mocha';
-import {server} from '../tools/webpack-test-server';
+import {assert, driver, Key, useServer} from 'mocha-webdriver';
+import {server} from '../../tools/webpack-test-server';
 
 describe('input', () => {
   useServer(server);

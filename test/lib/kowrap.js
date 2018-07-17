@@ -3,9 +3,9 @@
 /* global describe, it */
 
 const ko = require('knockout');
-const {observable, bundleChanges} = require('../lib/observable');
-const {computed} = require('../lib/computed');
-const {fromKo, toKo} = require('../lib/kowrap');
+const {observable, bundleChanges} = require('../../lib/observable');
+const {computed} = require('../../lib/computed');
+const {fromKo, toKo} = require('../../lib/kowrap');
 const { assertResetSingleCall } = require('./testutil2');
 
 const assert = require('chai').assert;

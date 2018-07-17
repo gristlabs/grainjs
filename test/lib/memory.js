@@ -2,10 +2,10 @@
 /* global describe, before, it */
 
 const ko = require('knockout');
-const {Emitter} = require('../lib/emit');
-const {observable} = require('../lib/observable');
-const {computed} = require('../lib/computed');
-const {pureComputed} = require('../lib/pureComputed');
+const {Emitter} = require('../../lib/emit');
+const {observable} = require('../../lib/observable');
+const {computed} = require('../../lib/computed');
+const {pureComputed} = require('../../lib/pureComputed');
 const testutil = require('./testutil');
 
 const N = 5000;

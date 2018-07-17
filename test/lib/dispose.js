@@ -2,7 +2,7 @@
 
 /* global describe, it, afterEach */
 
-const {Disposable} = require('../lib/dispose');
+const {Disposable} = require('../../lib/dispose');
 const { consoleCapture } = require('./testutil');
 
 const assert = require('chai').assert;

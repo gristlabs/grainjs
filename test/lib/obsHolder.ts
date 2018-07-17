@@ -1,5 +1,5 @@
-import {Disposable} from '../lib/dispose';
-import {observable, obsHolder} from '../lib/observable';
+import {Disposable} from '../../lib/dispose';
+import {observable, obsHolder} from '../../lib/observable';
 import {assertResetSingleCall} from './testutil2';
 
 import {assert} from 'chai';

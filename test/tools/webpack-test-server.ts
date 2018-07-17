@@ -1,6 +1,6 @@
+import {IMochaServer} from 'mocha-webdriver';
 import * as merge from 'webpack-merge';
 import * as serve from 'webpack-serve';
-import {IMochaServer} from './webdriver-mocha';
 
 // tslint:disable:no-console
 

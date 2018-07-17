@@ -1,6 +1,6 @@
-import {computed} from '../lib/computed';
-import {Disposable} from '../lib/dispose';
-import {observable} from '../lib/observable';
+import {computed} from '../../lib/computed';
+import {Disposable} from '../../lib/dispose';
+import {observable} from '../../lib/observable';
 import {assertResetSingleCall} from './testutil2';
 
 import {assert} from 'chai';

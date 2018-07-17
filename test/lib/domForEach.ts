@@ -1,7 +1,7 @@
-import {popGlobals, pushGlobals} from '../lib/browserGlobals';
-import {dom} from '../lib/dom';
-import {obsArray} from '../lib/obsArray';
-import {observable} from '../lib/observable';
+import {popGlobals, pushGlobals} from '../../lib/browserGlobals';
+import {dom} from '../../lib/dom';
+import {obsArray} from '../../lib/obsArray';
+import {observable} from '../../lib/observable';
 import {assertResetFirstArgs} from './testutil2';
 
 import {assert} from 'chai';

@@ -1,5 +1,5 @@
-import {assert, driver, useServer} from '../tools/webdriver-mocha';
-import {server} from '../tools/webpack-test-server';
+import {assert, driver, useServer} from 'mocha-webdriver';
+import {server} from '../../tools/webpack-test-server';
 
 // TODO READ HELPFUL RECOMMENDATIONS AT:
 // https://wiki.saucelabs.com/display/DOCS/Best+Practices+for+Running+Tests

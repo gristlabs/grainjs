@@ -2,10 +2,10 @@
 
 /* global describe, before, it */
 
-const {observable, bundleChanges} = require('../lib/observable');
-const {computed} = require('../lib/computed');
-const {pureComputed} = require('../lib/pureComputed');
-const _computed_queue = require('../lib/_computed_queue');
+const {observable, bundleChanges} = require('../../lib/observable');
+const {computed} = require('../../lib/computed');
+const {pureComputed} = require('../../lib/pureComputed');
+const _computed_queue = require('../../lib/_computed_queue');
 
 const _ = require('lodash');
 const assert = require('chai').assert;

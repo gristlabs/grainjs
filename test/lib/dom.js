@@ -2,10 +2,10 @@
 
 /* global describe, before, after, it */
 
-const {dom} = require('../lib/dom');
-const {observable} = require('../lib/observable');
-const {computed} = require('../lib/computed');
-const {G, pushGlobals, popGlobals} = require('../lib/browserGlobals');
+const {dom} = require('../../lib/dom');
+const {observable} = require('../../lib/observable');
+const {computed} = require('../../lib/computed');
+const {G, pushGlobals, popGlobals} = require('../../lib/browserGlobals');
 const {consoleCapture} = require('./testutil');
 const {assertResetSingleCall} = require('./testutil2');
 

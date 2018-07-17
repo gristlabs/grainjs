@@ -1,6 +1,6 @@
 import {assert} from 'chai';
 import {min, range} from 'lodash';
-import {PriorityQueue} from '../lib/PriorityQueue';
+import {PriorityQueue} from '../../lib/PriorityQueue';
 
 // tslint:disable:no-var-requires
 const testutil = require('./testutil');

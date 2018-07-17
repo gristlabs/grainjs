@@ -1,6 +1,6 @@
-import {G, popGlobals, pushGlobals} from '../lib/browserGlobals';
-import {observable} from '../lib/observable';
-import {styled} from '../lib/styled';
+import {G, popGlobals, pushGlobals} from '../../lib/browserGlobals';
+import {observable} from '../../lib/observable';
+import {styled} from '../../lib/styled';
 
 import {assert} from 'chai';
 import {JSDOM} from 'jsdom';

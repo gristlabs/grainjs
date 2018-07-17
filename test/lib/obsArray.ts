@@ -1,7 +1,7 @@
-import {computed} from '../lib/computed';
-import {Disposable} from '../lib/dispose';
-import {computedArray, makeLiveIndex, MutableObsArray, ObsArray, obsArray} from '../lib/obsArray';
-import {bundleChanges, Observable, observable} from '../lib/observable';
+import {computed} from '../../lib/computed';
+import {Disposable} from '../../lib/dispose';
+import {computedArray, makeLiveIndex, MutableObsArray, ObsArray, obsArray} from '../../lib/obsArray';
+import {bundleChanges, Observable, observable} from '../../lib/observable';
 import {assertResetFirstArgs, assertResetSingleCall} from './testutil2';
 
 import {assert} from 'chai';

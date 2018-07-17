@@ -2,7 +2,7 @@
 
 /* global describe, before, beforeEach, afterEach, it */
 
-const util = require('../lib/util');
+const util = require('../../lib/util');
 
 const _ = require('lodash');
 const assert = require('chai').assert;

@@ -2,9 +2,9 @@
 
 /* global describe, before, after, it */
 
-const domevent = require('../lib/domevent');
-const {dom} = require('../lib/dom');
-const {pushGlobals, popGlobals} = require('../lib/browserGlobals');
+const domevent = require('../../lib/domevent');
+const {dom} = require('../../lib/dom');
+const {pushGlobals, popGlobals} = require('../../lib/browserGlobals');
 const { assertResetSingleCall } = require('./testutil2');
 
 const assert = require('assert');

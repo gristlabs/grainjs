@@ -1,6 +1,6 @@
 {
   "name": "grainjs",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "JS library from Grist Labs",
   "main": "dist/cjs/index",
   "module": "dist/esm/index",

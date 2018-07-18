@@ -326,3 +326,44 @@ function identity<T>(arg: T): T { return arg; }
 export function maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomMethod {
   return domComputed(boolValueObs, (value) => value ? contentFunc(value) : null);
 }
+
+/**
+ * A very simple setup to identify DOM elements for testing purposes. Here's the recommended
+ * usage.
+ *
+ *   // In the component to be tested.
+ *   import {noTestId, TestId} from 'grainjs';
+ *
+ *   function myComponent(myArgs, testId: TestId = noTestId) {
+ *     return dom(..., testId("some-name"),
+ *       dom(..., testId("another-name"), ...),
+ *     );
+ *   }
+ *
+ * In the fixture code using this component:
+ *
+ *   import {makeTestId} from 'grainjs';
+ *
+ *   dom(..., myComponent(myArgs, makeTestId('test-mycomp-'), ...)
+ *
+ * In the webdriver test code:
+ *
+ *   driver.find('.test-my-comp-some-name')
+ *   driver.find('.test-my-comp-another-name')
+ *
+ * When myComponent() is created with testId argument omitted, the testId() calls are no-ops. When
+ * makeTestId('test-foo-') is passed in, testId() calls simply add a css class with that prefix.
+ */
+export type TestId = (name: string) => DomElementMethod|null;
+
+/**
+ * See documentation for TestId above.
+ */
+export function makeTestId(prefix: string): TestId {
+  return clsPrefix.bind(null, prefix);
+}
+
+/**
+ * See documentation for TestId above.
+ */
+export const noTestId: TestId = (name: string) => null;

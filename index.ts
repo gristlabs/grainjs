@@ -8,3 +8,5 @@ export * from './lib/observable';
 export * from './lib/styled';
 export {ISubscribable, Subscription, subscribe} from './lib/subscribe';
 export * from './lib/util';
+export * from './lib/widgets/input';
+export * from './lib/widgets/select';

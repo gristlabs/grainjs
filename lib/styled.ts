@@ -125,15 +125,20 @@ function createCssRules(className: string, styles: string) {
   return `& {${mainRules}\n}\n${nestedRules}`.replace(/&/g, className);
 }
 
-class StylePiece {
-  // Index of next auto-generated css class name.
-  private static _next: number = 1;
+// Keep the counter for next class attached to the global window object rather than be a library
+// global. This way if by some chance multiple instance of grainjs are loaded into the page, it
+// still works without overwriting class names (which would be extremely confusing).
+function getNextStyleNum() {
+  const g = (G.window as any);
+  return g._grainNextStyleNum = (g._grainNextStyleNum || 0) + 1;
+}
 
+class StylePiece {
   // Set of all StylePieces created but not yet mounted.
   private static _unmounted = new Set<StylePiece>();
 
-  // Generate a new css class name.
-  private static _nextClassName() { return `_grain${this._next++}`; }
+  // Generate a new css class name. The suffix ensures that names like "&2" can't cause a conflict.
+  private static _nextClassName() { return `_grain${getNextStyleNum()}_`; }
 
   // Mount all unmounted StylePieces, and clear the _unmounted map.
   private static _mountAll(): void {

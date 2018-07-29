@@ -163,4 +163,42 @@ describe('styles', function() {
     assert.lengthOf(G.document.head.querySelectorAll('style'), 1);
     assert.lengthOf((G.document.head.querySelector('style')!.sheet as CSSStyleSheet).cssRules, 3);
   });
+
+  function getSelectorsInPage(): Set<string> {
+    const selectors = new Set<string>();
+    for (const s of G.document.head.querySelectorAll('style')) {
+      for (const r of Array.from((s.sheet as CSSStyleSheet).cssRules)) {
+        selectors.add((r as CSSStyleRule).selectorText);
+      }
+    }
+    return selectors;
+  }
+
+  it('should avoid class-name conflicts with multiple copies of the library', () => {
+    // We force a reload of styled.ts module, and make sure that style names don't repeat.
+    delete require.cache[require.resolve('../../lib/styled')];
+    const module1 = require('../../lib/styled');
+
+    const sspan = module1.styled('span', `color: red`);
+    const elemSpan = sspan('Hello');
+    assert.lengthOf(G.document.head.querySelectorAll('style'), 1);
+    assert.equal(G.window.getComputedStyle(elemSpan).color, 'red');
+
+    const selectorSet1 = getSelectorsInPage();
+
+    // We force a reload of styled.ts module, and make sure that style names don't repeat.
+    delete require.cache[require.resolve('../../lib/styled')];
+    const module2 = require('../../lib/styled');
+
+    // Specifically, check that style actually gets respected.
+    const sdiv = module2.styled('span', `color: blue`);
+    const elemDiv = sdiv('World');
+    assert.lengthOf(G.document.head.querySelectorAll('style'), 2);
+    assert.equal(G.window.getComputedStyle(elemDiv).color, 'blue');
+    assert.equal(G.window.getComputedStyle(elemSpan).color, 'red');
+
+    // And check that a new style actually got added.
+    const selectorSet2 = getSelectorsInPage();
+    assert.equal(selectorSet2.size, selectorSet1.size + 1);
+  });
 });

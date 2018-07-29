@@ -1,6 +1,6 @@
 import {G, popGlobals, pushGlobals} from '../../lib/browserGlobals';
 import {observable} from '../../lib/observable';
-import {styled} from '../../lib/styled';
+import {keyframes, styled} from '../../lib/styled';
 
 import {assert} from 'chai';
 import {JSDOM} from 'jsdom';
@@ -75,6 +75,52 @@ describe('styles', function() {
     assert.notInclude(elem.className, '-green');
     assert.include(elem.className, '-unknown');
     assert.equal(G.window.getComputedStyle(elem).color, 'red');  // From main element.
+  });
+
+  it('should support keyframes', () => {
+    const rotate = keyframes(`
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    `);
+    const spinDiv = styled('div', `
+      border: 1px solid red;
+      animation: ${rotate} 1.5s infinite linear;
+
+      &-foo { animation: ${rotate} 1.5s infinite linear; }
+      &-bar { animation: bar-frame 1.5s infinite linear; }
+
+      @keyframes bar-frame {
+        20% { transform: rotate(20deg); }
+        80% { transform: rotate(50deg); }
+      }
+    `);
+
+    const elem1 = G.document.body.appendChild(spinDiv());
+    const elem2 = G.document.body.appendChild(spinDiv(spinDiv.cls('-foo')));
+    const elem3 = G.document.body.appendChild(spinDiv(spinDiv.cls('-bar')));
+
+    const cssRules = (G.document.head.querySelector('style')!.sheet as CSSStyleSheet).cssRules;
+
+    // Select just the CSSKeyframesRules, and store them in a map by name.
+    const framesRules = Array.from(cssRules).filter((rule) =>
+      rule.constructor.name === 'CSSKeyframesRule') as CSSKeyframesRule[];
+    const framesMap = new Map(framesRules.map<[string, CSSKeyframesRule]>((r) => [r.name, r]));
+
+    function getKeytext(rule: CSSKeyframesRule) {
+      return Array.from(rule.cssRules, (r) => (r as CSSKeyframeRule).keyText);
+    }
+
+    const anim1 = G.window.getComputedStyle(elem1).animation!.split(' ')[0];
+    assert.isTrue(framesMap.has(anim1));
+    assert.deepEqual(getKeytext(framesMap.get(anim1)!), ["0%", "100%"]);
+
+    const anim2 = G.window.getComputedStyle(elem2).animation!.split(' ')[0];
+    assert.isTrue(framesMap.has(anim2));
+    assert.deepEqual(getKeytext(framesMap.get(anim2)!), ["0%", "100%"]);
+
+    const anim3 = G.window.getComputedStyle(elem3).animation!.split(' ')[0];
+    assert.isTrue(framesMap.has(anim3));
+    assert.deepEqual(getKeytext(framesMap.get(anim3)!), ["20%", "80%"]);
   });
 
   it('should allow wrapping existing components', () => {

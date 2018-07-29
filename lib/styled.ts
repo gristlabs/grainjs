@@ -54,6 +54,18 @@
  *      myButton(myButton.cls('-small'), 'Test')
  *
  * creates a button with both the myButton style above, and the style specified under "&-small".
+ *
+ * Animations with @keyframes may be created with a unique name by using the keyframes() helper:
+ *
+ *    const rotate360 = keyframes(`
+ *      from { transform: rotate(0deg); }
+ *      to { transform: rotate(360deg); }
+ *    `);
+ *
+ *    const Rotate = styled('div', `
+ *      display: inline-block;
+ *      animation: ${rotate360} 2s linear infinite;
+ *    `);
  */
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
@@ -96,19 +108,21 @@ export function styled(creator: any, styles: string): IClsName {
   });
 }
 
+// Keyframes produces simply a string with the generated name. Note that these does not support
+// nesting or ampersand (&) handling, since these would be difficult and are entirely unneeded.
+export function keyframes(styles: string): string {
+  return (new KeyframePiece(styles)).className;
+}
+
 function createCssRules(className: string, styles: string) {
-  const nestedRules: string[] = [];
+  // The first time we encounter a nested section, we know which are the "main" rules, and can
+  // wrap them appropriately.
+  const nestedStart = styles.search(/[^;]*\{/);
+  const mainRules = nestedStart < 0 ? styles : styles.slice(0, nestedStart);
+  const nestedRules = nestedStart < 0 ? "" : styles.slice(nestedStart);
 
-  // Parse out nested styles. Replacing them by empty string in the main section, and add them to
-  // nestedRules array to be joined up at the end. Replace & with .className.
-  const mainRules = styles.replace(/([^;]*)\s*{([^}]*)\s*}/g, (match, selector, rules) => {
-    const fullSelector = selector.replace(/&/g, '.' + className);
-    nestedRules.push(`${fullSelector} {${rules}}`);
-    return '';
-  });
-
-  // Actual styles to include into the generated stylesheet.
-  return `.${className} {${mainRules}}\n` + nestedRules.join('\n');
+  // At the end, replace all occurrences of & with ".className".
+  return `& {${mainRules}\n}\n${nestedRules}`.replace(/&/g, className);
 }
 
 class StylePiece {
@@ -123,8 +137,7 @@ class StylePiece {
 
   // Mount all unmounted StylePieces, and clear the _unmounted map.
   private static _mountAll(): void {
-    const sheet = Array.from(this._unmounted, (p) => createCssRules(p.className, p._styles))
-    .join('\n\n');
+    const sheet: string = Array.from(this._unmounted, (p) => p._createRules()).join("\n\n");
 
     G.document.head.appendChild(dom('style', sheet));
     for (const piece of this._unmounted) {
@@ -136,7 +149,7 @@ class StylePiece {
   public readonly className: string;
   private _mounted: boolean = false;
 
-  constructor(private _styles: string) {
+  constructor(protected _styles: string) {
     this.className = StylePiece._nextClassName();
     StylePiece._unmounted.add(this);
   }
@@ -144,5 +157,15 @@ class StylePiece {
   public use(): DomElementMethod {
     if (!this._mounted) { StylePiece._mountAll(); }
     return (elem) => { elem.classList.add(this.className); };
+  }
+
+  protected _createRules(): string {
+    return createCssRules('.' + this.className, this._styles);
+  }
+}
+
+class KeyframePiece extends StylePiece {
+  protected _createRules(): string {
+    return `@keyframes ${this.className} {${this._styles}}`;
   }
 }

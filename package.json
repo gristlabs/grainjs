@@ -15,6 +15,7 @@
     "test-manual": "webpack-serve --config test/fixtures/webpack.config.js",
     "test-browser": "mocha test/lib/widgets/*.{js,ts}",
     "test-browser-debug": "mocha --bail --no-exit test/lib/widgets/*.{js,ts}",
+    "prepare": "npm run build",
     "preversion": "npm test",
     "version": "npm run build",
     "gitpublish": "./gitpublish.sh"

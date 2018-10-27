@@ -8,13 +8,13 @@
   "scripts": {
     "build": "bash build.sh",
     "watch": "tsc -w",
-    "test": "nyc mocha -R list test/lib/**/*.{js,ts}",
-    "test-memory": "mocha -R list -gc test/lib/**/*.{js,ts}",
-    "test-timing": "TIMING_TESTS=1 mocha -R list test/lib/**/*.{js,ts}",
+    "test": "nyc mocha -R list test/lib/*.{js,ts}",
+    "test-memory": "mocha -R list -gc test/lib/*.{js,ts}",
+    "test-timing": "TIMING_TESTS=1 mocha -R list test/lib/*.{js,ts}",
     "build-demo": "browserify demo/celsius_grain/index.js -d | uglifyjs --source-map 'content=inline,url=build-index.js.map' -o demo/celsius_grain/build-index.js",
     "test-manual": "webpack-serve --config test/fixtures/webpack.config.js",
-    "test-browser": "mocha test/lib/widgets/**/*.{js,ts}",
-    "test-browser-debug": "mocha --bail --no-exit test/lib/widgets/**/*.{js,ts}",
+    "test-browser": "mocha test/lib/widgets/*.{js,ts}",
+    "test-browser-debug": "mocha --bail --no-exit test/lib/widgets/*.{js,ts}",
     "preversion": "npm test",
     "version": "npm run build",
     "gitpublish": "./gitpublish.sh"

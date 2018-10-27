@@ -144,7 +144,7 @@ class StylePiece {
   private static _mountAll(): void {
     const sheet: string = Array.from(this._unmounted, (p) => p._createRules()).join("\n\n");
 
-    G.document.head.appendChild(dom('style', sheet));
+    G.document.head!.appendChild(dom('style', sheet));
     for (const piece of this._unmounted) {
       piece._mounted = true;
     }

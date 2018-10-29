@@ -125,11 +125,14 @@ function createCssRules(className: string, styles: string) {
   return `& {${mainRules}\n}\n${nestedRules}`.replace(/&/g, className);
 }
 
+// Used by getNextStyleNum when running without a global window object (e.g. in tests).
+const _global = {};
+
 // Keep the counter for next class attached to the global window object rather than be a library
 // global. This way if by some chance multiple instance of grainjs are loaded into the page, it
 // still works without overwriting class names (which would be extremely confusing).
 function getNextStyleNum() {
-  const g = (G.window as any);
+  const g: any = G.window || _global;
   return g._grainNextStyleNum = (g._grainNextStyleNum || 0) + 1;
 }
 

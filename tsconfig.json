@@ -4,5 +4,8 @@
     "index.ts",
     "lib/",
     "test/"
+  ],
+  "exclude": [
+    "test/types/"
   ]
 }

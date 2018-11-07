@@ -1,31 +1,19 @@
 "use strict";
 
-/* global describe, before, after, it */
+/* global describe, it */
 
 const {dom} = require('../../lib/dom');
 const {observable} = require('../../lib/observable');
 const {computed} = require('../../lib/computed');
-const {G, pushGlobals, popGlobals} = require('../../lib/browserGlobals');
+const {G} = require('../../lib/browserGlobals');
 const {consoleCapture} = require('./testutil');
-const {assertResetSingleCall} = require('./testutil2');
+const {assertResetSingleCall, useJsDomWindow} = require('./testutil2');
 
 const assert = require('chai').assert;
-const { JSDOM } = require('jsdom');
 const sinon = require('sinon');
 
 describe('dom', function() {
-  let jsdomDoc;
-
-  before(function() {
-    jsdomDoc = new JSDOM("<!doctype html><html><body>" +
-      "<div id='a'></div>" +
-      "</body></html>");
-    pushGlobals(jsdomDoc.window);
-  });
-
-  after(function() {
-    popGlobals();
-  });
+  useJsDomWindow();
 
   describe("construction", function() {
     it("should create elements with the right tag name, class and ID", function() {
@@ -494,7 +482,7 @@ describe('dom', function() {
       let spy1 = sinon.spy();
       let spy2 = sinon.stub().throws(new Error('init throw'));
       let elem = dom('div', 'Hello',
-        dom.createInit(Comp, 'foo', spies1, c => { spy1(c); })
+        dom.createInit(Comp, ['foo', spies1], c => { spy1(c); })
       );
 
       assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
@@ -508,8 +496,8 @@ describe('dom', function() {
       // Now check that in case of an exception, already-constructed parts get disposed.
       assert.throws(() =>
         dom('div', 'Hello',
-          dom.createInit(Comp, 'foo', spies1, c => { spy1(c); }),
-          dom.createInit(Comp, 'bar', spies2, c => { spy2(c); })
+          dom.createInit(Comp, ['foo', spies1], c => { spy1(c); }),
+          dom.createInit(Comp, ['bar', spies2], c => { spy2(c); })
         ),
         /init throw/);
 
@@ -846,18 +834,13 @@ describe('dom', function() {
   });
 
   describe("find", function() {
-    before(function() {
-      jsdomDoc = new JSDOM("<!doctype html><html><body>" +
-        "<div id='a' class='x'></div>" +
-        "<div id='b' class='x y'></div>" +
-        "<div id='c' class='x y z'></div>" +
-        "</body></html>");
-      pushGlobals(jsdomDoc.window);
-    });
-
-    after(function() {
-      popGlobals();
-    });
+    useJsDomWindow(
+      "<!doctype html><html><body>" +
+      "<div id='a' class='x'></div>" +
+      "<div id='b' class='x y'></div>" +
+      "<div id='c' class='x y z'></div>" +
+      "</body></html>"
+    );
 
     it("should find the first matching element", function() {
       assert.equal(dom.find('#a').id, 'a');

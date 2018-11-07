@@ -6,7 +6,7 @@
 import {onDisposeElem} from './_domDispose';
 import {DomElementMethod, update} from './_domImpl';
 import {replaceContent} from './_domMethods';
-import {Disposable, IDisposableOwner} from './dispose';
+import {Disposable, IDisposableOwner, IDisposableOwnerT} from './dispose';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';
@@ -42,9 +42,9 @@ export abstract class Component extends Disposable {
    * If the owner is not an Element, works like a regular Disposable. To add such a component to
    * DOM, use the mount() method.
    */
-  // TODO add typescript overloads for strict argument checks.
-  public static create<T extends Component>(this: IComponentClassType<T>,
-                                            owner: Element|IDisposableOwner|null, ...args: any[]): T {
+  public static create<T extends new (...args: any[]) => any>(
+      this: T, owner: Element|IDisposableOwnerT<InstanceType<T>>|null,
+      ...args: ConstructorParameters<T>): InstanceType<T> {
     const _owner: IDisposableOwner|null = owner instanceof G.Element ? new DomOwner(owner) : owner;
     return Disposable.create.call(this, _owner, ...args);
   }
@@ -141,8 +141,8 @@ export abstract class Component extends Disposable {
  *    dom.Component(...) and implement the render() method.
  * @param {Objects} ...args: Arguments to the Component's constructor.
  */
-// TODO add typescript overloads for strict argument checks.
-export function create<T extends Component>(cls: IComponentClassType<T>, ...args: any[]): DomElementMethod {
+export function create<T extends IComponentClassType<Component>>(
+    cls: T, ...args: ConstructorParameters<T>): DomElementMethod {
   return (elem) => { cls.create(elem, ...args); };
 }
 
@@ -150,18 +150,16 @@ export function create<T extends Component>(cls: IComponentClassType<T>, ...args
  * If you need to initialize a component after creation, you may do it in the middle of a dom()
  * call using createInit(), in which the last of args is initFunc: a function called with the
  * constructed instance of the component:
- *    dom.createInit(MyComponent, ...args, c => {
+ *    dom.createInit(MyComponent, [...args], c => {
  *      c.addChild(...);
  *      c.setOption(...);
  *    });
+ * (Note that for typescript type-safety, args must be passed as an array here.)
  * The benefit of such inline construction is that the component is owned by the dom element as
  * soon as it's created, so an exception in the init function or later among dom()'s arguments
  * will trigger a cleanup.
  */
-export function createInit<T>(cls: IComponentClassType<T>, ...args: any[]): DomElementMethod {
-  return (elem) => {
-    const initFunc: (c: T) => void = args.pop();
-    const c = cls.create(elem, ...args);
-    initFunc(c);
-  };
+export function createInit<T extends IComponentClassType<Component>>(
+    cls: T, args: ConstructorParameters<T>, initFunc: (c: InstanceType<T>) => void): DomElementMethod {
+  return (elem) => { initFunc(cls.create(elem, ...args) as InstanceType<T>); };
 }

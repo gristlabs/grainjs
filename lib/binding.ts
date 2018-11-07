@@ -50,7 +50,7 @@ export function subscribe<T>(valueObs: BindableValue<T>,
     //    let sub = subscribe(use => callback(valueObs(use)));
     // The difference is that when valueObs() evaluates to unchanged value, callback would be
     // called in the version above, but not in the version below.
-    const comp = computed(valueObs);
+    const comp = computed(valueObs as ComputedCallback<T>);
     comp.addListener(callback);
     callback(comp.get(), undefined);
     return comp;      // Disposing this will dispose its one listener.

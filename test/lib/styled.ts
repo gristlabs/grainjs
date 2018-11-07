@@ -99,7 +99,7 @@ describe('styles', function() {
     const elem2 = G.document.body.appendChild(spinDiv(spinDiv.cls('-foo')));
     const elem3 = G.document.body.appendChild(spinDiv(spinDiv.cls('-bar')));
 
-    const cssRules = (G.document.head.querySelector('style')!.sheet as CSSStyleSheet).cssRules;
+    const cssRules = (G.document.head!.querySelector('style')!.sheet as CSSStyleSheet).cssRules;
 
     // Select just the CSSKeyframesRules, and store them in a map by name.
     const framesRules = Array.from(cssRules).filter((rule) =>
@@ -110,6 +110,8 @@ describe('styles', function() {
       return Array.from(rule.cssRules, (r) => (r as CSSKeyframeRule).keyText);
     }
 
+    // It seems that :animation" is only set correctly in jsdom <11.11.0, it doesn't work in
+    // 11.12.0 through 12.2.0.
     const anim1 = G.window.getComputedStyle(elem1).animation!.split(' ')[0];
     assert.isTrue(framesMap.has(anim1));
     assert.deepEqual(getKeytext(framesMap.get(anim1)!), ["0%", "100%"]);
@@ -149,24 +151,24 @@ describe('styles', function() {
     const sdiv = styled('div', `background-color: blue`);
 
     // No <style> elements added to <head> yet.
-    assert.lengthOf(G.document.head.querySelectorAll('style'), 0);
+    assert.lengthOf(G.document.head!.querySelectorAll('style'), 0);
 
     sspan2('Hello');
 
     // Should now have a single <style> element with 3 rules (three CSS classes).
-    assert.lengthOf(G.document.head.querySelectorAll('style'), 1);
-    assert.lengthOf((G.document.head.querySelector('style')!.sheet as CSSStyleSheet).cssRules, 3);
+    assert.lengthOf(G.document.head!.querySelectorAll('style'), 1);
+    assert.lengthOf((G.document.head!.querySelector('style')!.sheet as CSSStyleSheet).cssRules, 3);
 
     G.document.body.appendChild(sdiv('another element', sspan('and'), sspan2('more')));
 
     // Should still be a single <style> element with 3 rules.
-    assert.lengthOf(G.document.head.querySelectorAll('style'), 1);
-    assert.lengthOf((G.document.head.querySelector('style')!.sheet as CSSStyleSheet).cssRules, 3);
+    assert.lengthOf(G.document.head!.querySelectorAll('style'), 1);
+    assert.lengthOf((G.document.head!.querySelector('style')!.sheet as CSSStyleSheet).cssRules, 3);
   });
 
   function getSelectorsInPage(): Set<string> {
     const selectors = new Set<string>();
-    for (const s of G.document.head.querySelectorAll('style')) {
+    for (const s of G.document.head!.querySelectorAll('style')) {
       for (const r of Array.from((s.sheet as CSSStyleSheet).cssRules)) {
         selectors.add((r as CSSStyleRule).selectorText);
       }
@@ -181,7 +183,7 @@ describe('styles', function() {
 
     const sspan = module1.styled('span', `color: red`);
     const elemSpan = sspan('Hello');
-    assert.lengthOf(G.document.head.querySelectorAll('style'), 1);
+    assert.lengthOf(G.document.head!.querySelectorAll('style'), 1);
     assert.equal(G.window.getComputedStyle(elemSpan).color, 'red');
 
     const selectorSet1 = getSelectorsInPage();
@@ -193,7 +195,7 @@ describe('styles', function() {
     // Specifically, check that style actually gets respected.
     const sdiv = module2.styled('span', `color: blue`);
     const elemDiv = sdiv('World');
-    assert.lengthOf(G.document.head.querySelectorAll('style'), 2);
+    assert.lengthOf(G.document.head!.querySelectorAll('style'), 2);
     assert.equal(G.window.getComputedStyle(elemDiv).color, 'blue');
     assert.equal(G.window.getComputedStyle(elemSpan).color, 'red');
 

@@ -18,7 +18,7 @@ export type INodeFunc = (node: Node) => void;
 // Internal helper to walk the DOM tree, calling visitFunc(elem) on all descendants of elem.
 // Descendants are processed first.
 function _walkDom(elem: Node, visitFunc: INodeFunc): void {
-  let c = elem.firstChild;
+  let c: Node|null = elem.firstChild;
   while (c) {
     // Note: this might be better done using an explicit stack, but in practice DOM trees aren't
     // so deep as to cause problems.

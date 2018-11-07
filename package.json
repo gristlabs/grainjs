@@ -73,6 +73,7 @@
     "chai-as-promised": "^7.1.1",
     "chromedriver": "^2.40.0",
     "create-react-app": "^2.0.4",
+    "dtslint": "^0.3.0",
     "fastpriorityqueue": "^0.6.1",
     "geckodriver": "^1.11.0",
     "jsdom": "11.11.0",

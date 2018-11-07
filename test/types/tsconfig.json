@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "lib": ["es6", "dom"],
+    "moduleResolution": "node",
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noUnusedLocals": true,
+    "declaration": false,
+    "sourceMap": true,
+    "baseUrl": "..",
+    "rootDir": "..",
+    "noEmit": true,
+    "plugins": [{
+      "name": "tslint-language-service"
+    }]
+  }
+}

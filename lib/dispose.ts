@@ -102,20 +102,8 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
   // The complex-looking overloads are to ensure that it can do type-checking for constuctors of
   // different arity. E.g. if Foo's constructor takes (number, string), we want Foo.create to
   // require (owner, number, string) as arguments.
-  public static create<T extends IDisposable>(
-    this: new () => T, owner: IDisposableOwnerT<T>|null): T;
-  public static create<T extends IDisposable, A>(
-    this: new (a: A) => T, owner: IDisposableOwnerT<T>|null, a: A): T;
-  public static create<T extends IDisposable, A, B>(
-    this: new (a: A, b: B) => T, owner: IDisposableOwnerT<T>|null, a: A, b: B): T;
-  public static create<T extends IDisposable, A, B, C>(
-    this: new (a: A, b: B, c: C) => T, owner: IDisposableOwnerT<T>|null, a: A, b: B, c: C): T;
-  public static create<T extends IDisposable, A, B, C, D>(
-    this: new (a: A, b: B, c: C, d: D) => T, owner: IDisposableOwnerT<T>|null, a: A, b: B, c: C, d: D): T;
-  public static create<T extends IDisposable, A, B, C, D, E>(
-    this: new (a: A, b: B, c: C, d: D, e: E) => T, owner: IDisposableOwnerT<T>|null, a: A, b: B, c: C, d: D, e: E): T;
-  public static create<T extends IDisposable>(
-    this: new (...args: any[]) => T, owner: IDisposableOwnerT<T>|null, ...args: any[]): T {
+  public static create<T extends new (...args: any[]) => any>(
+    this: T, owner: IDisposableOwnerT<InstanceType<T>>|null, ...args: ConstructorParameters<T>): InstanceType<T> {
 
     const origDefaultOwner = _defaultDisposableOwner;
     const holder = new Holder();

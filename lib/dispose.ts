@@ -132,6 +132,9 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
 
   constructor() {
     // This registers with a temp Holder when using create(), and is a no-op when using `new Foo`.
+    // TODO: There is a bug here when Foo.create() calls fro, the constructor 'new Bar()', which
+    // is also a Disposable. It would then call _defaultDisposableOwner.autoDispose with the
+    // temporary holder, disposing Foo in the process.
     _defaultDisposableOwner.autoDispose(this);
   }
 

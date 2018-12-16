@@ -3,7 +3,7 @@
 /* global describe, it, afterEach */
 
 const {Disposable} = require('../../lib/dispose');
-const { consoleCapture } = require('./testutil');
+const {consoleCapture} = require('./testutil2');
 
 const assert = require('chai').assert;
 const sinon = require('sinon');

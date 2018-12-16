@@ -6,7 +6,7 @@ const {dom} = require('../../lib/dom');
 const {observable} = require('../../lib/observable');
 const {computed} = require('../../lib/computed');
 const {G} = require('../../lib/browserGlobals');
-const {consoleCapture} = require('./testutil');
+const {consoleCapture} = require('./testutil2');
 const {assertResetSingleCall, useJsDomWindow} = require('./testutil2');
 
 const assert = require('chai').assert;

@@ -118,13 +118,7 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
    * exception, dispose() gets called to clean up the partially-constructed object.
    *
    * Owner may be null if intend to ensure disposal some other way.
-   *
-   * TODO: create() needs more unittests, including to ensure that TypeScript types are done
-   * correctly.
    */
-  // The complex-looking overloads are to ensure that it can do type-checking for constuctors of
-  // different arity. E.g. if Foo's constructor takes (number, string), we want Foo.create to
-  // require (owner, number, string) as arguments.
   public static create<T extends new (...args: any[]) => any>(
     this: T, owner: IDisposableOwnerT<InstanceType<T>>|null, ...args: ConstructorParameters<T>): InstanceType<T> {
 
@@ -155,10 +149,10 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
 
   constructor() {
     // This registers with a temp Holder when using create(), and is a no-op when using `new Foo`.
-    // TODO: There is a bug here when Foo.create() calls fro, the constructor 'new Bar()', which
-    // is also a Disposable. It would then call _defaultDisposableOwner.autoDispose with the
-    // temporary holder, disposing Foo in the process.
     _defaultDisposableOwner.autoDispose(this);
+    // Be sure to reset to no-op, so that a (non-recommended) direct call like 'new Bar()', from
+    // inside Foo's constructor doesn't use the same Holder that's temporarily holding Foo.
+    _defaultDisposableOwner = _noopOwner;
   }
 
   /** Take ownership of obj, and dispose it when this.dispose() is called. */
@@ -204,8 +198,13 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
    */
   public dispose(): void {
     const disposalList = this._disposalList;
-    this._disposalList = null!;
-    disposalList.callAndDispose(this);
+    if (!disposalList) {
+        // tslint:disable-next-line:no-console
+      console.error("Error disposing %s which is already disposed", _describe(this));
+    } else {
+      this._disposalList = null!;
+      disposalList.callAndDispose(this);
+    }
   }
 
   /**

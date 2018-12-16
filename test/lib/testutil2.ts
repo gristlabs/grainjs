@@ -38,3 +38,43 @@ export function useJsDomWindow(html?: string) {
     popGlobals();
   });
 }
+
+export type ConsoleMethod = 'log' | 'error' | 'warn' | 'debug' | 'info';
+/**
+ * Capture console output in the enclosed function. Usage:
+ *
+ *    return consoleCapture(['log', 'warn'], messages => {
+ *      ...
+ *      assert.deepEqual(messages, [...]);
+ *    });
+ *
+ * @param methodNames: An array of console's method names to capture, e.g. ['log']
+ *    The method name is always prefixed to the captured messages as "method: ".
+ *
+ * Note that captured messages are an approximation of what console would output: only %s and %d
+ * get interpolated in the format string.
+ */
+export function consoleCapture(methodNames: ConsoleMethod[],
+                               bodyFunc: (messages: string[]) => void) {
+  const messages: string[] = [];
+  methodNames.forEach((m) => sinon.stub(console, m).callsFake(
+    (...args) => _capture(messages, m, ...args)));
+  try {
+    return bodyFunc(messages);
+  } finally {
+    methodNames.forEach((m) => (console[m] as sinon.SinonStub).restore());
+  }
+}
+
+function _capture(messages: string[], methodName: string, format: any, ...args: any[]) {
+  // Format the message, nice and simple.
+  let i = 0;
+  if (typeof format === 'string') {
+    format = format.replace(/\%s|\%d/g, () => args[i++]);
+  }
+  let message = methodName + ': ' + format;
+  for ( ; i < args.length; i++) {
+    message += ' ' + args[i];
+  }
+  messages.push(message);
+}

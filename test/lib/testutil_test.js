@@ -4,11 +4,12 @@
 
 const assert = require('chai').assert;
 const testutil = require('./testutil');
+const {consoleCapture} = require('./testutil2');
 
 describe('testutil', function() {
   describe('consoleCapture', function() {
     it('should capture formatted messages', () => {
-      let ret = testutil.consoleCapture(messages => {
+      let ret = consoleCapture(['log'], messages => {
         function Foo() {}
         console.log('test1 %d: %s; %s', 17, "Hello world", new Foo());
         console.log('test2 %d: %s.', 17, ['hello', 'world'], {hello: 'world'}, 18);
@@ -28,7 +29,7 @@ describe('testutil', function() {
     });
 
     it('should respect the first argument', () => {
-      testutil.consoleCapture(['log', 'warn', 'error'], messages => {
+      consoleCapture(['log', 'warn', 'error'], messages => {
         function Foo() {}
         console.warn('test1 %d: %s; %s', 17, "Hello world", new Foo());
         console.error('test2 %d: %s.', 17, ['hello', 'world'], {hello: 'world'}, 18);

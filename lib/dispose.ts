@@ -233,7 +233,7 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
  * TODO Holder needs unittests.
  */
 export class Holder<T extends IDisposable> implements IDisposable, IDisposableOwner {
-  public static create<T extends IDisposable>(owner: IDisposableOwner|null): Holder<T> {
+  public static create<T extends IDisposable>(owner: IDisposableOwnerT<Holder<T>>|null): Holder<T> {
     return setDisposeOwner(owner, new Holder<T>());
   }
 

@@ -1,1 +1,1 @@
-// TypeScript Version: 3.1
+// Empty placeholder expected by dtslint.

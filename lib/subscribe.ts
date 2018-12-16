@@ -105,7 +105,7 @@ export class Subscription {
     if (this._callback === null) { return; }      // Means this Subscription has been disposed.
     try {
       // Note that this is faster than using .map().
-      const readArgs = [this._useFunc];
+      const readArgs: [UseCB, ...any[]] = [this._useFunc];
       for (let i = 0, len = this._dependencies.length; i < len; i++) {
         readArgs[i + 1] = this._dependencies[i].get();
         this._depItem.useDep(this._dependencies[i]._getDepItem());

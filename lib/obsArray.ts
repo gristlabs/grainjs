@@ -31,7 +31,7 @@
  * ownership of those disposables that are added to it as array elements.
  */
 
-import {IDisposable, IDisposableOwner, setDisposeOwner} from './dispose';
+import {IDisposable, IDisposableOwnerT, setDisposeOwner} from './dispose';
 import {Listener} from './emit';
 import {BaseObservable, Observable} from './observable';
 import {subscribe, Subscription} from './subscribe';
@@ -291,7 +291,7 @@ export function computedArray<T, U>(
  * The returned observable has an additional .setLive(bool) method. While set to false, the
  * observable will not be adjusted as the array changes, except to keep it valid.
  */
-export function makeLiveIndex<T>(owner: IDisposableOwner|null, obsArr: ObsArray<T>,
+export function makeLiveIndex<T>(owner: IDisposableOwnerT<LiveIndex>|null, obsArr: ObsArray<T>,
                                  initialIndex: number = 0): LiveIndex {
   return setDisposeOwner(owner, new LiveIndex(obsArr, initialIndex));
 }

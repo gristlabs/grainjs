@@ -46,7 +46,7 @@ export abstract class Component extends Disposable {
       this: T, owner: Element|IDisposableOwnerT<InstanceType<T>>|null,
       ...args: ConstructorParameters<T>): InstanceType<T> {
     const _owner: IDisposableOwner|null = owner instanceof G.Element ? new DomOwner(owner) : owner;
-    return Disposable.create.call(this, _owner, ...args);
+    return Disposable.create.call(this as (new (...args: any[]) => any), _owner, ...args);
   }
 
   private _markerPre: Node = G.document.createComment('A');

@@ -11,14 +11,14 @@
  */
 
 import {DepItem} from './_computed_queue';
-import {Observable} from './observable';
+import {BaseObservable, Observable} from './observable';
 import {ISubscribable, Subscription, UseCB} from './subscribe';
 
 function _noWrite(): never {
   throw new Error("Can't write to non-writable pureComputed");
 }
 
-function _useFunc<T>(obs: Observable<T>): T {
+function _useFunc<T>(obs: BaseObservable<T>): T {
   return obs.get();
 }
 
@@ -57,7 +57,7 @@ export class PureComputed<T> extends Observable<T> {
       // _inCall member prevents infinite recursion.
       this._inCall = true;
       try {
-        const readArgs: any[] = [_useFunc];
+        const readArgs: [UseCB, ...any[]] = [_useFunc];
         // Note that this attempts to optimize for speed.
         for (let i = 0, len = this._dependencies.length; i < len; i++) {
           readArgs[i + 1] = this._dependencies[i].get();

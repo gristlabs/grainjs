@@ -48,6 +48,20 @@
  * If creating your own class with a dispose() method, do NOT throw exceptions from dispose().
  * These cannot be handled properly in all cases. Read here about the same issue in C++:
  *    http://bin-login.name/ftp/pub/docs/programming_languages/cpp/cffective_cpp/MAGAZINE/SU_FRAME.HTM#destruct
+ *
+ * Using a parametrized (generic) class as a Disposable is tricky. E.g.
+ *    class Bar<T> extends Disposable { ... }
+ *    // Bar<T>.create(...)   <-- doesn't work
+ *    // Bar.create<T>(...)   <-- doesn't work
+ *    // Bar.create(...)      <-- works, but with {} for Bar's type parameters
+ *
+ * The solution is to expose the constructor type using a helper method:
+ *    class Bar<T> extends Disposable {
+ *      // Note the tuple below which must match the constructor parameters of Bar<U>.
+ *      public static ctor<U>(): IDisposableCtor<Bar<U>, [U, boolean]> { return this; }
+ *      constructor(a: T, b: boolean) { ... }
+ *    }
+ *    Bar.ctor<T>().create(...)   // <-- works, creates Bar<T>, and does type-checking!
  */
 
 import {LLink} from './emit';
@@ -83,6 +97,15 @@ const _noopOwner: IDisposableOwner = {
 // Newly-created Disposable instances will have this as their owner. This is not a constant, it
 // is used by create() for the safe creation of Disposables.
 let _defaultDisposableOwner = _noopOwner;
+
+/**
+ * The static portion of class Disposable.
+ */
+export interface IDisposableCtor<Derived, CtorArgs extends any[]> {
+  new(...args: CtorArgs): Derived;
+  create<T extends new(...args: any[]) => any>(
+    this: T, owner: IDisposableOwnerT<InstanceType<T>>|null, ...args: ConstructorParameters<T>): InstanceType<T>;
+}
 
 /**
  * Base class for disposable objects that can own other objects. See the module documentation.

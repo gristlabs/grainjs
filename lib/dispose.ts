@@ -162,8 +162,8 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
   }
 
   /** Call the given callback when this.dispose() is called. */
-  public onDispose<T>(callback: (this: T) => void, context?: T): void {
-    this._disposalList.addListener(callback, context);
+  public onDispose<T>(callback: (this: T) => void, context?: T): DisposeListener {
+    return this._disposalList.addListener(callback, context);
   }
 
   /**
@@ -237,19 +237,21 @@ export class Holder<T extends IDisposable> implements IDisposable, IDisposableOw
   }
 
   protected _owned: T|null = null;
+  private _disposalListener: DisposeListener|undefined = undefined;
 
   /** Take ownership of a new object, disposing the previously held one. */
   public autoDispose(obj: T): T {
-    if (this._owned) { this._owned.dispose(); }
+    this.clear();
     this._owned = obj;
     if (obj instanceof Disposable) {
-      obj.onDispose(this.release, this);
+      this._disposalListener = obj.onDispose(this._onOutsideDispose, this);
     }
     return obj;
   }
 
   /** Releases the held object without disposing it, emptying the holder. */
   public release(): IDisposable|null {
+    this._unlisten();
     const ret = this._owned;
     this._owned = null;
     return ret;
@@ -257,6 +259,7 @@ export class Holder<T extends IDisposable> implements IDisposable, IDisposableOw
 
   /** Disposes the held object and empties the holder. */
   public clear(): void {
+    this._unlisten();
     if (this._owned) {
       this._owned.dispose();
       this._owned = null;
@@ -271,6 +274,19 @@ export class Holder<T extends IDisposable> implements IDisposable, IDisposableOw
 
   /** When the holder is disposed, it disposes the held object if any. */
   public dispose(): void { this.clear(); }
+
+  /** Stop listening for the disposal of this._owned. */
+  private _unlisten() {
+    if (this._disposalListener) {
+      this._disposalListener.dispose();
+      this._disposalListener = undefined;
+    }
+  }
+
+  private _onOutsideDispose() {
+    this._disposalListener = undefined;
+    this._owned = null;
+  }
 }
 
 /**
@@ -295,9 +311,10 @@ function _describe(obj: any) {
 class DisposalList extends LLink {
   constructor() { super(); }
 
-  public addListener<T>(callback: (this: T) => void, optContext?: T): void {
+  public addListener<T>(callback: (this: T) => void, optContext?: T): DisposeListener {
     const lis = new DisposeListener(callback, optContext);
     this._insertBefore(this._next!, lis);
+    return lis;
   }
 
   /**
@@ -317,7 +334,7 @@ class DisposalList extends LLink {
  * Internal class that keeps track of one item of the DisposalList. It mimicks emit.Listener, but
  * reports and swallows erros when it calls the callbacks in the list.
  */
-class DisposeListener extends LLink {
+class DisposeListener extends LLink implements IDisposable {
   public static callAll(begin: LLink, end: LLink, owner: Disposable): void {
     while (begin !== end) {
       const lis = begin as DisposeListener;
@@ -332,4 +349,9 @@ class DisposeListener extends LLink {
   }
 
   constructor(private callback: () => void, private context?: any) { super(); }
+
+  public dispose(): void {
+    if (this.isDisposed()) { return; }
+    this._removeNode(this);
+  }
 }

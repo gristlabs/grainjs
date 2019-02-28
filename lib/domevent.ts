@@ -126,27 +126,57 @@ export function onMatch(selector: string, eventType: string, callback: EventCB,
   return (elem) => { new DomEventMatchListener(elem, eventType, callback, useCapture, selector); };
 }
 
+export type KeyEventType = 'keypress' | 'keyup' | 'keydown';
+
+export interface IKeyHandlers {
+  [key: string]: (this: void, ev: KeyboardEvent, elem: Element) => void;
+}
+
 /**
- * Listen to key presses, with specified per-key callbacks. The `onKeyPress()` variant takes no
- * `elem` argument, and may be used as an argument to dom().
- *
+ * Listen to key events (typically 'keydown' or 'keypress'), with specified per-key callbacks.
  * Key names are listed at https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+ *
+ * Methods onKeyPress() and onKeyDown() are intended to be used as arguments to dom().
+ *
+ * By default, handled events are stopped from bubbling with stopPropagation() and
+ * preventDefault(). If, however, you register a key with a "$" suffix (i.e. "Enter$" instead of
+ * "Enter"), then the event is allowed to bubble normally.
+ *
+ * When this handler is set on an element, we automatically ensure that tabindex attribute is set,
+ * to allow this element to receive keyboard events.
  *
  * For example:
  *
  *    dom('input', ...
- *      dom.onKeyPress({
+ *      dom.onKeyDown({
  *        Enter: (e, elem) => console.log("Enter pressed"),
  *        Escape: (e, elem) => console.log("Escape pressed"),
+ *        Delete$: (e, elem) => console.log("Delete pressed, will bubble"),
  *      })
  *    )
  */
-export function onKeyPressElem(elem: EventTarget, callbacks: {[key: string]: EventCB}): IDisposable {
-  return onElem(elem, 'keypress', (e, _elem) => {
-    const cb = callbacks[(e as KeyboardEvent).key];
-    if (cb) { cb(e, _elem); }
+export function onKeyElem(elem: Element, evType: KeyEventType, keyHandlers: IKeyHandlers): IDisposable {
+  if (!((elem as HTMLElement).tabIndex >= 0)) {   // If tabIndex property is undefined or -1,
+    elem.setAttribute('tabindex', '-1');          // Set tabIndex attribute to make the element focusable.
+  }
+  return onElem(elem, evType, (_ev, _elem) => {
+    const ev = _ev as KeyboardEvent;
+    const plainHandler = keyHandlers[ev.key];
+    const handler = plainHandler || keyHandlers[ev.key + '$'];
+    if (handler) {
+      if (plainHandler) {
+        ev.stopPropagation();
+        ev.preventDefault();
+      }
+      handler(ev, _elem);
+    }
   });
 }
-export function onKeyPress(callbacks: {[key: string]: EventCB}): DomElementMethod {
-  return (elem) => { onKeyPressElem(elem, callbacks); };
+
+export function onKeyPress(keyHandlers: IKeyHandlers): DomElementMethod {
+  return (elem) => { onKeyElem(elem, 'keypress', keyHandlers); };
+}
+
+export function onKeyDown(keyHandlers: IKeyHandlers): DomElementMethod {
+  return (elem) => { onKeyElem(elem, 'keydown', keyHandlers); };
 }

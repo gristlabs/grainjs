@@ -14,6 +14,10 @@ export function assertResetSingleCall(spy: sinon.SinonSpy, context: any, ...args
   spy.resetHistory();
 }
 
+export function assertResetSingleCallStrict(spy: sinon.SinonSpy, context: any, ...args: any[]): void {
+  assertResetSingleCall(spy, context, ...args.map((a) => sinon.match.same(a)));
+}
+
 /**
  * Assert the list of first args with which the given spy was called; then resets its history.
  */

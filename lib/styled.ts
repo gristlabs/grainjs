@@ -85,7 +85,7 @@ export interface IClsName {
 }
 
 // See module documentation for details.
-export function styled<R>(tag: string, styles: string): DomCreateFunc0<Element> & IClsName;
+export function styled<R>(tag: string, styles: string): DomCreateFunc0<HTMLElement> & IClsName;
 export function styled<R>(creator: DomCreateFunc0<R>, styles: string): DomCreateFunc0<R> & IClsName;
 export function styled<R, T>(creator: DomCreateFunc1<R, T>, styles: string): DomCreateFunc1<R, T> & IClsName;
 export function styled<R, T, U>(

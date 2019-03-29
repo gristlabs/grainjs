@@ -292,7 +292,7 @@ export function domComputed<T>(valueObs: BindableValue<T>, contentFunc?: (val: T
     const markerPost = G.document.createComment('b');
     elem.appendChild(markerPre);
     elem.appendChild(markerPost);
-    _subscribe(elem, valueObs,
+    _subscribe(markerPost, valueObs,
       (value) => replaceContent(markerPre, markerPost, _contentFunc(value)));
   };
 }

@@ -35,18 +35,11 @@
  */
 
 import {DepItem} from './_computed_queue';
-import {IDisposableOwner} from './dispose';
 import {BaseObservable as Obs, Observable} from './observable';
-import {ISubscribable, Subscription} from './subscribe';
+import {ISubscribable, Subscription, UseCBOwner as UseCB} from './subscribe';
 
 function _noWrite(): never {
   throw new Error("Can't write to non-writable computed");
-}
-
-// The generic type for the use() function that callbacks get.
-export interface UseCB {    // tslint:disable-line:interface-name
-  <U>(obs: Obs<U>): U;
-  owner: IDisposableOwner;
 }
 
 export class Computed<T> extends Observable<T> {

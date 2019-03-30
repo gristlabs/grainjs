@@ -1,6 +1,6 @@
+import {replaceContent} from './_domComputed';
 import {domDispose} from './_domDispose';
 import {DomMethod, frag} from './_domImpl';
-import {replaceContent} from './_domMethods';
 import {computedArray, MaybeObsArray, ObsArray} from './obsArray';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.

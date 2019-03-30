@@ -18,12 +18,12 @@ describe('binding', function() {
   it('should work with a plain value', function() {
     let spy = sinon.spy();
     let ret;
-    ret = binding.subscribe(17, spy);
+    ret = binding.subscribeBindable(17, spy);
     assertResetSingleCall(spy, undefined, 17, undefined);
     assert.strictEqual(ret, null);
 
     let obj = {foo: "bar"};
-    ret = binding.subscribe(obj, spy);
+    ret = binding.subscribeBindable(obj, spy);
     assertResetSingleCall(spy, undefined, obj, undefined);
     assert.strictEqual(ret, null);
   });
@@ -33,7 +33,7 @@ describe('binding', function() {
     let spy = sinon.spy();
 
     assert.isFalse(obs.hasListeners());
-    let sub = binding.subscribe(obs, spy);
+    let sub = binding.subscribeBindable(obs, spy);
     assert.isTrue(obs.hasListeners());
 
     // Check that the callback was called initially.
@@ -63,7 +63,7 @@ describe('binding', function() {
     let spy = sinon.spy();
 
     assert.isFalse(obs.hasListeners());
-    let sub = binding.subscribe(obs, spy);
+    let sub = binding.subscribeBindable(obs, spy);
     assert.isTrue(obs.hasListeners());
 
     // Check that the callback was called initially.
@@ -97,7 +97,7 @@ describe('binding', function() {
     let cbSpy = sinon.spy();
 
     assert.isFalse(tmp.hasListeners());
-    let sub = binding.subscribe(use => { cbSpy(); return use(tmp) * use(tmp); }, spy);
+    let sub = binding.subscribeBindable(use => { cbSpy(); return use(tmp) * use(tmp); }, spy);
     assert.isTrue(tmp.hasListeners());
 
     // Check that the callback was called initially.
@@ -128,7 +128,7 @@ describe('binding', function() {
     let spy = sinon.spy();
 
     assert.strictEqual(obs.getSubscriptionsCount(), 0);
-    let sub = binding.subscribe(obs, spy);
+    let sub = binding.subscribeBindable(obs, spy);
     assert.strictEqual(obs.getSubscriptionsCount(), 1);
 
     // Check that the callback was called initially.

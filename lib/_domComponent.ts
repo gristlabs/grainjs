@@ -3,9 +3,9 @@
  * createElem() and create().
  */
 
+import {replaceContent} from './_domComputed';
 import {onDisposeElem} from './_domDispose';
 import {DomElementMethod, update} from './_domImpl';
-import {replaceContent} from './_domMethods';
 import {Disposable, IDisposableOwner, IDisposableOwnerT} from './dispose';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.

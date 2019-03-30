@@ -19,6 +19,7 @@
  */
 
 import {DepItem} from './_computed_queue';
+import {IDisposableOwner} from './dispose';
 import {Listener} from './emit';
 import {BaseObservable as Obs} from './observable';
 
@@ -30,6 +31,11 @@ export interface ISubscribable {
 
 // The generic type for the use() function that callbacks get.
 export type UseCB = <T>(obs: Obs<T>) => T;
+
+export interface UseCBOwner {    // tslint:disable-line:interface-name
+  <U>(obs: Obs<U>): U;
+  owner: IDisposableOwner;
+}
 
 interface IListenerWithInUse extends Listener {
   _inUse: boolean;
@@ -59,7 +65,7 @@ export class Subscription {
     this._callback = callback;
     this._useFunc = this._useDependency.bind(this);
     if (owner) {
-      (this._useFunc as any).owner = owner;
+      (this._useFunc as UseCBOwner).owner = owner;
     }
 
     this._evaluate();

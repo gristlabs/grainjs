@@ -54,4 +54,19 @@ describe("domComputed", function() {
     assertResetSingleCall(spyDispose, undefined, "FOO", "bar");
     assertResetSingleCall(spyCreate, undefined, "FOO", "BAR");
   });
+
+  it("should dispose even on a later exception", function() {
+    const obs1 = observable("foo");
+    const obs2 = observable("bar");
+    const spyDispose = sinon.spy();
+    assert.throws(() =>
+      dom('div', 'Hello',
+        dom.domComputed(obs1, (val1) => dom('p', dom.onDispose(() => spyDispose(val1)), val1)),
+        dom.domComputed(obs2, (val2) => { throw new Error("fake-error"); }),
+        'World',
+      ),
+      /fake-error/,
+    );
+    assertResetSingleCall(spyDispose, undefined, "foo");
+  });
 });

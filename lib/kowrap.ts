@@ -31,8 +31,12 @@ import {observable, Observable} from './observable';
 // be garbage-collected once it has no listeners AND the underlying observable is disposed or
 // unreferenced.
 
-export interface IKnockoutObservable<T> {
+export interface IKnockoutObservable<T> extends IKnockoutReadObservable<T> {
   (val: T): void;
+}
+
+export interface IKnockoutReadObservable<T> {
+  (): void;
   peek(): T;
   subscribe(callback: (newValue: T) => void, target?: any, event?: "change"): any;
 }

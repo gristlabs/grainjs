@@ -20,12 +20,14 @@
 // We keep various dom-related functions organized in private modules, but they are exposed here.
 export {DomMethod, DomElementMethod, DomArg, DomElementArg, svg, update, frag, find, findAll} from './_domImpl';
 export * from './_domComponent';
+export * from './_domComputed';
 export * from './_domDispose';
 export * from './_domForEach';
 export * from './_domMethods';
 export * from './domevent';
 
 import * as _domComponent from './_domComponent';
+import * as _domComputed from './_domComputed';
 import * as _domDispose from './_domDispose';
 import * as _domForEach from './_domForEach';
 import * as _domImpl from './_domImpl';
@@ -74,9 +76,9 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const dataElem        = _domMethods.dataElem;
   export const data            = _domMethods.data;
   export const getData         = _domMethods.getData;
-  export const replaceContent  = _domMethods.replaceContent;
-  export const domComputed     = _domMethods.domComputed;
-  export const maybe           = _domMethods.maybe;
+  export const replaceContent  = _domComputed.replaceContent;
+  export const domComputed     = _domComputed.domComputed;
+  export const maybe           = _domComputed.maybe;
 
   export const forEach         = _domForEach.forEach;
 

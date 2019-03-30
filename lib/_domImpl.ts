@@ -30,6 +30,7 @@ export type DomElementArg = DomArg | IAttrObj | IDomElementArgArray | DomElement
 export interface IDomElementArgArray extends Array<DomElementArg> {}
 
 // The goal of the above declarations is to get help from TypeScript in detecting incorrect usage:
+// (See test/types/dom.ts for a test of this.)
 //  import {text, hide} from './_domMethods';
 //  dom('div', text('hello'));        // OK
 //  dom('div', hide(true));           // OK

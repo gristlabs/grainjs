@@ -1,6 +1,6 @@
-import {autoDisposeElem, domDispose, onDisposeElem} from './_domDispose';
-import {DomArg, DomElementMethod, DomMethod, frag, IAttrObj} from './_domImpl';
-import {BindableValue, subscribe as subscribeBinding} from './binding';
+import {onDisposeElem} from './_domDispose';
+import {DomElementMethod, DomMethod, IAttrObj} from './_domImpl';
+import {BindableValue, subscribeElem as _subscribe} from './binding';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';
@@ -10,15 +10,6 @@ import {G} from './browserGlobals';
  * values from being garbage collected when the owning DOM elements are no longer used.
  */
 const _dataMap: WeakMap<Node, {[key: string]: any}> = new WeakMap();
-
-/**
- * Internal helper that binds the callback to valueObs, which may be a value, observble, or
- * function, and attaches a disposal callback to the passed-in element.
- */
-function _subscribe<T>(elem: Node, valueObs: BindableValue<T>,
-                       callback: (newVal: T, oldVal?: T) => void): void {
-  autoDisposeElem(elem, subscribeBinding(valueObs, callback));
-}
 
 /**
  * Sets multiple attributes of a DOM element. The `attrs()` variant takes no `elem` argument.
@@ -223,108 +214,6 @@ export function data(key: string, valueObs: BindableValue<any>): DomMethod {
 export function getData(elem: Node, key: string) {
   const obj = _dataMap.get(elem);
   return obj && obj[key];
-}
-
-/**
- * Replaces the content between nodeBefore and nodeAfter, which should be two siblings within the
- * same parent node. New content may be anything allowed as an argument to dom(), including null
- * to insert nothing. Runs disposers, if any, on all removed content.
- */
-export function replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomArg): void {
-  const elem = nodeBefore.parentNode;
-  if (elem) {
-    let next;
-    for (let n = nodeBefore.nextSibling; n && n !== nodeAfter; n = next) {
-      next = n.nextSibling;
-      domDispose(n);
-      elem.removeChild(n);
-    }
-    if (content) {
-      elem.insertBefore(content instanceof G.Node ? content : frag(content), nodeAfter);
-    }
-  }
-}
-
-/**
- * Appends dynamic DOM content to an element. The value may be an observable or function (from
- * which a computed is created), whose value will be passed to `contentFunc` which should return
- * DOM content. If the contentFunc is omitted, it defaults to identity, i.e. it's OK for the
- * observable or function to return DOM directly.
- *
- * The DOM content returned may be an element, string, array, or null. Whenever the observable
- * changes, previous content is disposed and removed, and new content added in its place.
- *
- * These are roughly equivalent:
- *  (A) domComputed(nlinesObs, nlines => nlines > 1 ? dom('textarea') : dom('input'));
- *  (B) domComputed(use => use(nlinesObs) > 1, isTall => isTall ? dom('textarea') : dom('input'));
- *  (C) domComputed(use => use(nlinesObs) > 1 ? dom('textarea') : dom('input'));
- *
- * Here, (B) is best. It encapsulates meaningful changes in the observable, and separates DOM
- * creation, so that DOM is only recreated when necessary. Between (A) and (C), (A) should be
- * preferred. Both (A) and (C) would rebuild DOM for any change in nlinesObs, but in (C), it's too
- * easy to use `use` more than necessary and cause inadvertent rebuilding of DOM.
- *
- * Syntax (C), without the last argument, may be useful in cases of DOM depending on several
- * observables, e.g.
- *
- *    domComputed(use => use(readonlyObs) ? dom('div') :
- *                          (use(nlinesObs) > 1 ? dom('textarea') : dom('input')));
- *
- * If the argument is not an observable, domComputed() may but should not be used. The following
- * are equivalent:
- *
- *    dom(..., domComputed(listValue, list => list.map(x => dom('div', x))), ...)
- *    dom(..., listValue.map(x => dom('div', x)), ...)
- *
- * In this case, the latter is preferred as the clearly simpler one.
- *
- * @param {Element} elem: The element to which to append the DOM content.
- * @param {Object} valueObs: Observable or function for a computed.
- * @param [Function] contentFunc: Function called with the result of valueObs as the input, and
- *    returning DOM as output. If omitted, defaults to the identity function.
- */
-export function domComputed<T extends DomArg>(valueObs: BindableValue<T>): DomMethod;
-export function domComputed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomMethod;
-export function domComputed<T>(valueObs: BindableValue<T>, contentFunc?: (val: T) => DomArg): DomMethod {
-  const _contentFunc: (val: T) => DomArg = contentFunc || (identity as any);
-  return (elem: Node) => {
-    const markerPre = G.document.createComment('a');
-    const markerPost = G.document.createComment('b');
-    elem.appendChild(markerPre);
-    elem.appendChild(markerPost);
-    _subscribe(markerPost, valueObs,
-      (value) => replaceContent(markerPre, markerPost, _contentFunc(value)));
-  };
-}
-
-function identity<T>(arg: T): T { return arg; }
-
-/**
- * Conditionally appends DOM to an element. The value may be an observable or function (from which
- * a computed is created), whose value -- if truthy -- will be passed to `contentFunc` which
- * should return DOM content. If the value is falsy, DOM content is removed.
- *
- * Note that if the observable changes between different truthy values, contentFunc gets called
- * for each value, and previous content gets destroyed. To consider all truthy values the same,
- * use an observable that returns a proper boolean, e.g.
- *
- *    dom.maybe(use => Boolean(use(fooObs)), () => dom(...));
- *
- * As with domComputed(), dom.maybe() may but should not be used when the argument is not an
- * observable or function. The following are equivalent:
- *
- *    dom(..., dom.maybe(myValue, () => dom(...)));
- *    dom(..., myValue ? dom(...) : null);
- *
- * The latter is preferred for being simpler.
- *
- * @param {Element} elem: The element to which to append the DOM content.
- * @param {Object} boolValueObs: Observable or function for a computed.
- * @param [Function] contentFunc: Function called with the result of boolValueObs when it is
- *    truthy. Should returning DOM as output.
- */
-export function maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomMethod {
-  return domComputed(boolValueObs, (value) => value ? contentFunc(value) : null);
 }
 
 /**

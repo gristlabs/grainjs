@@ -82,9 +82,7 @@ export namespace dom {      // tslint:disable-line:no-namespace
 
   export const forEach         = _domForEach.forEach;
 
-  export const Component       = _domComponent.Component;
   export const create          = _domComponent.create;
-  export const createInit      = _domComponent.createInit;
 
   export const onElem          = domevent.onElem;
   export const on              = domevent.on;

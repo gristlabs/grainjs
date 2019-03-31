@@ -3,6 +3,7 @@
 /* global describe, it */
 
 const {dom} = require('../../lib/dom');
+const {Disposable} = require('../../lib/dispose');
 const {observable} = require('../../lib/observable');
 const {computed} = require('../../lib/computed');
 const {G} = require('../../lib/browserGlobals');
@@ -372,16 +373,17 @@ describe('dom', function() {
   });
 
   describe("component", function() {
-    class Comp extends dom.Component {
+    class Comp extends Disposable {
       constructor(arg, spies) {
         super();
         spies.onConstruct(arg);
         this.onDispose(() => spies.onDispose());
         this.fakeAttr = "fakeAttr";   // This should NOT become an attribute.
-        this.setContent(dom('div', dom.cls(arg.toUpperCase(), true),
+        this.content = dom('div', dom.cls(arg.toUpperCase(), true),
           spies.onRender,
-          dom.onDispose(spies.onDomDispose)));
+          dom.onDispose(spies.onDomDispose));
       }
+      buildDom() { return this.content; }
     }
 
     function makeSpies() {
@@ -415,8 +417,8 @@ describe('dom', function() {
       // This verifies, in particular, that we don't treat the component as an object with a bunch
       // of attributes, but do treat plain objects as attributes.
       assert.equal(elem.outerHTML,
-        '<div realattr="a">Hello<!--A--><div class="FOO"></div><!--B-->' +
-        '<!--A--><div class="BAR"></div><!--B-->World</div>');
+        '<div realattr="a">Hello<!--a--><div class="FOO"></div><!--b-->' +
+        '<!--a--><div class="BAR"></div><!--b-->World</div>');
     });
 
     it('should dispose even on a later exception', function() {
@@ -453,7 +455,10 @@ describe('dom', function() {
       // Simulate the explanatory example in the comment to dom.create() to show the problem, and
       // compare with the previous test case.
       function _insert_(component) {
-        return elem => component.mount(elem);
+        return elem => {
+          // We never actually get here, so doesn't matter what code is here.
+          throw new Error("unexpected-error");
+        };
       }
 
       consoleCapture(['error'], messages => {
@@ -477,12 +482,12 @@ describe('dom', function() {
       sinon.assert.notCalled(spies2.onDomDispose);
     });
 
-    it('should support createInit', function() {
+    it('should allow getting a handle to the created component', function() {
       let spies1 = makeSpies(), spies2 = makeSpies();
-      let spy1 = sinon.spy();
+      let spy1 = sinon.spy((a) => a);
       let spy2 = sinon.stub().throws(new Error('init throw'));
       let elem = dom('div', 'Hello',
-        dom.createInit(Comp, ['foo', spies1], c => { spy1(c); })
+        dom.create((owner) => spy1(Comp.create(owner, 'foo', spies1)))
       );
 
       assertResetSingleCall(spies1.onConstruct, spies1, 'foo');
@@ -496,8 +501,8 @@ describe('dom', function() {
       // Now check that in case of an exception, already-constructed parts get disposed.
       assert.throws(() =>
         dom('div', 'Hello',
-          dom.createInit(Comp, ['foo', spies1], c => { spy1(c); }),
-          dom.createInit(Comp, ['bar', spies2], c => { spy2(c); })
+          dom.create((owner) => spy1(Comp.create(owner, 'foo', spies1))),
+          dom.create((owner) => spy2(Comp.create(owner, 'bar', spies2)))
         ),
         /init throw/);
 
@@ -511,24 +516,25 @@ describe('dom', function() {
       assertResetSingleCall(spies2.onRender, undefined, sinon.match.has('className', 'BAR'));
       assertResetSingleCall(spy2, undefined, sinon.match.instanceOf(Comp));
       assertResetSingleCall(spies2.onDispose, spies2);
-      assertResetSingleCall(spies2.onDomDispose, undefined, sinon.match.has('className', 'BAR'));
+      sinon.assert.notCalled(spies2.onDomDispose);
     });
 
-    it('should support setContent() with a doc fragment', function() {
+    it('should support a doc fragment for content', function() {
       let components = [];
-      class Comp extends dom.Component {
+      class Comp extends Disposable {
         constructor(arg, spies) {
           super();
           spies.onConstruct(arg);
           this.onDispose(() => spies.onDispose());
           components.push(this);
-          this.setContent(dom.frag(
+          this.content = dom.frag(
             dom('div', '(', dom.text(arg.toLowerCase()), ')',
               dom.onDispose(spies.onDomDispose)),
             dom('span', '[', dom.text(arg.toUpperCase()), ']'),
             spies.onRender
-          ));
+          );
         }
+        buildDom() { return this.content; }
       }
 
       let spies1 = makeSpies(), spies2 = makeSpies();
@@ -542,23 +548,18 @@ describe('dom', function() {
       assertResetSingleCall(spies2.onConstruct, spies2, 'Yy');
       assertResetSingleCall(spies1.onRender, undefined, sinon.match.instanceOf(G.DocumentFragment));
       assertResetSingleCall(spies2.onRender, undefined, sinon.match.instanceOf(G.DocumentFragment));
-      assert.equal(elem.innerHTML, 'Hello<!--A--><div>(xx)</div><span>[XX]</span><!--B-->' +
-        '<!--A--><div>(yy)</div><span>[YY]</span><!--B-->World');
-
-      // We don't make it easy to get a handle to a created component, but if we manage to, and
-      // dispose it, its DOM should get removed.
-      components[0].dispose();
-      assert.equal(elem.innerHTML, 'Hello<!--A--><div>(yy)</div><span>[YY]</span><!--B-->World');
-      assertResetSingleCall(spies1.onDispose, spies1);
-      assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('tagName', 'DIV'));
-      sinon.assert.notCalled(spies2.onDomDispose);
+      assert.equal(elem.innerHTML, 'Hello<!--a--><div>(xx)</div><span>[XX]</span><!--b-->' +
+        '<!--a--><div>(yy)</div><span>[YY]</span><!--b-->World');
 
       // If we dispose the parent, the DOM doesn't need to be modified, but disposers get called.
       dom.domDispose(elem);
       // Check that DOM isn't modified (that would be wasteful).
-      assert.equal(elem.innerHTML, 'Hello<!--A--><div>(yy)</div><span>[YY]</span><!--B-->World');
+      assert.equal(elem.innerHTML, 'Hello<!--a--><div>(xx)</div><span>[XX]</span><!--b-->' +
+        '<!--a--><div>(yy)</div><span>[YY]</span><!--b-->World');
+      assertResetSingleCall(spies1.onDispose, spies1);
+      assertResetSingleCall(spies2.onDispose, spies2);
+      assertResetSingleCall(spies1.onDomDispose, undefined, sinon.match.has('tagName', 'DIV'));
       assertResetSingleCall(spies2.onDomDispose, undefined, sinon.match.has('tagName', 'DIV'));
-      sinon.assert.notCalled(spies1.onDomDispose);
     });
   });
 

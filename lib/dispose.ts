@@ -45,6 +45,12 @@
  *    this._holder.clear();             // disposes contained object
  *    this._holder.release();           // releases contained object
  *
+ * If you need a container for multiple objects and dispose them all together, use a MultiHolder:
+ *    this._mholder = MultiHolder.create(null);
+ *    Bar.create(this._mholder, 1);     // create new Bar(1)
+ *    Bar.create(this._mholder, 2);     // create new Bar(2)
+ *    this._mholder.dispose();          // disposes both objects
+ *
  * If creating your own class with a dispose() method, do NOT throw exceptions from dispose().
  * These cannot be handled properly in all cases. Read here about the same issue in C++:
  *    http://bin-login.name/ftp/pub/docs/programming_languages/cpp/cffective_cpp/MAGAZINE/SU_FRAME.HTM#destruct
@@ -288,6 +294,13 @@ export class Holder<T extends IDisposable> implements IDisposable, IDisposableOw
     this._owned = null;
   }
 }
+
+/**
+ * MultiHolder keeps multiple disposable object. It disposes all held object when the holder
+ * itself is disposed. It's actually nothing more than the Disposable base class itself, just
+ * exposed with a clearer name that describes its purpose.
+ */
+export class MultiHolder extends Disposable {}
 
 /**
  * Sets owner of obj (i.e. calls owner.autoDispose(obj)) unless owner is null. Returns obj.

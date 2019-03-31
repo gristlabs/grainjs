@@ -1,23 +1,12 @@
-import {popGlobals, pushGlobals} from '../../lib/browserGlobals';
 import {dom} from '../../lib/dom';
 import {observable} from '../../lib/observable';
-import {assertResetSingleCall} from './testutil2';
+import {assertResetSingleCall, useJsDomWindow} from './testutil2';
 
 import {assert} from 'chai';
-import {JSDOM} from 'jsdom';
 import * as sinon from 'sinon';
 
 describe("domComputed", function() {
-  let jsdomDoc;
-
-  before(function() {
-    jsdomDoc = new JSDOM("<!doctype html><html><body></body></html>");
-    pushGlobals(jsdomDoc.window);
-  });
-
-  after(function() {
-    popGlobals();
-  });
+  useJsDomWindow();
 
   it("should be possible to nest", function() {
     const obs1 = observable("foo");

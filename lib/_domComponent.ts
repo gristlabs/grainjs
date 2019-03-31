@@ -12,9 +12,9 @@
  * static method, in which case that's what gets called.
  *
  * In both cases, the call gets a first argument of `owner` followed by the rest of the arguments
- * to dom.create(). The `owner` is a Disposable that will own this component. This works naturally
- * with any class that derives from Disposable, since it then has a suitable static create()
- * method.
+ * to dom.create(). The `owner` is a MultiHolder that will own this component. This works
+ * naturally with any class that derives from Disposable, since it then has a suitable static
+ * create() method.
  *
  * Function-based components may use owner to easily handle disposal. For example:
  *
@@ -63,7 +63,7 @@
  */
 import {domComputed, DomComputed} from './_domComputed';
 import {autoDisposeElem} from './_domDispose';
-import {IDisposableOwner, MultiHolder} from './dispose';
+import {MultiHolder} from './dispose';
 import {Observable} from './observable';
 
 export type DomContents = Node | string | DomComputed | void | null | undefined | IDomContentsArray;
@@ -75,7 +75,7 @@ export interface IDomComponent {
 
 export type DomComponentReturn = DomContents | IDomComponent | Observable<DomContents>;
 
-export type IDomCreateFunc<Args extends any[]> = (owner: IDisposableOwner, ...args: Args) => DomComponentReturn;
+export type IDomCreateFunc<Args extends any[]> = (owner: MultiHolder, ...args: Args) => DomComponentReturn;
 export interface IDomCreateClass<Args extends any[]> {
   create: IDomCreateFunc<Args>;
 }

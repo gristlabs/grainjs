@@ -3,9 +3,9 @@
  * a plain value, or a function from which it builds a computed.
  */
 
-import {autoDisposeElem} from './_domDispose';
 import {computed} from './computed';
 import {IDisposable} from './dispose';
+import {autoDisposeElem} from './domDispose';
 import {IKnockoutReadObservable} from './kowrap';
 import {Observable} from './observable';
 import {subscribe, UseCBOwner} from './subscribe';

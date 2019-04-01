@@ -1,6 +1,6 @@
-import {onDisposeElem} from './_domDispose';
-import {DomElementMethod, DomMethod, IAttrObj} from './_domImpl';
 import {BindableValue, subscribeElem as _subscribe} from './binding';
+import {onDisposeElem} from './domDispose';
+import {DomElementMethod, DomMethod, IAttrObj} from './domImpl';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';

@@ -18,20 +18,21 @@
  */
 
 // We keep various dom-related functions organized in private modules, but they are exposed here.
-export {DomMethod, DomElementMethod, DomArg, DomElementArg, svg, update, frag, find, findAll} from './_domImpl';
-export * from './_domComponent';
-export * from './_domComputed';
-export * from './_domDispose';
-export * from './_domForEach';
-export * from './_domMethods';
+export {DomMethod, DomElementMethod, DomArg, DomElementArg, svg, update, frag, find, findAll} from './domImpl';
+export * from './domComponent';
+export * from './domComputed';
+export * from './domDispose';
+export * from './domForEach';
+export * from './domMethods';
 export * from './domevent';
 
-import * as _domComponent from './_domComponent';
-import * as _domComputed from './_domComputed';
-import * as _domDispose from './_domDispose';
-import * as _domForEach from './_domForEach';
-import * as _domImpl from './_domImpl';
-import * as _domMethods from './_domMethods';
+import * as _domComponent from './domComponent';
+import * as _domComputed from './domComputed';
+import * as _domDispose from './domDispose';
+import * as _domForEach from './domForEach';
+import * as _domImpl from './domImpl';
+import * as _domMethods from './domMethods';
+
 import * as domevent from './domevent';
 
 // We just want to re-export _domImpl.dom, but to allow adding methods to it in a typesafe way,

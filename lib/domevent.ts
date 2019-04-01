@@ -39,8 +39,8 @@
  *    let lis = domevent.onElem(elem, 'mouseup', e => { lis.dispose(); other_work(); });
  */
 
-import {DomElementMethod} from './_domImpl';
 import {IDisposable} from './dispose';
+import {DomElementMethod} from './domImpl';
 
 export type EventCB = (this: void, event: Event, elem: Element) => void;
 

@@ -1,6 +1,6 @@
-import {domDispose} from './_domDispose';
-import {DomArg, DomMethod, frag} from './_domImpl';
 import {BindableValue, subscribeElem} from './binding';
+import {domDispose} from './domDispose';
+import {DomArg, DomMethod, frag} from './domImpl';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';

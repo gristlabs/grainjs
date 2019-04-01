@@ -61,9 +61,9 @@
  *    dom.create((owner) => Computed.create(owner, obs1, (use, val1) => val1.toUpperCase()));
  *    dom.create((owner) => domComputed(Computed.create(owner, obs1, (use, val1) => val1.toUpperCase())));
  */
-import {domComputed, DomComputed} from './_domComputed';
-import {autoDisposeElem} from './_domDispose';
 import {MultiHolder} from './dispose';
+import {domComputed, DomComputed} from './domComputed';
+import {autoDisposeElem} from './domDispose';
 import {Observable} from './observable';
 
 export type DomContents = Node | string | DomComputed | void | null | undefined | IDomContentsArray;

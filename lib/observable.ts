@@ -22,7 +22,7 @@
  */
 
 import {compute, DepItem} from './_computed_queue';
-import {IDisposable, IDisposableOwnerT} from './dispose';
+import {IDisposable, IDisposableOwnerT, setDisposeOwner} from './dispose';
 import {Emitter, Listener} from './emit';
 
 export {bundleChanges} from './_computed_queue';
@@ -141,6 +141,13 @@ export class Observable<T> extends BaseObservable<T> implements IDisposableOwner
     const obs = new Observable<T>(value);
     obs._owned = value;
     return obs;
+  }
+
+  /**
+   * Creates a new Observable with the given initial value, and owned by owner.
+   */
+  public static create<T>(owner: IDisposableOwnerT<Observable<T>>|null, value: T): Observable<T> {
+    return setDisposeOwner(owner, new Observable<T>(value));
   }
 
   private _owned?: T & IDisposable = undefined;

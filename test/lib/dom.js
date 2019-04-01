@@ -259,7 +259,7 @@ describe('dom', function() {
       obs.set('bar');
       assert.equal(elem.hasAttribute('b1'), true);
       assert.equal(elem.value, 'propbar34');
-      assert.equal(elem.className, 'classbar isbar');
+      assert.equal(elem.className, 'isbar classbar');
       assert.equal(child1.style.display, '');
       assert.equal(child2.style.display, 'none');
 

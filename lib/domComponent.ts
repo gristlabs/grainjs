@@ -53,18 +53,10 @@
  * The returned DOM may includes Nodes, strings, and domComputed() values, as well as arrays of
  * any of these. In other words, any DomArg goes except DomMethods. All the DOM returned will be
  * disposed when the containing element is disposed, followed by the `owner` itself.
- *
- * In addition to DOM, a component may return a Computed (or generally any Observable) with DOM
- * contents. This simply gets wrapped into a domComputed. I.e. the following are equivalent:
- *
- *    dom.create(Computed, obs1, (use, val1) => val1.toUpperCase());
- *    dom.create((owner) => Computed.create(owner, obs1, (use, val1) => val1.toUpperCase()));
- *    dom.create((owner) => domComputed(Computed.create(owner, obs1, (use, val1) => val1.toUpperCase())));
  */
 import {MultiHolder} from './dispose';
 import {domComputed, DomComputed} from './domComputed';
 import {autoDisposeElem} from './domDispose';
-import {Observable} from './observable';
 
 export type DomContents = Node | string | DomComputed | void | null | undefined | IDomContentsArray;
 export interface IDomContentsArray extends Array<DomContents> {}
@@ -73,7 +65,7 @@ export interface IDomComponent {
   buildDom(): DomContents;
 }
 
-export type DomComponentReturn = DomContents | IDomComponent | Observable<DomContents>;
+export type DomComponentReturn = DomContents | IDomComponent;
 
 export type IDomCreateFunc<Args extends any[]> = (owner: MultiHolder, ...args: Args) => DomComponentReturn;
 export interface IDomCreateClass<Args extends any[]> {
@@ -90,14 +82,8 @@ export function create<Args extends any[]>(fn: IDomCreator<Args>, ...args: Args)
     autoDisposeElem(markerPost, owner);
 
     const value: DomComponentReturn = ('create' in fn) ? fn.create(owner, ...args) : fn(owner, ...args);
-
-    if (value instanceof Observable) {
-      return domComputed(value);
-    } else if (value && typeof value === 'object' && 'buildDom' in value) {
-      return value.buildDom();
-    } else {
-      return value;
-    }
+    return (value && typeof value === 'object' && 'buildDom' in value) ?
+      value.buildDom() : value;
   });
   return [markerPre, markerPost, func];
 }

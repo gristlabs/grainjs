@@ -24,13 +24,16 @@ import {PriorityQueue} from './PriorityQueue';
  */
 export class DepItem {
   public static isPrioritySmaller(a: DepItem, b: DepItem): boolean {
-    return a._priority < b._priority;
+    return a._priority < b._priority || (a._priority === b._priority && a._creation < b._creation);
   }
 
   private _priority: number = 0;
   private _enqueued: boolean = false;
   private _callback: () => void;
   private _context?: object;
+
+  // Order of creation, used for ordering items at same priority.
+  private _creation: number = ++_nextCreationNum;
 
   /**
    * Callback should call depItem.useDep(dep) for each DepInput it depends on.
@@ -72,6 +75,9 @@ export class DepItem {
 
 // The main compute queue.
 const queue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
+
+// Counter for creation order, used to create a stable ordering of DepItems at same priority.
+let _nextCreationNum = 0;
 
 // Array to keep track of items recomputed during this call to compute(). It could be a local
 // variable in compute(), but is made global to minimize allocations.

@@ -68,12 +68,21 @@ export interface IDomComponent {
 export type DomComponentReturn = DomContents | IDomComponent;
 
 export type IDomCreateFunc<Args extends any[]> = (owner: MultiHolder, ...args: Args) => DomComponentReturn;
+
+// It's not that we must have a constructor matching create(), but specifying type of new allows
+// type checking of classes that derive from Disposable, whereas matching only create() does not
+// (presumably because of the too much magic that Disposable does for the type of create()).
 export interface IDomCreateClass<Args extends any[]> {
   create: IDomCreateFunc<Args>;
+  new (...args: Args): DomComponentReturn;
 }
 export type IDomCreator<Args extends any[]> = IDomCreateFunc<Args> | IDomCreateClass<Args>;
 
-export function create<Args extends any[]>(fn: IDomCreator<Args>, ...args: Args): DomContents {
+type DomCreatorArgs<T> =
+  T extends (owner: MultiHolder, ...args: infer P) => any ? P :
+  (T extends new (...args: infer P) => any ? P : never);
+
+export function create<Fn extends IDomCreator<any[]>>(fn: Fn, ...args: DomCreatorArgs<Fn>): DomContents {
   const [markerPre, markerPost, func] = domComputed(null, () => {
     // Note that the callback to domComputed() is not called until the markers have been attached
     // to the parent element. We attach the MultiHolder's disposal to markerPost the way
@@ -81,7 +90,9 @@ export function create<Args extends any[]>(fn: IDomCreator<Args>, ...args: Args)
     const owner = MultiHolder.create(null);
     autoDisposeElem(markerPost, owner);
 
-    const value: DomComponentReturn = ('create' in fn) ? fn.create(owner, ...args) : fn(owner, ...args);
+    const value: DomComponentReturn = ('create' in fn) ?
+      (fn as IDomCreateClass<any[]>).create(owner, ...args) :
+      (fn as IDomCreateFunc<any[]>)(owner, ...args);
     return (value && typeof value === 'object' && 'buildDom' in value) ?
       value.buildDom() : value;
   });

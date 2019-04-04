@@ -6,6 +6,7 @@ export * from './lib/emit';
 export * from './lib/kowrap';
 export * from './lib/obsArray';
 export * from './lib/observable';
+export * from './lib/pureComputed';
 export * from './lib/styled';
 export * from './lib/subscribe';
 export * from './lib/util';

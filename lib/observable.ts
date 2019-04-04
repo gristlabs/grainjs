@@ -90,7 +90,8 @@ export class BaseObservable<T> {
    * previously-set such callback.
    * @param {Function} changeCB(hasListeners): Function to call after a listener is added or
    *    removed. It's called with a boolean indicating whether this observable has any listeners.
-   *    Pass in `null` to unset the callback.
+   *    Pass in `null` to unset the callback. Note that it can be called multiple times in a row
+   *    with hasListeners `true`.
    */
   public setListenerChangeCB(changeCB: (hasListeners: boolean) => void, optContext?: any): void {
     this._onChange.setChangeCB(changeCB, optContext);

@@ -62,6 +62,7 @@
     "@types/chai": "^4.1.2",
     "@types/chai-as-promised": "^7.1.0",
     "@types/jsdom": "^12.2.0",
+    "@types/knockout": "^3.4.64",
     "@types/lodash": "^4.14.100",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.0",

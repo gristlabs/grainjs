@@ -11,15 +11,16 @@
  */
 
 import {DepItem} from './_computed_queue';
+import {IKnockoutReadObservable} from './kowrap';
 import {BaseObservable, Observable} from './observable';
-import {ISubscribable, Subscription, UseCB} from './subscribe';
+import {ISubscribable, ISubscribableObs, Subscription, UseCB} from './subscribe';
 
 function _noWrite(): never {
   throw new Error("Can't write to non-writable pureComputed");
 }
 
-function _useFunc<T>(obs: BaseObservable<T>): T {
-  return obs.get();
+function _useFunc<T>(obs: BaseObservable<T>|IKnockoutReadObservable<T>): T {
+  return ('get' in obs) ? obs.get() : obs.peek();
 }
 
 // Constant empty array, which we use to avoid allocating new read-only empty arrays.
@@ -29,7 +30,7 @@ export class PureComputed<T> extends Observable<T> {
   private _callback: (use: UseCB, ...args: any[]) => T;
   private _write: (value: T) => void;
   private _sub: Subscription|null;
-  private readonly _dependencies: ReadonlyArray<ISubscribable>;
+  private readonly _dependencies: ReadonlyArray<ISubscribableObs>;
   private _inCall: boolean;
 
   /**

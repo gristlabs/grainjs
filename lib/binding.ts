@@ -5,18 +5,14 @@
 
 import {computed} from './computed';
 import {IDisposable} from './dispose';
+import {autoDisposeElem} from './domDispose';
+import {IKnockoutReadObservable} from './kowrap';
 import {Observable} from './observable';
-import {UseCB} from './subscribe';
+import {subscribe, UseCBOwner} from './subscribe';
 
-export type BindableValue<T> = Observable<T> | ComputedCallback<T> | T | IKnockoutObservable<T>;
+export type BindableValue<T> = Observable<T> | ComputedCallback<T> | T | IKnockoutReadObservable<T>;
 
-export type ComputedCallback<T> = (use: UseCB, ...args: any[]) => T;
-
-export interface IKnockoutObservable<T> {
-  (): T;
-  peek(): T;
-  subscribe(callback: (newValue: T) => void, target?: any, event?: "change"): IDisposable;
-}
+export type ComputedCallback<T> = (use: UseCBOwner, ...args: any[]) => T;
 
 /**
  * Subscribes a callback to valueObs, which may be one a plain value, an observable, a knockout
@@ -29,20 +25,15 @@ export interface IKnockoutObservable<T> {
  *
  * Returns an object which should be disposed to remove the created subscriptions, or null.
  */
-export function subscribe<T>(valueObs: BindableValue<T>,
-                             callback: (newVal: T, oldVal?: T) => void): IDisposable|null {
+export function subscribeBindable<T>(valueObs: BindableValue<T>,
+                                     callback: (val: T) => void): IDisposable|null {
   // A plain function (to make a computed from), or a knockout observable.
   if (typeof valueObs === 'function') {
     // Knockout observable.
-    const koValue = valueObs as IKnockoutObservable<T>;
+    const koValue = valueObs as IKnockoutReadObservable<T>;
     if (typeof koValue.peek === 'function') {
-      let savedValue = koValue.peek();
-      const sub = koValue.subscribe((val: T) => {
-        const old = savedValue;
-        savedValue = val;
-        callback(val, old);
-      });
-      callback(savedValue, undefined);
+      const sub = koValue.subscribe((val) => callback(val));
+      callback(koValue.peek());
       return sub;
     }
 
@@ -51,18 +42,27 @@ export function subscribe<T>(valueObs: BindableValue<T>,
     // The difference is that when valueObs() evaluates to unchanged value, callback would be
     // called in the version above, but not in the version below.
     const comp = computed(valueObs as ComputedCallback<T>);
-    comp.addListener(callback);
-    callback(comp.get(), undefined);
+    comp.addListener((val) => callback(val));
+    callback(comp.get());
     return comp;      // Disposing this will dispose its one listener.
   }
 
   // An observable.
   if (valueObs instanceof Observable) {
-    const sub = valueObs.addListener(callback);
-    callback(valueObs.get(), undefined);
-    return sub;
+    // Use subscribe() rather than addListener(), so that bundling of changes (implicit and with
+    // bundleChanges()) is respected. This matters when callback also uses observables.
+    return subscribe(valueObs, (use, val) => callback(val));
   }
 
-  callback(valueObs, undefined);
+  callback(valueObs);
   return null;
+}
+
+/**
+ * Subscribes a callback to valueObs (which may be a value, observable, or function) using
+ * subscribe(), and disposes the subscription with the passed-in element.
+ */
+export function subscribeElem<T>(elem: Node, valueObs: BindableValue<T>,
+                                 callback: (newVal: T, oldVal?: T) => void): void {
+  autoDisposeElem(elem, subscribeBindable(valueObs, callback));
 }

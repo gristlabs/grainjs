@@ -35,21 +35,51 @@
  */
 
 import {DepItem} from './_computed_queue';
-import {IDisposableOwner} from './dispose';
+import {IDisposableOwnerT, setDisposeOwner} from './dispose';
 import {BaseObservable as Obs, Observable} from './observable';
-import {ISubscribable, Subscription} from './subscribe';
+import {ISubscribable, Subscription, UseCBOwner as UseCB} from './subscribe';
 
 function _noWrite(): never {
   throw new Error("Can't write to non-writable computed");
 }
 
-// The generic type for the use() function that callbacks get.
-export interface UseCB {    // tslint:disable-line:interface-name
-  <U>(obs: Obs<U>): U;
-  owner: IDisposableOwner;
-}
+type Owner<T> = IDisposableOwnerT<Computed<T>>|null;
 
 export class Computed<T> extends Observable<T> {
+  // Still need repetitive declarations to support varargs that are not the final argument.
+  public static create<T>(
+    owner: Owner<T>, cb: (use: UseCB) => T): Computed<T>;
+  public static create<T, A>(
+    owner: Owner<T>, a: Obs<A>,
+    cb: (use: UseCB, a: A) => T): Computed<T>;
+  public static create<T, A, B>(
+    owner: Owner<T>, a: Obs<A>, b: Obs<B>,
+    cb: (use: UseCB, a: A, b: B) => T): Computed<T>;
+  public static create<T, A, B, C>(
+    owner: Owner<T>, a: Obs<A>, b: Obs<B>, c: Obs<C>,
+    cb: (use: UseCB, a: A, b: B, c: C) => T): Computed<T>;
+  public static create<T, A, B, C, D>(
+    owner: Owner<T>, a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>,
+    cb: (use: UseCB, a: A, b: B, c: C, d: D) => T): Computed<T>;
+  public static create<T, A, B, C, D, E>(
+    owner: Owner<T>, a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>,
+    cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
+
+  /**
+   * Creates a new Computed, owned by the given owner.
+   * @param owner: Object to own this Computed, or null to handle disposal manually.
+   * @param ...observables: Zero or more observables on which this computes depends. The callback
+   *        will get called when any of these changes.
+   * @param callback: Read callback that will be called with (use, ...values),
+   *    i.e. the `use` function and values for all of the ...observables. The callback is called
+   *    immediately and whenever any dependency changes.
+   * @returns {Computed} The newly created computed observable.
+   */
+  public static create<T>(owner: IDisposableOwnerT<Computed<T>>|null, ...args: any[]): Computed<T> {
+    const readCb = args.pop();
+    return setDisposeOwner(owner, new Computed<T>(readCb, args));
+  }
+
   private _callback: (use: UseCB, ...args: any[]) => T;
   private _write: (value: T) => void;
   private _sub: Subscription;

@@ -2,10 +2,11 @@
 
 /* global describe, it */
 
-const {observable} = require('../../lib/observable');
+const {Holder} = require('../../lib/dispose');
+const {observable, Observable} = require('../../lib/observable');
 const { assertResetSingleCall } = require('./testutil2');
 
-const assert = require('assert');
+const {assert} = require('chai');
 const sinon = require('sinon');
 
 describe('observable', function() {
@@ -123,5 +124,19 @@ describe('observable', function() {
     lis1 = obs.addListener(spy1);
     sinon.assert.notCalled(spyChange);
     assert.strictEqual(obs.hasListeners(), true);
+  });
+
+  it("should be possible to create with .create", function() {
+    const holder = Holder.create(null);
+    const obs = Observable.create(holder, "foo");
+    assert.strictEqual(obs.get(), "foo");
+    obs.set("bar");
+    assert.strictEqual(obs.get(), "bar");
+    assert.isFalse(obs.isDisposed());
+
+    holder.clear();
+    assert.isTrue(obs.isDisposed());
+    // After an observable is disposed, it should discard its reference to the value.
+    assert.strictEqual(obs.get(), undefined);
   });
 });

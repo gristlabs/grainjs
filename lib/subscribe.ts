@@ -19,17 +19,26 @@
  */
 
 import {DepItem} from './_computed_queue';
+import {IDisposableOwner} from './dispose';
 import {Listener} from './emit';
+import {fromKo, IKnockoutReadObservable} from './kowrap';
 import {BaseObservable as Obs} from './observable';
 
-export interface ISubscribable {
+export interface ISubscribableObs {
   _getDepItem(): DepItem|null;
   addListener(callback: (val: any, prev: any) => void, optContext?: object): Listener;
   get(): any;
 }
 
+export type ISubscribable = ISubscribableObs | IKnockoutReadObservable<any>;
+
 // The generic type for the use() function that callbacks get.
-export type UseCB = <T>(obs: Obs<T>) => T;
+export type UseCB = <T>(obs: Obs<T>|IKnockoutReadObservable<T>) => T;
+
+export interface UseCBOwner {    // tslint:disable-line:interface-name
+  <U>(obs: Obs<U>|IKnockoutReadObservable<U>): U;
+  owner: IDisposableOwner;
+}
 
 interface IListenerWithInUse extends Listener {
   _inUse: boolean;
@@ -40,9 +49,9 @@ const emptyArray: ReadonlyArray<any> = [];
 
 export class Subscription {
   private readonly _depItem: DepItem;
-  private readonly _dependencies: ReadonlyArray<ISubscribable>;
+  private readonly _dependencies: ReadonlyArray<ISubscribableObs>;
   private readonly _depListeners: ReadonlyArray<Listener>;
-  private _dynDeps: Map<ISubscribable, IListenerWithInUse>;
+  private _dynDeps: Map<ISubscribableObs, IListenerWithInUse>;
   private _callback: (use: UseCB, ...args: any[]) => void;
   private _useFunc: UseCB;
 
@@ -59,7 +68,7 @@ export class Subscription {
     this._callback = callback;
     this._useFunc = this._useDependency.bind(this);
     if (owner) {
-      (this._useFunc as any).owner = owner;
+      (this._useFunc as UseCBOwner).owner = owner;
     }
 
     this._evaluate();
@@ -85,7 +94,8 @@ export class Subscription {
    * subscription to `obs` if one doesn't yet exist.
    * @param {Observable} obs: The observable being used as a dependency.
    */
-  private _useDependency(obs: ISubscribable) {
+  private _useDependency(_obs: ISubscribable) {
+    const obs = ('_getDepItem' in _obs) ? _obs : fromKo(_obs);
     let listener = this._dynDeps.get(obs);
     if (!listener) {
       listener = this._subscribeTo(obs) as IListenerWithInUse;
@@ -130,7 +140,8 @@ export class Subscription {
    * @param {Observable} obs: The observable to subscribe to.
    * @returns {Listener} Listener object.
    */
-  private _subscribeTo(obs: ISubscribable) {
+  private _subscribeTo(_obs: ISubscribable) {
+    const obs = ('_getDepItem' in _obs) ? _obs : fromKo(_obs);
     return obs.addListener(this._enqueue, this);
   }
 

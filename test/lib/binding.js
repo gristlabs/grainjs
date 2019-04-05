@@ -4,7 +4,7 @@
 
 const binding = require('../../lib/binding');
 const {computed} = require('../../lib/computed');
-const {observable} = require('../../lib/observable');
+const {bundleChanges, observable} = require('../../lib/observable');
 const { assertResetSingleCall } = require('./testutil2');
 
 const assert = require('chai').assert;
@@ -18,13 +18,13 @@ describe('binding', function() {
   it('should work with a plain value', function() {
     let spy = sinon.spy();
     let ret;
-    ret = binding.subscribe(17, spy);
-    assertResetSingleCall(spy, undefined, 17, undefined);
+    ret = binding.subscribeBindable(17, spy);
+    assertResetSingleCall(spy, undefined, 17);
     assert.strictEqual(ret, null);
 
     let obj = {foo: "bar"};
-    ret = binding.subscribe(obj, spy);
-    assertResetSingleCall(spy, undefined, obj, undefined);
+    ret = binding.subscribeBindable(obj, spy);
+    assertResetSingleCall(spy, undefined, obj);
     assert.strictEqual(ret, null);
   });
 
@@ -33,22 +33,22 @@ describe('binding', function() {
     let spy = sinon.spy();
 
     assert.isFalse(obs.hasListeners());
-    let sub = binding.subscribe(obs, spy);
+    let sub = binding.subscribeBindable(obs, spy);
     assert.isTrue(obs.hasListeners());
 
     // Check that the callback was called initially.
-    assertResetSingleCall(spy, undefined, undefined, undefined);
+    assertResetSingleCall(spy, undefined, undefined);
 
     // Check the callback gets called on changes.
     obs.set("Hello");
-    assertResetSingleCall(spy, undefined, "Hello", undefined);
+    assertResetSingleCall(spy, undefined, "Hello");
 
     // Check the callback does not get called for unchanged values.
     obs.set("Hello");
     sinon.assert.notCalled(spy);
 
     obs.set("Hello2");
-    assertResetSingleCall(spy, undefined, "Hello2", "Hello");
+    assertResetSingleCall(spy, undefined, "Hello2");
 
     // Check the callback does not get called after disposal.
     sub.dispose();
@@ -63,15 +63,15 @@ describe('binding', function() {
     let spy = sinon.spy();
 
     assert.isFalse(obs.hasListeners());
-    let sub = binding.subscribe(obs, spy);
+    let sub = binding.subscribeBindable(obs, spy);
     assert.isTrue(obs.hasListeners());
 
     // Check that the callback was called initially.
-    assertResetSingleCall(spy, undefined, 289, undefined);
+    assertResetSingleCall(spy, undefined, 289);
 
     // Check the callback gets called on changes.
     tmp.set(5);
-    assertResetSingleCall(spy, undefined, 25, 289);
+    assertResetSingleCall(spy, undefined, 25);
 
     // Check the callback does not get called for unchanged values.
     tmp.set(-5);
@@ -97,16 +97,16 @@ describe('binding', function() {
     let cbSpy = sinon.spy();
 
     assert.isFalse(tmp.hasListeners());
-    let sub = binding.subscribe(use => { cbSpy(); return use(tmp) * use(tmp); }, spy);
+    let sub = binding.subscribeBindable(use => { cbSpy(); return use(tmp) * use(tmp); }, spy);
     assert.isTrue(tmp.hasListeners());
 
     // Check that the callback was called initially.
-    assertResetSingleCall(spy, undefined, 289, undefined);
+    assertResetSingleCall(spy, undefined, 289);
     assertResetSingleCall(cbSpy, undefined);
 
     // Check the callback gets called on changes.
     tmp.set(5);
-    assertResetSingleCall(spy, undefined, 25, 289);
+    assertResetSingleCall(spy, undefined, 25);
     assertResetSingleCall(cbSpy, undefined);
 
     // Check the callback does not get called for unchanged values, but the value function does.
@@ -128,15 +128,15 @@ describe('binding', function() {
     let spy = sinon.spy();
 
     assert.strictEqual(obs.getSubscriptionsCount(), 0);
-    let sub = binding.subscribe(obs, spy);
+    let sub = binding.subscribeBindable(obs, spy);
     assert.strictEqual(obs.getSubscriptionsCount(), 1);
 
     // Check that the callback was called initially.
-    assertResetSingleCall(spy, undefined, 289, undefined);
+    assertResetSingleCall(spy, undefined, 289);
 
     // Check the callback gets called on changes.
     tmp(5);
-    assertResetSingleCall(spy, undefined, 25, 289);
+    assertResetSingleCall(spy, undefined, 25);
 
     // Check the callback does not get called for unchanged values.
     tmp(-5);
@@ -148,5 +148,49 @@ describe('binding', function() {
     tmp(10);
     assert.strictEqual(obs.peek(), 100);
     sinon.assert.notCalled(spy);
+  });
+
+  it('should respect bundleChanges', function() {
+    const obs1 = observable("a");
+    const obs2 = observable("b");
+    const spy1 = sinon.spy();
+    const spy2 = sinon.spy();
+    const sub1 = binding.subscribeBindable(obs1, (val1) => spy1(val1 + obs2.get()));
+    const sub2 = binding.subscribeBindable((use) => use(obs1), (val1) => spy2(val1 + obs2.get()));
+
+    // Check that the callbacks were called initially.
+    assertResetSingleCall(spy1, undefined, "ab");
+    assertResetSingleCall(spy2, undefined, "ab");
+
+    bundleChanges(() => { obs1.set("A"); obs2.set("B"); });
+
+    // If bundleChanges were not respected, we'd see "Ab" for spy1.
+    assertResetSingleCall(spy1, undefined, "AB");
+    assertResetSingleCall(spy2, undefined, "AB");
+    sub1.dispose();
+    sub2.dispose();
+    bundleChanges(() => { obs1.set("C"); obs2.set("D"); });
+    sinon.assert.notCalled(spy1);
+    sinon.assert.notCalled(spy2);
+  });
+
+  it('should respect implicit bundling of changes', function() {
+    const obs = observable('a');
+    const obs1 = computed((use) => use(obs) + '1');
+    const obs2 = computed((use) => use(obs) + '2');
+    const spy1 = sinon.spy();
+    const spy2 = sinon.spy();
+    const sub1 = binding.subscribeBindable(obs1, () => spy1(obs1.get() + obs2.get()));
+    const sub2 = binding.subscribeBindable(obs2, () => spy2(obs1.get() + obs2.get()));
+    assertResetSingleCall(spy1, undefined, "a1a2");
+    assertResetSingleCall(spy2, undefined, "a1a2");
+    obs.set("x");
+    assertResetSingleCall(spy1, undefined, "x1x2");
+    assertResetSingleCall(spy2, undefined, "x1x2");
+    sub1.dispose();
+    sub2.dispose();
+    obs.set("y");
+    sinon.assert.notCalled(spy1);
+    sinon.assert.notCalled(spy2);
   });
 });

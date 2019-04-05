@@ -21,7 +21,7 @@ computed(o1, o2, (use, _o1, _o2) => {
   _o2;        // $ExpectType string
   use(o1);    // $ExpectType number
   use(o2);    // $ExpectType string
-  use;        // $ExpectType UseCB
+  use;        // $ExpectType UseCBOwner
 });
 
 pureComputed(o1, o2, (use, _o1, _o2) => {
@@ -50,5 +50,5 @@ computed(o1, o2, o1, o2, o1, (use, _o1, _o2, _o1b, _o2b, _o1c) => {
   _o1c;       // $ExpectType number
   use(o1);    // $ExpectType number
   use(o2);    // $ExpectType string
-  use;        // $ExpectType UseCB
+  use;        // $ExpectType UseCBOwner
 });

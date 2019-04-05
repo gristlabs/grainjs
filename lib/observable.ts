@@ -22,7 +22,7 @@
  */
 
 import {compute, DepItem} from './_computed_queue';
-import {IDisposable, IDisposableOwnerT} from './dispose';
+import {IDisposable, IDisposableOwnerT, setDisposeOwner} from './dispose';
 import {Emitter, Listener} from './emit';
 
 export {bundleChanges} from './_computed_queue';
@@ -90,7 +90,8 @@ export class BaseObservable<T> {
    * previously-set such callback.
    * @param {Function} changeCB(hasListeners): Function to call after a listener is added or
    *    removed. It's called with a boolean indicating whether this observable has any listeners.
-   *    Pass in `null` to unset the callback.
+   *    Pass in `null` to unset the callback. Note that it can be called multiple times in a row
+   *    with hasListeners `true`.
    */
   public setListenerChangeCB(changeCB: (hasListeners: boolean) => void, optContext?: any): void {
     this._onChange.setChangeCB(changeCB, optContext);
@@ -141,6 +142,13 @@ export class Observable<T> extends BaseObservable<T> implements IDisposableOwner
     const obs = new Observable<T>(value);
     obs._owned = value;
     return obs;
+  }
+
+  /**
+   * Creates a new Observable with the given initial value, and owned by owner.
+   */
+  public static create<T>(owner: IDisposableOwnerT<Observable<T>>|null, value: T): Observable<T> {
+    return setDisposeOwner(owner, new Observable<T>(value));
   }
 
   private _owned?: T & IDisposable = undefined;

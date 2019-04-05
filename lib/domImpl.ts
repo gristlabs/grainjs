@@ -1,5 +1,5 @@
-import {domDispose} from './_domDispose';
-import {attrsElem} from './_domMethods';
+import {domDispose} from './domDispose';
+import {attrsElem} from './domMethods';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';
@@ -30,7 +30,8 @@ export type DomElementArg = DomArg | IAttrObj | IDomElementArgArray | DomElement
 export interface IDomElementArgArray extends Array<DomElementArg> {}
 
 // The goal of the above declarations is to get help from TypeScript in detecting incorrect usage:
-//  import {text, hide} from './_domMethods';
+// (See test/types/dom.ts for a test of this.)
+//  import {text, hide} from './domMethods';
 //  dom('div', text('hello'));        // OK
 //  dom('div', hide(true));           // OK
 //  dom('div', {title: 'hello'});     // OK

@@ -23,7 +23,7 @@
  * the returned wrapper should not be disposed; it's tied to the lifetime of the wrapped object.
  */
 
-import {BaseObservable, bundleChanges, Observable} from './observable';
+import {bundleChanges, Observable} from './observable';
 
 // Implementation note. Both wrappers are implemented in the same way.
 //
@@ -43,7 +43,7 @@ export interface IKnockoutReadObservable<T> {
   getSubscriptionsCount(): number;
 }
 
-const fromKoWrappers: WeakMap<IKnockoutObservable<any>, BaseObservable<any>> = new WeakMap();
+const fromKoWrappers: WeakMap<IKnockoutObservable<any>, Observable<any>> = new WeakMap();
 const toKoWrappers: WeakMap<Observable<any>, IKnockoutObservable<any>> = new WeakMap();
 
 /**
@@ -53,7 +53,7 @@ const toKoWrappers: WeakMap<Observable<any>, IKnockoutObservable<any>> = new Wea
  * to the lifetime of koObs. If unused, it consumes minimal resources, and should get garbage
  * collected along with koObs.
  */
-export function fromKo<T>(koObs: IKnockoutObservable<T>): BaseObservable<T> {
+export function fromKo<T>(koObs: IKnockoutObservable<T>): Observable<T> {
   return fromKoWrappers.get(koObs) || fromKoWrappers.set(koObs, new KoWrapObs(koObs)).get(koObs)!;
 }
 
@@ -64,7 +64,7 @@ export function fromKo<T>(koObs: IKnockoutObservable<T>): BaseObservable<T> {
  * This way, when unused, the only reference is from the wrapper to the wrapped object. KoWrapObs
  * should not be disposed; its lifetime is tied to that of the wrapped object.
  */
-export class KoWrapObs<T> extends BaseObservable<T> {
+export class KoWrapObs<T> extends Observable<T> {
   private _koSub: any = null;
 
   constructor(private _koObs: IKnockoutObservable<T>) {

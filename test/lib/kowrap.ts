@@ -1,8 +1,8 @@
 import {assert} from 'chai';
 import * as ko from 'knockout';
 import * as sinon from 'sinon';
-import {bundleChanges, computed, fromKo, IKnockoutObservable, observable, pureComputed, toKo} from '../../index';
-import {assertResetSingleCall} from './testutil2';
+import {bundleChanges, computed, dom, fromKo, IKnockoutObservable, observable, pureComputed, toKo} from '../../index';
+import {assertResetSingleCall, useJsDomWindow} from './testutil2';
 
 describe('kowrap', function() {
 
@@ -265,4 +265,18 @@ describe('kowrap', function() {
     sinon.assert.notCalled(spyB2);
   });
 
+  describe("dom", function() {
+    useJsDomWindow();
+
+    it('should play well with dom bindings', function() {
+      const kObs = ko.observable(17);
+      const gObs = observable(17); // fromKo(kObs);
+      const elem = dom('input', dom.prop('value', gObs)) as HTMLInputElement;
+      assert.equal(elem.value, '17');
+      gObs.set(20);
+      assert.equal(elem.value, '20');
+      kObs(25);
+      assert.equal(elem.value, '20');
+    });
+  });
 });

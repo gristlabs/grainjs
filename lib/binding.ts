@@ -7,10 +7,10 @@ import {computed} from './computed';
 import {IDisposable} from './dispose';
 import {autoDisposeElem} from './domDispose';
 import {IKnockoutReadObservable} from './kowrap';
-import {Observable} from './observable';
+import {BaseObservable} from './observable';
 import {subscribe, UseCBOwner} from './subscribe';
 
-export type BindableValue<T> = Observable<T> | ComputedCallback<T> | T | IKnockoutReadObservable<T>;
+export type BindableValue<T> = BaseObservable<T> | ComputedCallback<T> | T | IKnockoutReadObservable<T>;
 
 export type ComputedCallback<T> = (use: UseCBOwner, ...args: any[]) => T;
 
@@ -48,7 +48,7 @@ export function subscribeBindable<T>(valueObs: BindableValue<T>,
   }
 
   // An observable.
-  if (valueObs instanceof Observable) {
+  if (valueObs instanceof BaseObservable) {
     // Use subscribe() rather than addListener(), so that bundling of changes (implicit and with
     // bundleChanges()) is respected. This matters when callback also uses observables.
     return subscribe(valueObs, (use, val) => callback(val));

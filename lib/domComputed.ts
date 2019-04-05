@@ -64,6 +64,8 @@ export function replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomAr
  * @param contentFunc: Function called with the result of valueObs as the input, and
  *    returning DOM as output. If omitted, defaults to the identity function.
  */
+// Note that DomMethod is excluded because it prevents typescript from inferring the type of
+// the first argument when it's a function (and it's not useful).
 export function domComputed(valueObs: BindableValue<Exclude<DomArg, DomMethod>>): DomComputed;
 export function domComputed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomComputed;
 export function domComputed<T>(

@@ -106,6 +106,6 @@ function identity<T>(arg: T): T { return arg; }
  * @param boolValueObs: Observable or function for a computed.
  * @param contentFunc: Called with the result of boolValueObs when it is truthy. Should return DOM.
  */
-export function maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomComputed {
-  return domComputed(boolValueObs, (value) => value ? contentFunc(value) : null);
+export function maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: NonNullable<T>) => DomArg): DomComputed {
+  return domComputed(boolValueObs, (value) => value ? contentFunc(value!) : null);
 }

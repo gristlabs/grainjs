@@ -5,13 +5,13 @@ import * as WebpackDevServer from 'webpack-dev-server';
 // tslint:disable:no-console
 
 export class WebpackServer implements IMochaServer {
-  // The result of webpack-serve call. See https://github.com/webpack-contrib/webpack-serve#serveargv-options
+  // WebpackDevServer instance. See https://github.com/webpack/docs/wiki/webpack-dev-server
   private _server: any;
   private _port: number = 0;
 
   public async start() {
     const config = require('../fixtures/webpack.config.js');
-    console.log("Starting webpack-serve");
+    console.log("Starting webpack-dev-serve");
     this._server = new WebpackDevServer(webpack(config), {
       ...config.devServer,
       noInfo: true,
@@ -21,7 +21,7 @@ export class WebpackServer implements IMochaServer {
   }
 
   public async stop() {
-    console.log("Stopping webpack-serve");
+    console.log("Stopping webpack-dev-serve");
     this._server.close();
   }
 

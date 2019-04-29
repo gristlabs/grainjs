@@ -1,7 +1,7 @@
 /**
  * Test and develop a widget by running the following at the root of the git checkout:
  *
- *    bin/webpack-serve --config test/fixtures/webpack.config.js
+ *    bin/webpack-dev-server --config test/fixtures/webpack.config.js
  *
  * It will build and serve the demo code with live-reload at
  *

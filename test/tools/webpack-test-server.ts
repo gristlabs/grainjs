@@ -1,38 +1,32 @@
 import {IMochaServer} from 'mocha-webdriver';
-import * as merge from 'webpack-merge';
-import * as serve from 'webpack-serve';
+import * as webpack from 'webpack';
+import * as WebpackDevServer from 'webpack-dev-server';
 
 // tslint:disable:no-console
 
 export class WebpackServer implements IMochaServer {
   // The result of webpack-serve call. See https://github.com/webpack-contrib/webpack-serve#serveargv-options
   private _server: any;
+  private _port: number = 0;
 
   public async start() {
     const config = require('../fixtures/webpack.config.js');
     console.log("Starting webpack-serve");
-    this._server = await serve({}, {
-      config: merge(config, {
-        serve: {
-          port: 9010,
-          open: false,
-          clipboard: false,
-          hotClient: false,
-          logLevel: 'warn',
-        },
-      }),
+    this._server = new WebpackDevServer(webpack(config), {
+      ...config.devServer,
+      noInfo: true,
     });
+    const port = this._port = config.devServer.port;
+    await new Promise((resolve, reject) => this._server.listen(port, 'localhost', resolve).on('error', reject));
   }
 
   public async stop() {
     console.log("Stopping webpack-serve");
-    this._server.app.stop();
+    this._server.close();
   }
 
   public getHost(): string {
-    const {app, options} = this._server;
-    const {port} = app.server.address();
-    return `${options.protocol}://${options.host}:${port}`;
+    return `http://localhost:${this._port}`;
   }
 }
 

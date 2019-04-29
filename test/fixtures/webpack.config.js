@@ -39,20 +39,15 @@ module.exports = {
       { test: /\.tsx?$/, loader: "ts-loader", exclude: /node_modules/ }
     ]
   },
-  serve: {
-    content: [path.resolve(__dirname)],
-    port: 9000,
-    open: { path: "/" },
+  devServer: {
+    contentBase: path.resolve(__dirname),
+    port: 9200,
+    open: 'Google Chrome',
 
     // Serve a trivial little index page.
-    add: (app, middleware, options) => {
-      app.use((ctx, next) => {
-        if (ctx.url === '/') {
-          ctx.type = 'html';
-          ctx.body = Object.keys(entries).map((e) => `<a href="${e}/">${e}</a><br>\n`).join('');
-        }
-        return next();
-      });
+    before: (app, server) => {
+      app.get('/', (req, res) =>
+        res.send(Object.keys(entries).map((e) => `<a href="${e}/">${e}</a><br>\n`).join('')));
     },
   }
 };

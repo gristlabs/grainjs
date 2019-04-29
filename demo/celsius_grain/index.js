@@ -1,6 +1,6 @@
 "use strict";
 
-const { computed, observable, dom } = require('../..');
+const { computed, Disposable, observable, dom } = require('../..');
 
 function toCelsius(fahrenheit) {
   return (fahrenheit - 32) * 5 / 9;
@@ -34,21 +34,22 @@ function TemperatureInput(temperature, scaleName) {
   );
 }
 
-class Calculator extends dom.Component {
+class Calculator extends Disposable {
   constructor() {
     super();
     this._temp = observable('');
     this._scale = observable('c');
+  }
 
+  buildDom() {
     const celsius = this.autoDispose(this._makeScaleTemp('c', toCelsius));
     const fahrenheit = this.autoDispose(this._makeScaleTemp('f', toFahrenheit));
     const celsiusValue = this.autoDispose(computed(use => parseFloat(use(celsius))));
-
-    this.setContent(dom('div',
+    return dom('div',
       TemperatureInput(celsius, 'Celsius'),
       TemperatureInput(fahrenheit, 'Fahrenheit'),
       BoilingVerdict(celsiusValue)
-    ));
+    );
   }
 
   _makeScaleTemp(toScale, converter) {

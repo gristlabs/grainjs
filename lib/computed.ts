@@ -81,7 +81,7 @@ export class Computed<T> extends Observable<T> {
   }
 
   private _callback: (use: UseCB, ...args: any[]) => T;
-  private _write: (value: T) => void;
+  private _write: (value: T) => Promise<void>;
   private _sub: Subscription;
 
   /**
@@ -107,15 +107,25 @@ export class Computed<T> extends Observable<T> {
    * "Sets" the value of the computed by calling the write() callback if one was provided in the
    * constructor. Throws an error if there was no such callback (not a "writable" computed).
    * @param {Object} value: The value to pass to the write() callback.
+   * @returns {Promise}: Waits for write() callback, but does not propagate rejections.
    */
-  public set(value: T): void { this._write(value); }
+  public set(value: T): Promise<void> {
+    return this._write(value);
+  }
 
   /**
    * Set callback to call when this.set(value) is called, to make it a writable computed. If not
-   * set, attempting to write to this computed will throw an exception.
+   * set, attempting to write to this computed will throw an exception. If `writeFunc` throws
+   * an error, subscribers will be notified of the previously computed value, even if it hadn't changed.
    */
-  public onWrite(writeFunc: (value: T) => void): Computed<T> {
-    this._write = writeFunc;
+  public onWrite(writeFunc: (value: T) => void | Promise<void>): Computed<T> {
+    this._write = async (value: T) => {
+      try {
+        await writeFunc(value);
+      } catch (err) {
+        this.setAndTrigger(this.get());
+      }
+    };
     return this;
   }
 

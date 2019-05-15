@@ -47,7 +47,7 @@ module.exports = {
   },
   devServer: {
     contentBase: path.resolve(__dirname),
-    port: 9200,
+    port: process.env.PORT || 9200,
     open: process.env.OPEN_BROWSER || 'Google Chrome',
 
     // Serve a trivial little index page with a directory, and a template for each project.

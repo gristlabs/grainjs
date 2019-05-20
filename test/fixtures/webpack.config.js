@@ -9,14 +9,20 @@
  */
 'use strict';
 
+const fs = require('fs');
 const glob = require('glob');
 const path = require('path');
 
 // Build each */index.ts as its own bundle.
 const entries = {};
-for (const fixture of glob.sync(`${__dirname}/*/index.ts`)) {
-  entries[path.basename(path.dirname(fixture))] = fixture;
+for (const fixture of glob.sync(`${__dirname}/*.ts`)) {
+  const name = path.basename(fixture, '.ts');
+  if (name.startsWith('webpack')) { continue; }
+  entries[name] = fixture;
 }
+
+// Generic trivial html template for all projects.
+const htmlTemplate = fs.readFileSync(`${__dirname}/template.html`, 'utf8');
 
 module.exports = {
   mode: "development",
@@ -42,12 +48,15 @@ module.exports = {
   devServer: {
     contentBase: path.resolve(__dirname),
     port: 9200,
-    open: 'Google Chrome',
+    open: process.env.OPEN_BROWSER || 'Google Chrome',
 
-    // Serve a trivial little index page.
+    // Serve a trivial little index page with a directory, and a template for each project.
     before: (app, server) => {
+      // app is an express app; we get a chance to add custom endpoints to it.
       app.get('/', (req, res) =>
-        res.send(Object.keys(entries).map((e) => `<a href="${e}/">${e}</a><br>\n`).join('')));
+        res.send(Object.keys(entries).map((e) => `<a href="${e}">${e}</a><br>\n`).join('')));
+      app.get(Object.keys(entries).map((e) => `/${e}`), (req, res) =>
+        res.send(htmlTemplate.replace('<NAME>', path.basename(req.url))));
     },
   }
 };

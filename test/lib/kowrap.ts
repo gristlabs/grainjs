@@ -2,6 +2,8 @@ import {assert} from 'chai';
 import * as ko from 'knockout';
 import * as sinon from 'sinon';
 import {bundleChanges, computed, dom, fromKo, IKnockoutObservable, observable, pureComputed, toKo} from '../../index';
+import {domDisposeHooks, setupKoDisposal} from '../../index';
+import {G} from '../../lib/browserGlobals';
 import {assertResetSingleCall, useJsDomWindow} from './testutil2';
 
 describe('kowrap', function() {
@@ -277,6 +279,62 @@ describe('kowrap', function() {
       assert.equal(elem.value, '20');
       kObs(25);
       assert.equal(elem.value, '20');
+    });
+  });
+
+  describe("setupKoDisposal", function() {
+    useJsDomWindow();
+
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    function koOnDispose(func: () => void) {
+      return (node: Node) => { ko.utils.domNodeDisposal.addDisposeCallback(node, func); };
+    }
+
+    function testWithDisposeCall(disposer: (node: Node) => void) {
+      const spies: sinon.SinonSpy[] = Array.from(Array(8), () => sinon.spy());
+      setupKoDisposal(ko);
+      const elem = dom('div',
+        dom('div', dom.onDispose(spies[0]), koOnDispose(spies[1]),
+          dom('span', koOnDispose(spies[2]), dom.onDispose(spies[3]),
+            dom('ul', dom('li', dom.onDispose(spies[4]))),
+            dom('ul', dom('li', koOnDispose(spies[5]))),
+          ),
+          // Test that disposers can be set on comment nodes too.
+          dom.update(G.document.createComment('comment1'), koOnDispose(spies[6])),
+          dom.update(G.document.createComment('comment2'), koOnDispose(spies[7])),
+        ),
+      );
+
+      assert.deepEqual(spies.map((spy) => spy.callCount), [0, 0, 0, 0, 0, 0, 0, 0]);
+      disposer(elem);
+      assert.deepEqual(spies.map((spy) => spy.callCount), [1, 1, 1, 1, 1, 1, 1, 1]);
+    }
+
+    it('should ensure both kinds of disposers are run by grainjs.domDispose', function() {
+      const disposeSpy = sandbox.spy(domDisposeHooks, 'disposeNode');
+
+      testWithDisposeCall((node) => dom.domDispose(node));
+
+      assert.equal(disposeSpy.callCount, 9);      // There are 9 nodes in the tree above.
+      disposeSpy.resetHistory();
+
+      // A duplication of the test ensures that it's safe to call setupKoDisposal() twice.
+      testWithDisposeCall((node) => dom.domDispose(node));
+      assert.equal(disposeSpy.callCount, 9);
+    });
+
+    it('should ensure both kinds of disposers are run by ko.cleanNode', function() {
+      const disposeSpy = sandbox.spy(domDisposeHooks, 'disposeNode');
+
+      testWithDisposeCall((node) => ko.cleanNode(node));
+
+      assert.equal(disposeSpy.callCount, 9);      // There are 9 nodes in the tree above.
+      disposeSpy.resetHistory();
+
+      testWithDisposeCall((node) => ko.cleanNode(node));
+      assert.equal(disposeSpy.callCount, 9);
     });
   });
 });

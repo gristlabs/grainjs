@@ -106,6 +106,9 @@ export function toKo<T>(knockout: IKnockoutModule, grainObs: Observable<T>): IKn
   return newKoObs;
 }
 
+// Marker for when knockout-disposal integration has already been setup.
+let koDisposalIsSetup = false;
+
 /**
  * Set up integration between grainjs and knockout disposal. Knockout does cleanup using
  * ko.removeNode / ko.cleanNode (it also takes care of JQuery cleanup if needed). GrainJS does
@@ -120,6 +123,10 @@ export function toKo<T>(knockout: IKnockoutModule, grainObs: Observable<T>): IKn
  * knockout, we are forced to rely on knockout's node traversal which ignores text nodes.
  */
 export function setupKoDisposal(ko: IKnockoutModule) {
+  // Ensure we don't do the setup more than once, or things will get called multiple times.
+  if (koDisposalIsSetup) { return; }
+  koDisposalIsSetup = true;
+
   const koDomNodeDisposal = (ko as any).utils.domNodeDisposal;
 
   // Knockout by default has an external-data-cleanup func set to cleanup JQuery. Whatever it is
@@ -130,12 +137,15 @@ export function setupKoDisposal(ko: IKnockoutModule) {
   const origGrainDisposeRecursive = domDisposeHooks.disposeRecursive;
 
   // New function called by knockout to do extra cleanup. Now calls grainjs single-node cleanup.
+  // (In knockout, we can only override single-node cleanup.)
   function newKoCleanExternalData(node: Node) {
     origKoCleanExternalData(node);
     domDisposeHooks.disposeNode(node);
   }
 
-  // Function called by grainjs to clean nodes recursively.
+  // Function called by grainjs to clean nodes recursively. We override the recursive cleanup
+  // function to call the recursive knockout cleanup (letting knockout do the dom traversal it
+  // normally does).
   function newGrainDisposeRecursive(node: Node) {
     origGrainDisposeRecursive(node);
 

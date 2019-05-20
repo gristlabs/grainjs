@@ -6,3 +6,11 @@ dom('div', {title: 'hello'});     // $ExpectType HTMLElement
 dom.frag(dom.text('hello'));      // $ExpectType DocumentFragment
 dom.frag(dom.hide(true));         // $ExpectError
 dom.frag({title: 'hello'});       // $ExpectError
+
+dom('div', (elem) => {
+  elem;                           // $ExpectType Element
+});
+
+dom('input', (elem) => {
+  elem;                           // $ExpectType HTMLInputElement
+});

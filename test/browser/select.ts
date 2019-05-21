@@ -1,5 +1,5 @@
 import {assert, driver, useServer} from 'mocha-webdriver';
-import {server} from '../../tools/webpack-test-server';
+import {server} from '../tools/webpack-test-server';
 
 // TODO READ HELPFUL RECOMMENDATIONS AT:
 // https://wiki.saucelabs.com/display/DOCS/Best+Practices+for+Running+Tests
@@ -9,7 +9,7 @@ describe('select', () => {
 
   before(async function() {
     this.timeout(20000);      // Set a longer default timeout.
-    await driver.get(`${server.getHost()}/select/`);
+    await driver.get(`${server.getHost()}/select`);
   });
 
   it('should update observable when value is selected', async () => {

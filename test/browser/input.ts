@@ -1,12 +1,12 @@
 import {assert, driver, Key, useServer} from 'mocha-webdriver';
-import {server} from '../../tools/webpack-test-server';
+import {server} from '../tools/webpack-test-server';
 
 describe('input', () => {
   useServer(server);
 
   before(async function() {
     this.timeout(20000);      // Set a longer default timeout.
-    await driver.get(`${server.getHost()}/input/`);
+    await driver.get(`${server.getHost()}/input`);
   });
 
   function getAllValues() {

@@ -34,7 +34,9 @@ export function useJsDomWindow(html?: string) {
   before(function() {
     const dom = new JSDOM(html || "<!doctype html><html><body>" +
       "<div id='a'></div>" +
-      "</body></html>");
+      "</body></html>", {
+        url: "http://localhost",
+      });
     pushGlobals(dom.window);
   });
 

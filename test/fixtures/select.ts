@@ -1,4 +1,4 @@
-import {dom, obsArray, observable} from 'index';
+import {dom, obsArray, observable, styled} from 'index';
 import {IOption, IOptionFull, select} from 'lib/widgets/select';
 
 function testDom() {
@@ -18,7 +18,7 @@ function testDom() {
   ];
   const numValue = observable(numChoices[2].value);
 
-  return [
+  return cssTest(
     dom('div#test_main',
       select(value, choices, {defLabel: "Select a fruit:"}),
       dom('div', "Current value: ",
@@ -48,7 +48,12 @@ function testDom() {
         dom('b#test_num_type', dom.text((use) => String(typeof use(numValue)))),
       ),
     ),
-  ];
+  );
 }
+
+const cssTest = styled('div', `
+  display: flex;
+  & > div { border: 1px solid grey; margin: 0.5rem; padding: 0.5rem; }
+`);
 
 dom.update(document.body, testDom());

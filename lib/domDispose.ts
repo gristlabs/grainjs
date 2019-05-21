@@ -29,19 +29,37 @@ function _walkDom(elem: Node, visitFunc: INodeFunc): void {
 }
 
 // Internal helper to run all disposers for a single element.
-function _disposeElem(elem: Node): void {
-  let disposer = _disposeMap.get(elem);
+export function _disposeNode(node: Node): void {
+  let disposer = _disposeMap.get(node);
   if (disposer) {
-    let key: Node|INodeFunc = elem;
+    let key: Node|INodeFunc = node;
     do {
       _disposeMap.delete(key);
-      disposer(elem);
+      disposer(node);
       // Find the next disposer; these are chained when there are multiple.
       key = disposer;
       disposer = _disposeMap.get(key);
     } while (disposer);
   }
 }
+
+function _disposeNodeRecursive(node: Node): void {
+  _walkDom(node, domDisposeHooks.disposeNode);
+}
+
+export interface IDomDisposeHooks {
+  disposeRecursive: (node: Node) => void;
+  disposeNode: (node: Node) => void;
+}
+
+/**
+ * Support for extending dom disposal. This is very low-level, and needs utmost care. Any
+ * disposers set should take care of calling the original versions of the disposers.
+ */
+export const domDisposeHooks: IDomDisposeHooks = {
+  disposeNode: _disposeNode,
+  disposeRecursive: _disposeNodeRecursive,
+};
 
 /**
  * Run disposers associated with any descendant of elem or with elem itself. Disposers get
@@ -50,10 +68,10 @@ function _disposeElem(elem: Node): void {
  * It is automatically called if one of the function arguments to dom() throws an exception during
  * element creation. This way any onDispose() handlers set on the unfinished element get called.
  *
- * @param {Element} elem: The element to run disposers on.
+ * @param {Node} node: The element to run disposers on.
  */
-export function domDispose(elem: Node): void {
-  _walkDom(elem, _disposeElem);
+export function domDispose(node: Node): void {
+  domDisposeHooks.disposeRecursive(node);
 }
 
 /**

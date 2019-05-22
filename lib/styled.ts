@@ -73,10 +73,12 @@ import {G} from './browserGlobals';
 import {dom, DomArg, DomElementArg, DomElementMethod, TagElem, TagName} from './domImpl';
 import {cls, clsPrefix} from './domMethods';
 
-export type DomCreateFunc0<R> = (...args: Array<DomArg<R>>) => R;
-export type DomCreateFunc1<R, T> = (a: T, ...args: Array<DomArg<R>>) => R;
-export type DomCreateFunc2<R, T, U> = (a: T, b: U, ...args: Array<DomArg<R>>) => R;
-export type DomCreateFunc3<R, T, U, W> = (a: T, b: U, c: W, ...args: Array<DomArg<R>>) => R;
+type DomArgs<R> = Array<DomArg<R>>;
+
+export type DomCreateFunc0<R, Args extends DomArgs<R> = DomArgs<R>> = (...args: Args) => R;
+export type DomCreateFunc1<R, T, Args extends DomArgs<R>> = (a: T, ...args: Args) => R;
+export type DomCreateFunc2<R, T, U, Args extends DomArgs<R>> = (a: T, b: U, ...args: Args) => R;
+export type DomCreateFunc3<R, T, U, W, Args extends DomArgs<R>> = (a: T, b: U, c: W, ...args: Args) => R;
 
 // The value returned by styled() matches the input (first argument), and also implements IClsName
 // interface.
@@ -86,14 +88,16 @@ export interface IClsName {
 }
 
 // See module documentation for details.
-export function styled<Tag extends TagName>(tag: Tag, styles: string): DomCreateFunc0<TagElem<Tag>> & IClsName;
-export function styled<R extends Element>(creator: DomCreateFunc0<R>, styles: string): DomCreateFunc0<R> & IClsName;
-export function styled<R extends Element, T>(
-  creator: DomCreateFunc1<R, T>, styles: string): DomCreateFunc1<R, T> & IClsName;
-export function styled<R extends Element, T, U>(
-  creator: DomCreateFunc2<R, T, U>, styles: string): DomCreateFunc2<R, T, U> & IClsName;
-export function styled<R extends Element, T, U, W>(
-  creator: DomCreateFunc3<R, T, U, W>, styles: string): DomCreateFunc3<R, T, U, W> & IClsName;
+export function styled<Tag extends TagName>(
+  tag: Tag, styles: string): DomCreateFunc0<TagElem<Tag>, DomArgs<TagElem<Tag>>> & IClsName;
+export function styled<R extends Element, Args extends DomArgs<R>>(
+  creator: DomCreateFunc0<R, Args>, styles: string): typeof creator & IClsName;
+export function styled<R extends Element, T, Args extends DomArgs<R>>(
+  creator: DomCreateFunc1<R, T, Args>, styles: string): typeof creator & IClsName;
+export function styled<R extends Element, T, U, Args extends DomArgs<R>>(
+  creator: DomCreateFunc2<R, T, U, Args>, styles: string): typeof creator & IClsName;
+export function styled<R extends Element, T, U, W, Args extends DomArgs<R>>(
+  creator: DomCreateFunc3<R, T, U, W, Args>, styles: string): typeof creator & IClsName;
 export function styled(creator: any, styles: string): IClsName {
   // Note that we intentionally minimize the work done when styled() is called; it's better to do
   // any needed work on first use. That's when we will actually build the css rules.

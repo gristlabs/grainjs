@@ -35,11 +35,11 @@ import * as _domMethods from './domMethods';
 
 import * as domevent from './domevent';
 
-import {DomArg, TagElem, TagName} from './domImpl';
+import {IDomArgs, TagElem, TagName} from './domImpl';
 
 // We just want to re-export _domImpl.dom, but to allow adding methods to it in a typesafe way,
 // TypeScript wants us to declare a real function in the same file.
-export function dom<Tag extends TagName>(tagString: Tag, ...args: Array<DomArg<TagElem<Tag>>>): TagElem<Tag> {
+export function dom<Tag extends TagName>(tagString: Tag, ...args: IDomArgs<TagElem<Tag>>): TagElem<Tag> {
   return _domImpl.dom(tagString, ...args);
 }
 

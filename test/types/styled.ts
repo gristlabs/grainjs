@@ -28,13 +28,14 @@ button(
 );
 
 // Try using styled to wrap dom-creating functions.
-export function icon(name: 'foo'|'bar', ...domArgs: DomElementArg[]): HTMLElement {
+function icon(name: 'foo'|'bar', arg: DomElementArg, arg2?: number): HTMLElement {
   return null as any;
 }
 
 const cssIcon = styled(icon, '...');
 cssIcon('test');                    // $ExpectError
 cssIcon('foo');                     // $ExpectType HTMLElement
+cssIcon('foo', null, 4);            // $ExpectType HTMLElement
 cssIcon('foo', (elem) => {          // $ExpectType HTMLElement
   elem;                             // $ExpectType HTMLElement
 });
@@ -46,3 +47,11 @@ cssButton({type: 'button'}, (elem) => {   // $ExpectType HTMLInputElement
 
 const cssLabelText = styled(input, '...');
 cssLabelText(observable(""), {}, "foo");  // $ExpectType HTMLInputElement
+
+// TODO This is not actually what we expect.
+const menuItem1: (action: () => void, ...args: DomElementArg[]) => Element = null as any;
+const menuItem2 = styled(menuItem1, '...');
+menuItem1(() => undefined, (elem) => {    // $ExpectType Element
+  elem; });                               // $ExpectType HTMLElement
+menuItem2(() => undefined, (elem) => {    // $ExpectType Element
+  elem; });                               // $ExpectType HTMLElement

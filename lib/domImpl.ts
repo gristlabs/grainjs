@@ -28,9 +28,9 @@ export interface IAttrObj {
 // accepts DomArgs and applies them to an element, use the most specific DomArg type that works
 // for that element, e.g. DomArg<HTMLInputElement> if possible, then DomElementArg, then DomArg.
 export type DomArg<T = Node> = Node | string | void | null | undefined |
-  IDomArgArray<T> | DomMethod<T> | (T extends Element ? IAttrObj : never);
+  IDomArgs<T> | DomMethod<T> | (T extends Element ? IAttrObj : never);
 
-export interface IDomArgArray<T = Node> extends Array<DomArg<T>> {}
+export interface IDomArgs<T = Node> extends Array<DomArg<T>> {}
 
 // Alias for backward compatibility.
 export type DomElementArg = DomArg<HTMLElement>;
@@ -65,7 +65,7 @@ export type DomElementArg = DomArg<HTMLElement>;
  *   "dom methods" - expressions such as `dom.attr('href', url)` or `dom.hide(obs)`, which
  *       are actually special cases of the "functions" category.
  */
-export function dom<Tag extends TagName>(tagString: Tag, ...args: Array<DomArg<TagElem<Tag>>>): TagElem<Tag> {
+export function dom<Tag extends TagName>(tagString: Tag, ...args: IDomArgs<TagElem<Tag>>): TagElem<Tag> {
   return _updateWithArgsOrDispose(_createFromTagString(_createElementHtml, tagString) as TagElem<Tag>, args);
 }
 
@@ -76,7 +76,7 @@ export type TagElem<T extends TagName> = T extends keyof HTMLElementTagNameMap ?
  * svg('tag#id.class1.class2', ...args)
  *  Same as dom(...), but creates an SVG element.
  */
-export function svg(tagString: string, ...args: Array<DomArg<SVGElement>>): SVGElement {
+export function svg(tagString: string, ...args: IDomArgs<SVGElement>): SVGElement {
   return _updateWithArgsOrDispose(_createFromTagString(_createElementSvg, tagString), args);
 }
 
@@ -139,7 +139,7 @@ export function update(elem: any, ...args: DomElementArg[]): Node {
 /**
  * Update an element with an array of arguments.
  */
-function _updateWithArgs<T extends Node>(elem: T, args: Array<DomArg<T>>): T {
+function _updateWithArgs<T extends Node>(elem: T, args: IDomArgs<T>): T {
   for (const arg of args) {
     _updateWithArg(elem, arg);
   }
@@ -151,7 +151,7 @@ function _updateWithArgs<T extends Node>(elem: T, args: Array<DomArg<T>>): T {
  * an internal helper to be used whenever elem is a newly-created element. If elem is an existing
  * element which the user already knows about, then _updateWithArgs should be called.
  */
-function _updateWithArgsOrDispose<T extends Node>(elem: T, args: Array<DomArg<T>>): T {
+function _updateWithArgsOrDispose<T extends Node>(elem: T, args: IDomArgs<T>): T {
   try {
     return _updateWithArgs(elem, args);
   } catch (e) {

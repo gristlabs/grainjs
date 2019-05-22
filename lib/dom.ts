@@ -18,7 +18,7 @@
  */
 
 // We keep various dom-related functions organized in private modules, but they are exposed here.
-export {DomMethod, DomElementMethod, DomArg, DomElementArg, svg, update, frag, find, findAll} from './domImpl';
+export * from './domImpl';
 export * from './domComponent';
 export * from './domComputed';
 export * from './domDispose';
@@ -35,12 +35,12 @@ import * as _domMethods from './domMethods';
 
 import * as domevent from './domevent';
 
-import {IDomArgs, TagElem, TagName} from './domImpl';
+import {dom as _dom, IDomArgs, TagElem, TagName} from './domImpl';
 
 // We just want to re-export _domImpl.dom, but to allow adding methods to it in a typesafe way,
 // TypeScript wants us to declare a real function in the same file.
 export function dom<Tag extends TagName>(tagString: Tag, ...args: IDomArgs<TagElem<Tag>>): TagElem<Tag> {
-  return _domImpl.dom(tagString, ...args);
+  return _dom(tagString, ...args);
 }
 
 // Additionally export all methods as properties of dom() function.

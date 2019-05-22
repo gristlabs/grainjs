@@ -1,7 +1,7 @@
 /**
  * General INPUT widget.
  */
-import {bundleChanges, dom, DomElementArg, Observable, subscribe} from '../../index';
+import {bundleChanges, dom, IDomArgs, Observable, subscribe} from '../../index';
 
 export interface IInputOptions {
   onInput?: boolean;      // If set, update the observable on every keystroke.
@@ -27,7 +27,10 @@ export interface IInputOptions {
  *    input(obs, {isValid: isValidObs}, {type: 'email', placeholder: 'Your email...'});
  *    input(obs, {onInput: true}, {type: 'text'});
  */
-export function input(obs: Observable<string>, options: IInputOptions, ...args: DomElementArg[]): HTMLInputElement {
+export function input(
+  obs: Observable<string>, options: IInputOptions, ...args: IDomArgs<HTMLInputElement>
+): HTMLInputElement {
+
   const isValid = options.isValid;
 
   function setValue(elem: HTMLInputElement) {

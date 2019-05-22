@@ -130,9 +130,7 @@ function _createFromTagString<E extends Element>(createFunc: (tag: string) => E,
 /**
  * Update an element with any number of arguments, as documented in dom().
  */
-export function update<E extends Element>(elem: E, ...args: DomElementArg[]): E;
-export function update<E extends Node>(elem: E, ...args: DomArg[]): E;
-export function update(elem: any, ...args: DomElementArg[]): Node {
+export function update<T extends Node, Args extends IDomArgs<T>>(elem: T, ...args: Args): T {
   return _updateWithArgs(elem, args);
 }
 
@@ -183,7 +181,7 @@ function _updateWithArg<T extends Node>(elem: T, arg: DomArg<T>): void {
 /**
  * Creates a DocumentFragment processing arguments the same way as the dom() function.
  */
-export function frag(...args: DomArg[]): DocumentFragment {
+export function frag(...args: IDomArgs<DocumentFragment>): DocumentFragment {
   const elem = G.document.createDocumentFragment();
   return _updateWithArgsOrDispose<DocumentFragment>(elem, args);
 }

@@ -36,8 +36,15 @@ dom('input#foo', (elem) => {              // $ExpectType HTMLElement
 
 // Check that DomElementArg may be assigned to DomArg<HTMLInputElement>, but not vice versa.
 ((a: DomArg<HTMLInputElement>) => null)(null as DomElementArg);
-((a: DomElementArg => null)(null as DomArg<HTMLInputElement>);  // $ExpectError
+((a: DomElementArg) => null)(null as DomArg<HTMLInputElement>);  // $ExpectError
 
 // Check that DomArg may be assigned to DomElementArg, but not vice versa.
 ((a: DomElementArg) => null)(null as DomArg);
 ((a: DomArg) => null)(null as DomElementArg);                   // $ExpectError
+
+// dom.update() should also preserve types.
+dom.update(dom('div'), (elem) => {        // $ExpectType HTMLDivElement
+  elem; });                               // $ExpectType HTMLDivElement
+
+// Passing a DomArg<Node> to dom.update() shouldn't confuse type-inference.
+dom.update(document.body, null as DomArg, {style: '...'});    // $ExpectType HTMLElement

@@ -70,27 +70,29 @@
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';
-import {dom, DomElementArg, DomElementMethod} from './dom';
+import {dom, DomArg, DomElementArg, DomElementMethod, TagElem, TagName} from './domImpl';
+import {cls, clsPrefix} from './domMethods';
 
-export type DomCreateFunc0<R> = (...args: DomElementArg[]) => R;
-export type DomCreateFunc1<R, T> = (a: T, ...args: DomElementArg[]) => R;
-export type DomCreateFunc2<R, T, U> = (a: T, b: U, ...args: DomElementArg[]) => R;
-export type DomCreateFunc3<R, T, U, W> = (a: T, b: U, c: W, ...args: DomElementArg[]) => R;
+export type DomCreateFunc0<R> = (...args: Array<DomArg<R>>) => R;
+export type DomCreateFunc1<R, T> = (a: T, ...args: Array<DomArg<R>>) => R;
+export type DomCreateFunc2<R, T, U> = (a: T, b: U, ...args: Array<DomArg<R>>) => R;
+export type DomCreateFunc3<R, T, U, W> = (a: T, b: U, c: W, ...args: Array<DomArg<R>>) => R;
 
 // The value returned by styled() matches the input (first argument), and also implements IClsName
 // interface.
 export interface IClsName {
   className: string;      // Name of the generated class.
-  cls: typeof dom.cls;    // Helper like dom.cls(), but which prefixes classes by className.
+  cls: typeof cls;        // Helper like dom.cls(), but which prefixes classes by className.
 }
 
 // See module documentation for details.
-export function styled<R>(tag: string, styles: string): DomCreateFunc0<HTMLElement> & IClsName;
-export function styled<R>(creator: DomCreateFunc0<R>, styles: string): DomCreateFunc0<R> & IClsName;
-export function styled<R, T>(creator: DomCreateFunc1<R, T>, styles: string): DomCreateFunc1<R, T> & IClsName;
-export function styled<R, T, U>(
+export function styled<Tag extends TagName>(tag: Tag, styles: string): DomCreateFunc0<TagElem<Tag>> & IClsName;
+export function styled<R extends Element>(creator: DomCreateFunc0<R>, styles: string): DomCreateFunc0<R> & IClsName;
+export function styled<R extends Element, T>(
+  creator: DomCreateFunc1<R, T>, styles: string): DomCreateFunc1<R, T> & IClsName;
+export function styled<R extends Element, T, U>(
   creator: DomCreateFunc2<R, T, U>, styles: string): DomCreateFunc2<R, T, U> & IClsName;
-export function styled<R, T, U, W>(
+export function styled<R extends Element, T, U, W>(
   creator: DomCreateFunc3<R, T, U, W>, styles: string): DomCreateFunc3<R, T, U, W> & IClsName;
 export function styled(creator: any, styles: string): IClsName {
   // Note that we intentionally minimize the work done when styled() is called; it's better to do
@@ -104,7 +106,7 @@ export function styled(creator: any, styles: string): IClsName {
     (...args: any[]) => creator(...args, style.use());
   return Object.assign(newCreator, {
     className: style.className,
-    cls: dom.clsPrefix.bind(null, style.className),
+    cls: clsPrefix.bind(null, style.className),
   });
 }
 

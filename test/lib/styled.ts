@@ -19,7 +19,7 @@ describe('styles', function() {
 
   it('should add basic styling', () => {
     const sdiv = styled('div', `color: red; font-size: 27px`);
-    const elem = G.document.body.appendChild(sdiv('hello world')) as HTMLElement;
+    const elem: HTMLElement = G.document.body.appendChild(sdiv('hello world'));
     assert.equal(elem.tagName, 'DIV');
 
     // Check that styles got applies.
@@ -50,7 +50,7 @@ describe('styles', function() {
       sdiv(
         sdiv.cls('-highlight', highlight),
         sdiv.cls((use) => '-' + use(colorClass)),
-        'hello world')) as HTMLElement;
+        'hello world'));
 
     // Check that highlight observable toggles class and computed style.
     assert.notInclude(elem.className, '-highlight');
@@ -129,7 +129,7 @@ describe('styles', function() {
     const sspan = styled('span', `color: red; font-size: 27px`);
     const sspan2 = styled(sspan, `color: green; background-color: yellow`);
 
-    const elem = G.document.body.appendChild(sspan2('hello world')) as HTMLElement;
+    const elem: HTMLElement = G.document.body.appendChild(sspan2('hello world'));
     assert.equal(elem.tagName, 'SPAN');
 
     // Check that styles got applies.

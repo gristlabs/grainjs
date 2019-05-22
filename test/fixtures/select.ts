@@ -27,7 +27,7 @@ function testDom() {
       ),
       textarea = dom('textarea', {rows: "10"}, choices.get().join("\n"),
         dom.on('blur', parseChoices),
-      ) as HTMLTextAreaElement,
+      ),
       dom('div',
         dom('input', {type: 'button', value: 'Update'}, dom.on('click', parseChoices)),
       ),

@@ -70,28 +70,22 @@
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';
-import {dom, DomElementArg, DomElementMethod} from './dom';
-
-export type DomCreateFunc0<R> = (...args: DomElementArg[]) => R;
-export type DomCreateFunc1<R, T> = (a: T, ...args: DomElementArg[]) => R;
-export type DomCreateFunc2<R, T, U> = (a: T, b: U, ...args: DomElementArg[]) => R;
-export type DomCreateFunc3<R, T, U, W> = (a: T, b: U, c: W, ...args: DomElementArg[]) => R;
+import {dom, IDomArgs, TagElem, TagName} from './domImpl';
+import {cls, clsPrefix} from './domMethods';
 
 // The value returned by styled() matches the input (first argument), and also implements IClsName
 // interface.
 export interface IClsName {
   className: string;      // Name of the generated class.
-  cls: typeof dom.cls;    // Helper like dom.cls(), but which prefixes classes by className.
+  cls: typeof cls;        // Helper like dom.cls(), but which prefixes classes by className.
 }
 
+export type DomCreateFunc<R, Args extends IDomArgs<R> = IDomArgs<R>> = (...args: Args) => R;
+
 // See module documentation for details.
-export function styled<R>(tag: string, styles: string): DomCreateFunc0<HTMLElement> & IClsName;
-export function styled<R>(creator: DomCreateFunc0<R>, styles: string): DomCreateFunc0<R> & IClsName;
-export function styled<R, T>(creator: DomCreateFunc1<R, T>, styles: string): DomCreateFunc1<R, T> & IClsName;
-export function styled<R, T, U>(
-  creator: DomCreateFunc2<R, T, U>, styles: string): DomCreateFunc2<R, T, U> & IClsName;
-export function styled<R, T, U, W>(
-  creator: DomCreateFunc3<R, T, U, W>, styles: string): DomCreateFunc3<R, T, U, W> & IClsName;
+export function styled<Tag extends TagName>(tag: Tag, styles: string): DomCreateFunc<TagElem<Tag>> & IClsName;
+export function styled<Args extends any[], R extends Element>(
+  creator: (...args: Args) => R, styles: string): typeof creator & IClsName;
 export function styled(creator: any, styles: string): IClsName {
   // Note that we intentionally minimize the work done when styled() is called; it's better to do
   // any needed work on first use. That's when we will actually build the css rules.
@@ -100,11 +94,11 @@ export function styled(creator: any, styles: string): IClsName {
   // Creator function reflects the input, with only the addition of style.use() at the end. Note
   // that it needs to be at the end because creator() might take special initial arguments.
   const newCreator = (typeof creator === 'string') ?
-    (...args: DomElementArg[]) => dom(creator, ...args, style.use()) :
-    (...args: any[]) => creator(...args, style.use());
+    (...args: any[]) => style.addToElem(dom(creator, ...args)) :
+    (...args: any[]) => style.addToElem(creator(...args));
   return Object.assign(newCreator, {
     className: style.className,
-    cls: dom.clsPrefix.bind(null, style.className),
+    cls: clsPrefix.bind(null, style.className),
   });
 }
 
@@ -162,9 +156,10 @@ class StylePiece {
     StylePiece._unmounted.add(this);
   }
 
-  public use(): DomElementMethod {
+  public addToElem<T extends Element>(elem: T): T {
     if (!this._mounted) { StylePiece._mountAll(); }
-    return (elem) => { elem.classList.add(this.className); };
+    elem.classList.add(this.className);
+    return elem;
   }
 
   protected _createRules(): string {

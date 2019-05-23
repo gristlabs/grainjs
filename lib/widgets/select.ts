@@ -65,15 +65,15 @@ export function select<T>(obs: Observable<T>, optionArray: MaybeObsArray<IOption
 
     // When obs changes, update select's value; we do it after <options> have been created.
     // Note that autoDisposeElem ensures the subscription is disposed with the 'select' element.
-    (elem: Element) => dom.autoDisposeElem(elem, subscribe(obs, (use, obsValue) => {
+    (elem) => dom.autoDisposeElem(elem, subscribe(obs, (use, obsValue) => {
       const arr = unwrapMaybeObsArray(optionArray);
       const index = arr.findIndex((item) => getOptionValue(item) === obsValue);
-      (elem as HTMLSelectElement).selectedIndex = index + 1;    // +1 for default option
+      elem.selectedIndex = index + 1;    // +1 for default option
     })),
 
     // When user picks a new item, use its value to update the observable.
     dom.on('change', (e, elem) => {
-      const index = (elem as HTMLSelectElement).selectedIndex;
+      const index = elem.selectedIndex;
       const item = unwrapMaybeObsArray(optionArray)[index - 1];   // -1 for default option
       // It should be impossible for the user to select an invalid option, but check just in case.
       if (item !== undefined) {

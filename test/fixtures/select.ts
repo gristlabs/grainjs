@@ -22,12 +22,12 @@ function testDom() {
     dom('div#test_main',
       select(value, choices, {defLabel: "Select a fruit:"}),
       dom('div', "Current value: ",
-        dom('input#test_value', {type: 'text'}, dom.prop('value', value),
-          dom.on('input', (e, elem) => value.set((elem as HTMLInputElement).value))),
+        dom('input', {id: 'test_value', type: 'text'}, dom.prop('value', value),
+          dom.on('input', (e, elem) => value.set(elem.value))),
       ),
       textarea = dom('textarea', {rows: "10"}, choices.get().join("\n"),
         dom.on('blur', parseChoices),
-      ) as HTMLTextAreaElement,
+      ),
       dom('div',
         dom('input', {type: 'button', value: 'Update'}, dom.on('click', parseChoices)),
       ),
@@ -38,10 +38,9 @@ function testDom() {
     dom('div#test_num',
       select(numValue, numChoices),
       dom('div', "Current value:", dom('br'),
-        dom('input#test_num_value', {type: 'text', size: "6"}, dom.prop('value', numValue),
+        dom('input', {id: 'test_num_value', type: 'text', size: "6"}, dom.prop('value', numValue),
           dom.on('input', (e, elem) => {
-            const val = (elem as HTMLInputElement).value;
-            const n = parseFloat(val);
+            const n = parseFloat(elem.value);
             if (!isNaN(n)) { numValue.set(n); }
           })),
         " type: ",

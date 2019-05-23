@@ -115,8 +115,8 @@ export function prop<T>(property: string, valueObs: BindableValue<T>): DomMethod
  * @param {Element} elem: The element to update.
  * @param {Boolean} boolValue: True to show the element, false to hide it.
  */
-export function showElem(elem: Element, boolValue: boolean): void {
-  (elem as HTMLElement).style.display = boolValue ? '' : 'none';
+export function showElem(elem: HTMLElement, boolValue: boolean): void {
+  elem.style.display = boolValue ? '' : 'none';
 }
 export function show(boolValueObs: BindableValue<boolean>): DomElementMethod {
   return (elem) =>
@@ -129,8 +129,8 @@ export function show(boolValueObs: BindableValue<boolean>): DomElementMethod {
  * @param {Element} elem: The element to update.
  * @param {Boolean} boolValue: True to hide the element, false to show it.
  */
-export function hideElem(elem: Element, boolValue: boolean): void {
-  (elem as HTMLElement).style.display = boolValue ? 'none' : '';
+export function hideElem(elem: HTMLElement, boolValue: boolean): void {
+  elem.style.display = boolValue ? 'none' : '';
 }
 export function hide(boolValueObs: BindableValue<boolean>): DomElementMethod {
   return (elem) =>

@@ -1,7 +1,7 @@
 /**
  * General INPUT widget.
  */
-import {bundleChanges, dom, DomElementArg, Observable, subscribe} from '../../index';
+import {bundleChanges, dom, IDomArgs, Observable, subscribe} from '../../index';
 
 export interface IInputOptions {
   onInput?: boolean;      // If set, update the observable on every keystroke.
@@ -27,11 +27,13 @@ export interface IInputOptions {
  *    input(obs, {isValid: isValidObs}, {type: 'email', placeholder: 'Your email...'});
  *    input(obs, {onInput: true}, {type: 'text'});
  */
-export function input(obs: Observable<string>, options: IInputOptions, ...args: DomElementArg[]): HTMLInputElement {
+export function input(
+  obs: Observable<string>, options: IInputOptions, ...args: IDomArgs<HTMLInputElement>
+): HTMLInputElement {
+
   const isValid = options.isValid;
 
-  function setValue(_elem: Element) {
-    const elem = _elem as HTMLInputElement;
+  function setValue(elem: HTMLInputElement) {
     bundleChanges(() => {
       obs.set(elem.value);
       if (isValid) { isValid.set(elem.validity.valid); }
@@ -41,11 +43,11 @@ export function input(obs: Observable<string>, options: IInputOptions, ...args: 
   return dom('input', ...args,
     dom.prop('value', obs),
     (isValid ?
-      (elem: Element) => dom.autoDisposeElem(elem,
-        subscribe(obs, (use) => isValid.set((elem as HTMLInputElement).checkValidity()))) :
+      (elem) => dom.autoDisposeElem(elem,
+        subscribe(obs, (use) => isValid.set(elem.checkValidity()))) :
       null),
     options.onInput ? dom.on('input', (e, elem) => setValue(elem)) : null,
     dom.on('change', (e, elem) => setValue(elem)),
     dom.onKeyPress({Enter: (e, elem) => setValue(elem)}),
-  ) as HTMLInputElement;
+  );
 }

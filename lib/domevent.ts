@@ -40,9 +40,13 @@
  */
 
 import {IDisposable} from './dispose';
-import {DomElementMethod} from './domImpl';
+import {DomElementMethod, DomMethod} from './domImpl';
 
-export type EventCB = (this: void, event: Event, elem: Element) => void;
+export type EventName = keyof HTMLElementEventMap;
+export type EventType<E extends EventName|string> = E extends EventName ? HTMLElementEventMap[E] : Event;
+
+export type EventCB<E extends Event = Event, T extends EventTarget = EventTarget> =
+  (this: void, event: E, elem: T) => void;
 
 function _findMatch(inner: Element, outer: Element, selector: string): Element|null {
   for (let el: Element|null = inner; el && el !== outer; el = el.parentElement) {
@@ -53,18 +57,18 @@ function _findMatch(inner: Element, outer: Element, selector: string): Element|n
   return null;
 }
 
-class DomEventListener implements EventListenerObject, IDisposable {
-  constructor(protected elem: EventTarget,
+class DomEventListener<E extends Event, T extends EventTarget> implements EventListenerObject, IDisposable {
+  constructor(protected elem: T,
               protected eventType: string,
-              protected callback: EventCB,
+              protected callback: EventCB<E, T>,
               protected useCapture: boolean,
               protected selector?: string) {
     this.elem.addEventListener(this.eventType, this, this.useCapture);
   }
 
-  public handleEvent(event: Event) {
+  public handleEvent(event: E) {
     const cb = this.callback;
-    cb(event, this.elem as Element);
+    cb(event, this.elem);
   }
 
   public dispose() {
@@ -72,8 +76,8 @@ class DomEventListener implements EventListenerObject, IDisposable {
   }
 }
 
-class DomEventMatchListener extends DomEventListener {
-  public handleEvent(event: Event) {
+class DomEventMatchListener<E extends Event> extends DomEventListener<E, EventTarget> {
+  public handleEvent(event: E) {
     const elem = _findMatch(event.target as Element, this.elem as Element, this.selector!);
     if (elem) {
       const cb = this.callback;
@@ -92,11 +96,13 @@ class DomEventMatchListener extends DomEventListener {
  *    rarely be useful (e.g. JQuery doesn't even offer it as an option).
  * @returns {Object} Listener object whose .dispose() method will remove the event listener.
  */
-export function onElem(elem: EventTarget, eventType: string, callback: EventCB,
-                       {useCapture = false} = {}): IDisposable {
+export function onElem<E extends EventName|string, T extends EventTarget>(
+  elem: T, eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}): IDisposable {
   return new DomEventListener(elem, eventType, callback, useCapture);
 }
-export function on(eventType: string, callback: EventCB, {useCapture = false} = {}): DomElementMethod {
+
+export function on<E extends EventName|string, T extends EventTarget>(
+  eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}): DomMethod<T> {
   // tslint:disable-next-line:no-unused-expression
   return (elem) => { new DomEventListener(elem, eventType, callback, useCapture); };
 }
@@ -128,8 +134,8 @@ export function onMatch(selector: string, eventType: string, callback: EventCB,
 
 export type KeyEventType = 'keypress' | 'keyup' | 'keydown';
 
-export interface IKeyHandlers {
-  [key: string]: (this: void, ev: KeyboardEvent, elem: Element) => void;
+export interface IKeyHandlers<T extends HTMLElement = HTMLElement> {
+  [key: string]: (this: void, ev: KeyboardEvent, elem: T) => void;
 }
 
 /**
@@ -155,12 +161,13 @@ export interface IKeyHandlers {
  *      })
  *    )
  */
-export function onKeyElem(elem: Element, evType: KeyEventType, keyHandlers: IKeyHandlers): IDisposable {
-  if (!((elem as HTMLElement).tabIndex >= 0)) {   // If tabIndex property is undefined or -1,
+export function onKeyElem<T extends HTMLElement>(
+  elem: T, evType: KeyEventType, keyHandlers: IKeyHandlers<T>,
+): IDisposable {
+  if (!(elem.tabIndex >= 0)) {                    // If tabIndex property is undefined or -1,
     elem.setAttribute('tabindex', '-1');          // Set tabIndex attribute to make the element focusable.
   }
-  return onElem(elem, evType, (_ev, _elem) => {
-    const ev = _ev as KeyboardEvent;
+  return onElem(elem, evType, (ev, _elem) => {
     const plainHandler = keyHandlers[ev.key];
     const handler = plainHandler || keyHandlers[ev.key + '$'];
     if (handler) {
@@ -173,10 +180,10 @@ export function onKeyElem(elem: Element, evType: KeyEventType, keyHandlers: IKey
   });
 }
 
-export function onKeyPress(keyHandlers: IKeyHandlers): DomElementMethod {
+export function onKeyPress<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T> {
   return (elem) => { onKeyElem(elem, 'keypress', keyHandlers); };
 }
 
-export function onKeyDown(keyHandlers: IKeyHandlers): DomElementMethod {
+export function onKeyDown<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T> {
   return (elem) => { onKeyElem(elem, 'keydown', keyHandlers); };
 }

@@ -273,7 +273,7 @@ describe('kowrap', function() {
     it('should play well with dom bindings', function() {
       const kObs = ko.observable(17);
       const gObs = observable(17); // fromKo(kObs);
-      const elem = dom('input', dom.prop('value', gObs)) as HTMLInputElement;
+      const elem: HTMLInputElement = dom('input', dom.prop('value', gObs));
       assert.equal(elem.value, '17');
       gObs.set(20);
       assert.equal(elem.value, '20');

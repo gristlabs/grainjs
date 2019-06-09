@@ -44,6 +44,12 @@ export interface IKnockoutReadObservable<T> {
   getSubscriptionsCount(): number;
 }
 
+// Inference from Knockout observable gets very tricky because ko.Observable includes the function
+// signature `(val: T) => any` from which type `any` gets inferred. We can infer the correct type
+// with this helper.
+export type InferKoType<KObs extends IKnockoutReadObservable<any>> =
+  KObs extends {peek(): infer T} ? T : never;
+
 const fromKoWrappers: WeakMap<IKnockoutObservable<any>, Observable<any>> = new WeakMap();
 const toKoWrappers: WeakMap<Observable<any>, IKnockoutObservable<any>> = new WeakMap();
 
@@ -54,7 +60,7 @@ const toKoWrappers: WeakMap<Observable<any>, IKnockoutObservable<any>> = new Wea
  * to the lifetime of koObs. If unused, it consumes minimal resources, and should get garbage
  * collected along with koObs.
  */
-export function fromKo<T>(koObs: IKnockoutObservable<T>): Observable<T> {
+export function fromKo<KObs extends IKnockoutObservable<any>>(koObs: KObs): Observable<InferKoType<KObs>> {
   return fromKoWrappers.get(koObs) || fromKoWrappers.set(koObs, new KoWrapObs(koObs)).get(koObs)!;
 }
 

@@ -6,7 +6,7 @@
 import {computed} from './computed';
 import {IDisposable} from './dispose';
 import {autoDisposeElem} from './domDispose';
-import {IKnockoutReadObservable} from './kowrap';
+import {IKnockoutReadObservable, InferKoType} from './kowrap';
 import {BaseObservable} from './observable';
 import {subscribe, UseCBOwner} from './subscribe';
 
@@ -25,8 +25,13 @@ export type ComputedCallback<T> = (use: UseCBOwner, ...args: any[]) => T;
  *
  * Returns an object which should be disposed to remove the created subscriptions, or null.
  */
-export function subscribeBindable<T>(valueObs: BindableValue<T>,
-                                     callback: (val: T) => void): IDisposable|null {
+// The overload below is annoying, but needed for correct type inference; see test/types/kowrap.ts.
+export function subscribeBindable<KObs extends IKnockoutReadObservable<any>>(
+    valueObs: KObs, callback: (val: InferKoType<KObs>) => void): IDisposable|null;
+export function subscribeBindable<T>(
+    valueObs: BindableValue<T>, callback: (val: T) => void): IDisposable|null;
+export function subscribeBindable<T>(
+    valueObs: BindableValue<T>, callback: (val: T) => void): IDisposable|null {
   // A plain function (to make a computed from), or a knockout observable.
   if (typeof valueObs === 'function') {
     // Knockout observable.

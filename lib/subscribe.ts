@@ -32,11 +32,16 @@ export interface ISubscribableObs {
 
 export type ISubscribable = ISubscribableObs | IKnockoutReadObservable<any>;
 
-// The generic type for the use() function that callbacks get.
-export type UseCB = <T>(obs: Obs<T>|IKnockoutReadObservable<T>) => T;
+// Type inference from the simpler Obs<T>|IKnockoutReadObservable<T> does not always produce
+// correct T for ko.Observable. The formula below is a workaround. See also InferKoType in kowrap.
+export type InferUseType<TObs extends Obs<any>|IKnockoutReadObservable<any>> =
+  TObs extends Obs<infer T> ? T :
+  TObs extends {peek(): infer U} ? U : never;
 
-export interface UseCBOwner {    // tslint:disable-line:interface-name
-  <U>(obs: Obs<U>|IKnockoutReadObservable<U>): U;
+// The generic type for the use() function that callbacks get.
+export type UseCB = <TObs extends Obs<any>|IKnockoutReadObservable<any>>(obs: TObs) => InferUseType<TObs>;
+
+export interface UseCBOwner extends UseCB {    // tslint:disable-line:interface-name
   owner: IDisposableOwner;
 }
 

@@ -1,3 +1,6 @@
+/**
+ * Test types using dtslint. See README in this directory.
+ */
 import { computed, Computed } from '../../lib/computed';
 import { pureComputed, PureComputed } from '../../lib/pureComputed';
 import { observable, Observable } from '../../lib/observable';

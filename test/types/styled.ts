@@ -1,6 +1,9 @@
-// This test verifies that styled() wrappers around DOM-building functions preserve useful type
-// info, and let it be inferred for their arguments.
-
+/**
+ * Test types using dtslint. See README in this directory.
+ *
+ * This test verifies that styled() wrappers around DOM-building functions preserve useful type
+ * info, and let it be inferred for their arguments.
+ */
 import { dom, DomElementArg, input, observable, styled } from '../../index';
 
 // Styled with a tag name should produce dom-creators with same arg types as DOM.

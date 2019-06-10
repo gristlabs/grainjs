@@ -1,3 +1,6 @@
+/**
+ * Test types using dtslint. See README in this directory.
+ */
 import { dom, DomArg, DomElementArg } from '../../lib/dom';
 
 dom('div', dom.text('hello'));    // $ExpectType HTMLDivElement

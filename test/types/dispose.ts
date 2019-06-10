@@ -1,3 +1,6 @@
+/**
+ * Test types using dtslint. See README in this directory.
+ */
 import { Disposable, IDisposable, IDisposableCtor, IDisposableOwnerT } from '../../lib/dispose';
 
 class MyFoo extends Disposable {

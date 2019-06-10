@@ -1,3 +1,6 @@
+/**
+ * Test types using dtslint. See README in this directory.
+ */
 import { Computed, Holder, Observable } from '../../index';
 
 function foo(s: string, n: number): string { return ''; }

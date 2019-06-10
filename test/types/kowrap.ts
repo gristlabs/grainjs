@@ -1,3 +1,6 @@
+/**
+ * Test types using dtslint. See README in this directory.
+ */
 import { BindableValue, Computed, fromKo, Observable, subscribe, subscribeBindable, toKo } from '../../index';
 import * as ko from 'knockout';
 

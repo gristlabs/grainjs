@@ -1,3 +1,6 @@
+/**
+ * Test types using dtslint. See README in this directory.
+ */
 import { Disposable, dom, IDisposableOwner } from '../../index';
 
 class MyComp extends Disposable {

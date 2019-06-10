@@ -1,3 +1,6 @@
+/**
+ * Test types using dtslint. See README in this directory.
+ */
 import { observable } from '../../lib/observable';
 import { dom } from '../../lib/dom';
 

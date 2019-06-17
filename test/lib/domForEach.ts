@@ -190,4 +190,37 @@ describe("foreach", function() {
     assertResetFirstArgs(spy, "a", "b", "c");
   });
 
+  it("should clean up subscriptions when containing element is disposed", function() {
+    const obs = observable(["a", "b", "c"]);
+    const yesNo = observable(true);
+    const spy = sinon.spy((x: string) => x);
+
+    const elem = dom('div',
+      dom.maybe(yesNo, () =>
+        dom.forEach(obs, (item) => dom('span', ':', spy(item))),
+      ));
+
+    assert.equal(elem.textContent, ':a:b:c');
+    assertResetFirstArgs(spy, "a", "b", "c");
+
+    // When we set yesNo to false, the entire forEach content gets disposed.
+    yesNo.set(false);
+    assert.equal(elem.textContent, '');
+    assertResetFirstArgs(spy);
+
+    // If forEach were still subscribed to obs, spy() would get called. Verify that it doesn't.
+    obs.set(["x", "y"]);
+    assert.equal(elem.textContent, '');
+    assertResetFirstArgs(spy);
+
+    // Create forEach again.
+    yesNo.set(true);
+    assert.equal(elem.textContent, ':x:y');
+    assertResetFirstArgs(spy, "x", "y");
+
+    // Spy gets called on changes again, and only once (no stale subscriptions).
+    obs.set(["x", "y", "z"]);
+    assert.equal(elem.textContent, ':x:y:z');
+    assertResetFirstArgs(spy, "x", "y", "z");
+  });
 });

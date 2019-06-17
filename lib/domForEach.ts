@@ -1,5 +1,5 @@
 import {replaceContent} from './domComputed';
-import {domDispose} from './domDispose';
+import {autoDisposeElem, domDispose} from './domDispose';
 import {DomMethod, frag} from './domImpl';
 import {computedArray, MaybeObsArray, ObsArray} from './obsArray';
 
@@ -37,6 +37,10 @@ export function forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T)
     }
 
     const nodes: ObsArray<Node|null> = computedArray(obsArray, itemCreateFunc);
+
+    // Be sure to dispose the newly-created array when the DOM it's associated with is gone.
+    autoDisposeElem(markerPost, nodes);
+
     nodes.addListener((newArr: Array<Node|null>, oldArr: Array<Node|null>, splice?) => {
       if (splice) {
         // Remove the elements that are gone.

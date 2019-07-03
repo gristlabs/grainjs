@@ -8,7 +8,7 @@
   "scripts": {
     "build": "bash build.sh",
     "watch": "tsc -w",
-    "test": "nyc mocha -R list 'test/lib/*.{js,ts}' && npm run test-types",
+    "test": "nyc mocha -R list 'test/lib/*.{js,ts}' && npm run test-types && npm run test-browser",
     "test-memory": "mocha -R list --expose-gc --gc-global 'test/lib/*.{js,ts}'",
     "test-timing": "TIMING_TESTS=1 mocha -R list 'test/lib/*.{js,ts}'",
     "build-demo": "browserify demo/celsius_grain/index.js -d | uglifyjs --source-map 'content=inline,url=build-index.js.map' -o demo/celsius_grain/build-index.js",
@@ -16,10 +16,8 @@
     "test-browser": "mocha 'test/browser/*.{js,ts}'",
     "test-browser-debug": "mocha --bail --no-exit 'test/browser/*.{js,ts}'",
     "test-types": "dtslint --onlyTestTsNext --expectOnly test/types",
-    "prepare": "npm run build",
-    "preversion": "npm test",
-    "version": "npm run build",
-    "gitpublish": "./gitpublish.sh"
+    "prepack": "npm run build && npm test",
+    "version": "npm run build && npm test"
   },
   "keywords": [
     "grist",
@@ -82,7 +80,6 @@
     "mocha": "^6.1.4",
     "mocha-webdriver": "^0.1.13",
     "nyc": "^14.0.0",
-    "publish-release": "^1.4.0",
     "selenium-webdriver": "^4.0.0-alpha.1",
     "sinon": "^7.1.0",
     "ts-loader": "^5.2.2",

@@ -16,8 +16,7 @@
     "test-browser": "mocha 'test/browser/*.{js,ts}'",
     "test-browser-debug": "mocha --bail --no-exit 'test/browser/*.{js,ts}'",
     "test-types": "dtslint --onlyTestTsNext --expectOnly test/types",
-    "prepack": "npm run build && npm test",
-    "version": "npm run build && npm test"
+    "prepack": "npm run build && npm test"
   },
   "keywords": [
     "grist",

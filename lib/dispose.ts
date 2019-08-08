@@ -234,8 +234,6 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
  *
  * If the object is an instance of Disposable, the holder will also notice when the object gets
  * disposed from outside of it, in which case the holder will become empty again.
- *
- * TODO Holder needs unittests.
  */
 export class Holder<T extends IDisposable> implements IDisposable, IDisposableOwner {
   public static create<T extends IDisposable>(owner: IDisposableOwnerT<Holder<T>>|null): Holder<T> {
@@ -266,9 +264,10 @@ export class Holder<T extends IDisposable> implements IDisposable, IDisposableOw
   /** Disposes the held object and empties the holder. */
   public clear(): void {
     this._unlisten();
-    if (this._owned) {
-      this._owned.dispose();
+    const owned = this._owned;
+    if (owned) {
       this._owned = null;
+      owned.dispose();
     }
   }
 
@@ -283,9 +282,10 @@ export class Holder<T extends IDisposable> implements IDisposable, IDisposableOw
 
   /** Stop listening for the disposal of this._owned. */
   private _unlisten() {
-    if (this._disposalListener) {
-      this._disposalListener.dispose();
+    const disposalListener = this._disposalListener;
+    if (disposalListener) {
       this._disposalListener = undefined;
+      disposalListener.dispose();
     }
   }
 

@@ -76,7 +76,7 @@
     "geckodriver": "^1.11.0",
     "jsdom": "15.0.0",
     "knockout": "^3.5.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.15",
     "mocha": "^6.1.4",
     "mocha-webdriver": "^0.1.13",
     "nyc": "^14.0.0",

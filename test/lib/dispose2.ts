@@ -144,5 +144,20 @@ describe('dispose2', function() {
       holder.dispose();
       assertResetSingleCall(fooDisposed, bar);
     });
+
+    it("should cope with disposal indirectly re-triggering clear() call", function() {
+      const holder = Holder.create(null);
+      const foo = Foo.create(holder, 30, noop);
+      foo.onDispose(() => holder.clear());
+
+      consoleCapture(['error'], (messages) => {
+        holder.clear();
+        // No error: not a problem to call holder.clear() from within holder.clear().
+        assert.deepEqual(messages, []);
+      });
+
+      assertResetSingleCall(fooDisposed, foo);
+      assert.isTrue(holder.isEmpty());
+    });
   });
 });

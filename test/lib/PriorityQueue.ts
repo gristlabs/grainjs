@@ -23,7 +23,7 @@ describe('PriorityQueue', function() {
   }
 
   it('should sort numbers up', function() {
-    const q = new PriorityQueue((a, b) => a < b);
+    const q = new PriorityQueue<number>((a, b) => a < b);
     [0.1, -1, 5.1, 4.2, 3.5].forEach((val) => q.push(val));
     assert.strictEqual(q.size, 5);
     assert.strictEqual(q.peek(), -1);
@@ -35,7 +35,7 @@ describe('PriorityQueue', function() {
   });
 
   it('should sort numbers down', function() {
-    const q = new PriorityQueue((a, b) => a > b);
+    const q = new PriorityQueue<number>((a, b) => a > b);
     [0.1, -1, 5.1, 4.2, 3.5].forEach((val) => q.push(val));
     assert.strictEqual(q.size, 5);
     assert.strictEqual(q.peek(), 5.1);
@@ -47,7 +47,7 @@ describe('PriorityQueue', function() {
   });
 
   it('should work for random operations', function() {
-    const q = new PriorityQueue((a, b) => a < b);
+    const q = new PriorityQueue<number>((a, b) => a < b);
     const arr = [];
     // First fill with 1000 random numbers.
     for (let i = 0; i < 1000; i++) {

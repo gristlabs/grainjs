@@ -15,6 +15,7 @@ export class WebpackServer implements IMochaServer {
     this._server = new WebpackDevServer(webpack(config), {
       ...config.devServer,
       noInfo: true,
+      open: false,
     });
     const port = this._port = config.devServer.port;
     await new Promise((resolve, reject) => this._server.listen(port, 'localhost', resolve).on('error', reject));

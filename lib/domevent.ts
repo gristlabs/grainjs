@@ -35,8 +35,8 @@
  * In this usage, the element passed to the callback will be a DOM element matching the given
  * selector. If there are multiple matches, the callback is only called for the innermost one.
  *
- * If you need to remove the callback on first call, here's a useful pattern:
- *    let lis = domevent.onElem(elem, 'mouseup', e => { lis.dispose(); other_work(); });
+ * If you need to call the callback just once (removing on first call), use once():
+ *    dom('div', dom.once('click', (event, elem) => { ... }));
  */
 
 import {IDisposable} from './dispose';
@@ -105,6 +105,21 @@ export function on<E extends EventName|string, T extends EventTarget>(
   eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}): DomMethod<T> {
   // tslint:disable-next-line:no-unused-expression
   return (elem) => { new DomEventListener(elem, eventType, callback, useCapture); };
+}
+
+/**
+ * Same as onElem / on methods, but only calls the callback once. If the event happens, we
+ * unsubscribe first, then call the callback.
+ */
+export function once<E extends EventName|string, T extends EventTarget>(
+  eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}): DomMethod<T> {
+  return (elem) => { onceElem(elem, eventType, callback, {useCapture}); };
+}
+
+export function onceElem<E extends EventName|string, T extends EventTarget>(
+  elem: T, eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}) {
+  const lis = onElem(elem, eventType, (ev, _elem) => { lis.dispose(); callback(ev, _elem); }, {useCapture});
+  return lis;
 }
 
 /**

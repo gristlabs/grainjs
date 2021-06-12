@@ -50,15 +50,15 @@ without knowing the details of the DOM construction.
 In addition, the library provides approaches to create and dispose resources (important for
 long-lived single-page applications), and an assortment of other related tools.
 
-- [DOM & Observables](basics.html)
-  - [DOM Construction](basics.html#dom-construction)
-  - [Observables](basics.html#observables)
-    - [Computed Observables](basics.html#computed-observables)
-  - [DOM Bindings](basics.html#dom-bindings)
-    - [Conditional DOM](basics.html#conditional-dom)
-    - [Repeating DOM](basics.html#repeating-dom)
-    - [DOM Events](basics.html#dom-events)
-  - [Styling DOM](basics.html#styling-dom)
+- [DOM & Observables](docs/basics.md)
+  - [DOM Construction](docs/basics.md#dom-construction)
+  - [Observables](docs/basics.md#observables)
+    - [Computed Observables](docs/basics.md#computed-observables)
+  - [DOM Bindings](docs/basics.md#dom-bindings)
+    - [Conditional DOM](docs/basics.md#conditional-dom)
+    - [Repeating DOM](docs/basics.md#repeating-dom)
+    - [DOM Events](docs/basics.md#dom-events)
+  - [Styling DOM](docs/basics.md#styling-dom)
 
 - [Disposables](dispose.html)
   - [Class Disposable](dispose.html#class-disposable)

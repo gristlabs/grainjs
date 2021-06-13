@@ -2,6 +2,15 @@
 
 In this page, we describe how to build DOM in GrainJS and how to tie it to observables.
 
+- [DOM Construction](#dom-construction)
+- [Observables](#observables)
+  - [Computed Observables](#computed-observables)
+- [DOM Bindings](#dom-bindings)
+  - [Conditional DOM](#conditional-dom)
+  - [Repeating DOM](#repeating-dom)
+  - [DOM Events](#dom-events)
+- [Styling DOM](#styling-dom)
+
 ## DOM Construction
 
 Here’s an example of DOM construction using GrainJS:
@@ -86,7 +95,7 @@ And, importantly, you can subscribe to changes to its value:
 const listener = showPanelObs.addListener(val => console.log("New value:", val));
 ```
 
-## Computed Observables
+### Computed Observables
 
 A "Computed" or a "Computed Observable" is an observable whose value depends on other observables
 and gets recalculated automatically when they change.

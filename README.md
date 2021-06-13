@@ -60,7 +60,7 @@ long-lived single-page applications), and an assortment of other related tools.
     - [DOM Events](docs/basics.md#dom-events)
   - [Styling DOM](docs/basics.md#styling-dom)
 
-- [Disposables](dispose.html)
+- [Disposables](dispose.html#disposables)
   - [Class Disposable](dispose.html#class-disposable)
   - [Taking Ownership](dispose.html#taking-ownership)
   - [Holders](dispose.html#holders)

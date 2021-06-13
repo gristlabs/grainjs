@@ -27,7 +27,7 @@ dom('a', {href: 'https://github.com/gristlabs/grainjs'},
 This constructs an element equivalent to the following HTML:
 
 ```html
-<a class="biglink" href="https://github.com/gristlabs/grainjs">
+<a href="https://github.com/gristlabs/grainjs" class="biglink">
   Hello <span>world</span>
 </a>
 ```
@@ -116,19 +116,19 @@ on this observable. So if you call `obs1.set(10)`, then `computed1` will get rec
 `computed1.get()` will evaluate to 22.
 
 The `use()` function, made available to the callback supplied to the Computed, is one significant
-difference to Knockout.js. Knockout creates a dependency on any observable used while the
-callback is executing; GrainJS intentionally makes dependency-creation explicit -- it only happens
-when the `use` function is, well, used.
+difference to Knockout.js (which inspired this feature). Knockout creates a dependency on any
+observable used while the callback is executing; GrainJS intentionally makes dependency-creation
+explicit -- it only happens when the `use` function is, well, used.
 
-There is another, even more explicit way to create a dependency of a computed: pass in
-dependencies into the constructor:
+There is another, even more explicit way to make a computed depend on another observable: pass in
+the dependencies into the constructor:
 
 ```typescript
-const computed2 = Computed.create(owner, obs1, obs2, (use, v1, v2) => v1 + v2);
+const computed2 = Computed.create(owner, obs1, obs2, (use, value1, value2) => value1 + value2);
 ```
 
 Here, `computed2` will depend on `obs1` and `obs2`, and any time either of those is updated, the
-callback will get called with their explicit values. This way is very slightly more efficient.
+callback will get called with their explicit values. This way is slightly more efficient.
 Otherwise, the two ways of creating computed observables are equivalent, and you may mix and match
 explicit dependencies, and dependencies created with the `use()` function.
 
@@ -175,7 +175,7 @@ dom('a',
 );
 ```
 
-Such manipulations are common enough that there is a shortcut. For most methods, you can replace
+Such manipulations are common enough that there is a shortcut. You can replace
 an observable argument with a callback which will be used to create a computed automatically:
 
 ```
@@ -187,7 +187,7 @@ dom('a',
 
 Notice also a difference here with React-like DOM construction. GrainJS is very direct. The use of
 an observable creates a subscription, so that whenever the observable value changes, the
-corresponding property just gets updated directly. There is no constructing of virtual DOM and
+corresponding property gets updated directly. There is no constructing of virtual DOM and
 figuring out differences. This can be a plus or a minus, depending on the situation.
 
 Notice also that the goal here is to allow you to describe DOM declaratively once. Anything
@@ -217,7 +217,7 @@ use `dom.domComputed`:
 
 ```typescript
 dom('div',
-  dom.*domComputed*(isChangedObs, (isChanged) =>
+  dom.domComputed(isChangedObs, (isChanged) =>
     isChanged ?
       [dom('button', 'Save'), dom('button', 'Revert')] :
       dom('button', 'Close')
@@ -226,13 +226,13 @@ dom('div',
 ```
 
 In this case, when `isChangedObs` is true, two elements will be inserted — “Save” and “Revert”
-buttons (it’s useful to know that you can return an array of elements!). When it’s false, those
+buttons (yes, you may return an array of elements). When it’s false, those
 two buttons will be removed, and a single “Close” button will be inserted instead.
 
 ### Repeating DOM
 
 If you want to insert multiple DOM elements, remember that you can simply include an array of them
-as an argument to the dom() function:
+as an argument to the `dom()` function:
 
 ```typescript
 const items = ['Apples', 'Pears', 'Peaches'];
@@ -241,7 +241,7 @@ dom('ul',
 );
 ```
 
-But what if items may change? If so, make it an observable, and use `dom.forEach`:
+But what if the list of items may change? If so, make it an observable, and use `dom.forEach()`:
 
 ```typescript
 const items = Observable.create(null, ['Apples', 'Pears', 'Peaches']);
@@ -301,18 +301,23 @@ dom('input', {type: 'text'},
 );
 ```
 
-The keys of the passed-in object are the [Key
-Names](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values). Normally,
-handled events are stopped from bubbling with `stopPropagation()` and `preventDefault()`. If, however,
-you register a key with a `"$"` suffix (i.e. `Enter$` instead of `Enter`), then the event is
-allowed to bubble normally.
+The keys of the passed-in object are the KeyboardEvent's
+[Key Values](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values).
+By default, registered keyboard events are stopped from bubbling with `stopPropagation()` and
+`preventDefault()`. If, however, you register a key with a `"$"` suffix (i.e. `Enter$` instead of
+`Enter`), then the event is allowed to bubble normally.
 
-For completeness, I should mention `dom.onMatch('.some-selector', 'click', (event, elem) => ...)`,
-analogous to JQuery's delegated event handlers. It turns out to be rarely useful. When attached to
-an element, it listens to DOM events on the descendants of that element which match
+For completeness, we should mention `dom.onMatch()`:
+
+```typescript
+dom.onMatch('.some-selector', 'click', (event, elem) => ...)
+```
+
+It is analogous to JQuery's delegated event handlers. It turns out to be rarely useful. When
+attached to an element, it listens to DOM events on the descendants of that element which match
 `'.some-selector'`. In practice, it listens to the events that bubble up to the element that it’s
-attached to, but checks that there is an ancestor of `event.target` that matches the selector, and
-provides that element as the `elem` argument to the callback.
+attached to, but only calls the callback when there is an ancestor of `event.target` that matches
+the selector. The matching elememt is then provided as the `elem` argument to the callback.
 
 
 ## Styling DOM
@@ -339,8 +344,8 @@ const cssWrapper = styled('section', `
 cssWrapper(cssTitle('Hello world'));
 ```
 
-This generates unique class names for `cssTitle` and `cssWrapper`, adds the styles to the document
-on first use, and the result is equivalent to:
+This generates unique class names for `cssTitle` and `cssWrapper`, adding the styles to the
+document on first use. The result is equivalent to:
 
 ```typescript
 dom('section', {className: cssWrapper.className},
@@ -350,7 +355,7 @@ dom('section', {className: cssWrapper.className},
 
 Calls to `styled()` should happen at the top level, at import time, in order to register all
 styles upfront. Actual work to attach styles to the doc happens the first time a style is needed
-to create an element. Calling `styled()` elsewhere than at top level is wasteful and bad for
+to create an element. Calling `styled()` elsewhere than at the top level is wasteful and bad for
 performance.
 
 By convention, styled elements are named with `css` prefix, and are placed at the bottom of the
@@ -366,7 +371,8 @@ const cssTitle2 = styled(cssTitle, `font-size: 1rem; color: red;`);
 Calling `cssTitle2('Foo')` becomes equivalent to `dom('h1')` with both `cssTitle.className` and
 `cssTitle2.className` classes turned on.
 
-Styles may incorporate other related styles by nesting them under the main one as follows:
+Styles may incorporate other related styles, or related media queries, by nesting them under the
+main one as follows:
 
 ```typescript
 const cssButton = styled('button', `
@@ -380,12 +386,17 @@ const cssButton = styled('button', `
     &-small {
         font-size: 0.6rem;
     }
+    @media print {
+      & {
+        display: none;
+      }
+    }
 `);
 ```
 
 In nested styles, ampersand (&) gets replaced with the generated `.className` of the main element.
-Only one level of nesting is allowed, and nested blocks must appear after all the styles that
-apply to the main element.
+Blocks of related styles must appear after all the styles that apply to the
+main element.
 
 The resulting styled component provides a `.cls()` helper to simplify using prefixed classes. It
 behaves as `dom.cls()`, but prefixes the class names with the generated `className` of the main
@@ -398,7 +409,8 @@ cssButton(cssButton.cls('-small'), 'Test')
 creates a button with both the `cssButton` style above, and the style specified under `&-small`.
 This can also be used with an observable, e.g. `cssButton.cls('-small', useSmallButtonsObs)`.
 
-Animations with `@keyframes` may be created with a unique name by using the `keyframes()` helper:
+In a similar approach to creating CSS classes from Javascript, you can create `@keyframes`
+animations by using the `keyframes()` helper. It returns the generated unique name:
 
 ```typescript
 const rotate360 = keyframes(`

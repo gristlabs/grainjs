@@ -54,7 +54,7 @@ purpose similar to a C++ destructor. At a basic level, the example above could b
 
 ```typescript
 class MyChart {
-   private _onResize = () => this._updateChartSize();
+  private _onResize = () => this._updateChartSize();
   constructor() {
     window.addListener('resize', this._onResize);
   }
@@ -66,17 +66,17 @@ class MyChart {
 ```
 
 But it’s not enough to define a `dispose()` method — we need to actually call it. In fact,
-whatever code creates a `MyChart` object needs to remember to dispose it when this object is no
-longer needed.
+whatever code creates a `MyChart` object needs to remember to call `.dispose()` on it when this
+object is no longer needed.
 
-When do we need to worry about disposal? At a lowest level, any kind of subscription or listener
-to an event, needs to be cleaned up. This could be a DOM event on a longer-lived object (e.g. on
+When do we need to worry about disposal? At the lowest level, any kind of subscription or listener
+to an event needs to be cleaned up. This could be a DOM event on a longer-lived object (e.g. on
 `window`), but it could also be a listener to messages from a websocket, or to custom events
 emitted by other parts of the app. Any object that may contain such subscriptions needs to be
 disposable. At the next level, any object which creates a disposable object, itself needs to do
 cleanup — namely, to dispose of the objects it created — so it itself needs to be disposable. And
-so the requirement to remember to clean up the resources you create, propagates through the whole
-app.
+so there is a requirement to remember to clean up the resources you create, which propagates
+through the whole app.
 
 On other words, we find ourselves in a situation similar to C++ — all code needs to be aware of
 disposable objects it creates, and needs to dispose them when they are no longer needed.
@@ -110,8 +110,8 @@ this.onDispose(doSomeCleanup);
 
 When `foo.dispose()` is called (defined by the `Disposable` base class), it will automatically
 call `doSomeCleanup` and `this.bar.dispose()`, in reverse order to that in which they were
-registered. The benefit here is that cleanup of a resource is easy to set up right next to where
-the resource itself gets created.
+registered. The benefit here is that the cleanup of a resource is easy to set up right next to
+where the resource itself gets created.
 
 For example, we can simplify our `MyChart` class above. The `dispose()` method is defined for us.
 
@@ -130,9 +130,9 @@ Various GrainJS tools are designed to work nicely with disposal. So using GrainJ
 methods, it’s shorter:
 
 ```typescript
-// THE RECOMMENDED WAY
 class MyChart extends Disposable {
   constructor() {
+    // THE RECOMMENDED WAY
     this.autoDispose(dom.onElem(window, 'resize', () => this._updateChartSize());
   }
   ...
@@ -145,7 +145,7 @@ is the following:
 
 ```typescript
 class MyDashboard extends Disposable {
-   private _chart: MyChart;
+  private _chart: MyChart;
   constructor() {
     this._chart = MyChart.create(this);  // Create MyChart, owned by this.
   }
@@ -176,12 +176,12 @@ in case `MyChart` constructor throws an exception.
 In short, when creating an instance of `Disposable`:
 
 1. Always prefer using `SomeClass.create()` method.
-2. Always prefer passing in the owner as the first argument.
+2. Always prefer passing in the owner as the first argument to `create`.
 
 Because the owned objects aren’t cleaned up until their owner is disposed, this pattern should be
 used in the constructor. It may also make sense in some initialization method that’s called once.
-It does not make sense to call SomeClass.create(this) or this.autoDispose(...) in a method that
-gets called multiple times. On each call, some resource gets created (like `SomeClass` or a
+It does not make sense to call `SomeClass.create(this)` or `this.autoDispose(...)` in a method
+that gets called multiple times. On each call, some resource gets created (like `SomeClass` or a
 subscription), and they will accumulate until this object itself is disposed. In most cases like
 this, you’d want each call to create and take ownership of the new resource, and clean up the
 previous one. For this, read on about Holders.
@@ -195,8 +195,8 @@ this._holder = Holder.create(this);
 Bar.create(this._holder, 1);  // creates new Bar(1)
 Bar.create(this._holder, 2);  // creates new Bar(2) and disposes previous object
 this._holder.get();           // returns the contained object
-this._holder.clear();         // disposes the contained object
-this._holder.release();       // releases the contained object
+this._holder.clear();         // disposes the contained object; .get() will now return null
+this._holder.release();       // releases and returns the contained object; .get() will now return null
 ```
 
 If you need a container for multiple objects and dispose them all together, use a MultiHolder:
@@ -210,6 +210,7 @@ this._mholder.dispose();       // disposes both objects
 
 ## Further Notes
 
+**Checking isDisposed.**
 Once an object is disposed, some code may still have a reference to it. Using a disposed object is
 usually a bad idea — the fact that it’s disposed says loud and clear that this object should no
 longer be used. You can check if an object has already been disposed:
@@ -218,11 +219,13 @@ longer be used. You can check if an object has already been disposed:
 foo.isDisposed()
 ```
 
+**Exceptions while disposing.**
 If creating your own class with a `dispose()` method, do NOT throw exceptions from `dispose()`.
 These cannot be handled properly in all cases, in particular when the disposal is called while
 processing another exception. (You can find explanations of this online in the context of C++ and
 destructors, but the same reasons apply here.)
 
+**Generics and Disposables.**
 You can make a TypeScript parametrized (generic) class inherit from `Disposable`, but it’s tricky
 to use its `.create()` method. For example:
 

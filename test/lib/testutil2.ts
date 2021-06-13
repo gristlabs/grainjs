@@ -64,7 +64,7 @@ export function consoleCapture(methodNames: ConsoleMethod[],
                                bodyFunc: (messages: string[]) => void) {
   const messages: string[] = [];
   methodNames.forEach((m) => sinon.stub(console, m).callsFake(
-    (...args) => _capture(messages, m, ...args)));
+    (msg?: unknown, ...args) => _capture(messages, m, msg, ...args)));
   try {
     return bodyFunc(messages);
   } finally {

@@ -14,6 +14,7 @@
     "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-pascal-case"]
   },
   "rules": {
+    "array-type": [true, "array-simple"],
     "max-classes-per-file": false,
     "object-literal-sort-keys": false,
     "only-arrow-functions": false,

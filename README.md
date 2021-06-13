@@ -50,7 +50,7 @@ without knowing the details of the DOM construction.
 In addition, the library provides approaches to create and dispose resources (important for
 long-lived single-page applications), and an assortment of other related tools.
 
-- [DOM & Observables](docs/basics.md)
+- [DOM & Observables](docs/basics.md#dom-observables)
   - [DOM Construction](docs/basics.md#dom-construction)
   - [Observables](docs/basics.md#observables)
     - [Computed Observables](docs/basics.md#computed-observables)

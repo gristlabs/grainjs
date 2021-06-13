@@ -1,4 +1,4 @@
-# GrainJS Introduction
+# DOM & Observables
 
 In this page, we describe how to build DOM in GrainJS and how to tie it to observables.
 
@@ -333,7 +333,7 @@ cssWrapper(cssTitle('Hello world'));
 This generates unique class names for `cssTitle` and `cssWrapper`, adds the styles to the document
 on first use, and the result is equivalent to:
 
-```
+```typescript
 dom('section', {className: cssWrapper.className},
   dom('h1', {className: cssTitle.className},
     'Hello world'));
@@ -350,7 +350,7 @@ module in which they are used.
 You may create a style that modifies an existing `styled()` or other component, or any
 Element-returning function, e.g.
 
-```
+```typescript
 const cssTitle2 = styled(cssTitle, `font-size: 1rem; color: red;`);
 ```
 
@@ -359,7 +359,7 @@ Calling `cssTitle2('Foo')` becomes equivalent to `dom('h1')` with both `cssTitle
 
 Styles may incorporate other related styles by nesting them under the main one as follows:
 
-```
+```typescript
 const cssButton = styled('button', `
     border-radius: 0.5rem;
     border: 1px solid grey;
@@ -382,7 +382,7 @@ The resulting styled component provides a `.cls()` helper to simplify using pref
 behaves as `dom.cls()`, but prefixes the class names with the generated `className` of the main
 element. E.g. for the example above,
 
-```
+```typescript
 cssButton(cssButton.cls('-small'), 'Test')
 ```
 
@@ -391,7 +391,7 @@ This can also be used with an observable, e.g. `cssButton.cls('-small', useSmall
 
 Animations with `@keyframes` may be created with a unique name by using the `keyframes()` helper:
 
-```
+```typescript
 const rotate360 = keyframes(`
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

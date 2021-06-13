@@ -190,6 +190,7 @@ As the recommended pattern, the static `create` method is available and recommen
 observables and computed observables:
 - `Computed.create(owner, ...)`, and
 - `Observable.create(owner, value)`.
+
 Disposing computed observables is important -- if not disposed, they continue to be subscribed to
 their dependencies. Disposing plain observables isn't strictly necessary, but still recommended,
 partly because disposing them is _sometimes_ important (e.g. when the contained value needs to be

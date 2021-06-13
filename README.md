@@ -66,10 +66,10 @@ long-lived single-page applications), and an assortment of other related tools.
   - [Holders](docs/dispose.md#holders)
   - [Further Notes](docs/dispose.md#further-notes)
 
-- [More on Observables](docs/more-observables.md)
+- [More on Observables](docs/more-observables.md#more-on-observables)
   - [Subscribe](docs/more-observables.md#subscribe)
-  - [ObsArray](docs/more-observables.md#obsarray)
   - [Disposable Values](docs/more-observables.md#disposable-values)
+  - [ObsArray](docs/more-observables.md#obsarray)
   - [PureComputed](docs/more-observables.md#purecomputed)
   - [Order of Evaluation](docs/more-observables.md#order-of-evaluation)
 

@@ -186,6 +186,17 @@ subscription), and they will accumulate until this object itself is disposed. In
 this, you’d want each call to create and take ownership of the new resource, and clean up the
 previous one. For this, read on about Holders.
 
+As the recommended pattern, the static `create` method is available and recommended to create
+observables and computed observables:
+- `Computed.create(owner, ...)`, and
+- `Observable.create(owner, value)`.
+Disposing computed observables is important -- if not disposed, they continue to be subscribed to
+their dependencies. Disposing plain observables isn't strictly necessary, but still recommended,
+partly because disposing them is _sometimes_ important (e.g. when the contained value needs to be
+disposed, as described in [Disposable Values](more-observables.md#disposable-values)), and partly
+because it's easier to create things in the same consistent way than have to remember which
+objects are OK to treat differently.
+
 ## Holders
 
 If you need to replace an owned object, or release an object from disposal, or dispose it early, use a Holder:

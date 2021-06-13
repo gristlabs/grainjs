@@ -171,7 +171,7 @@ export function onKeyElem<T extends HTMLElement>(
     const plainHandler = keyHandlers[ev.key];
     const handler = plainHandler || keyHandlers[ev.key + '$'];
     if (handler) {
-      if (plainHandler) {
+      if (plainHandler!) {
         ev.stopPropagation();
         ev.preventDefault();
       }

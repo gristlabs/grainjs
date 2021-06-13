@@ -27,6 +27,8 @@ export interface IBrowserGlobals {
   window: typeof window;
 }
 
+export interface IBrowserGlobalsLax extends IBrowserGlobals {window: any};
+
 function _updateGlobals(dest: IBrowserGlobals, source: IBrowserGlobals): void {
   dest.DocumentFragment  = source.DocumentFragment;
   dest.Element           = source.Element;
@@ -48,7 +50,7 @@ const _globalsStack: IBrowserGlobals[] = [initial];
 /**
  * Replace globals with those from the given object. Use popGlobals() to restore previous values.
  */
-export function pushGlobals(globals: IBrowserGlobals): void {
+export function pushGlobals(globals: IBrowserGlobalsLax): void {
   _globalsStack.push(globals);
   _updateGlobals(G, globals);
 }

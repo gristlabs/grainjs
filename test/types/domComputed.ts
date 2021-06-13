@@ -5,13 +5,13 @@ import { observable } from '../../lib/observable';
 import { dom } from '../../lib/dom';
 
 const obs = observable<string>("test");
-dom.domComputed(obs, (val: string) => val.toUpperCase()); // $ExpectType [Node, Node, DomMethod<Node>]
-dom.domComputed(obs, (val) => val.toUpperCase());         // $ExpectType [Node, Node, DomMethod<Node>]
+dom.domComputed(obs, (val: string) => val.toUpperCase()); // $ExpectType DomComputed
+dom.domComputed(obs, (val) => val.toUpperCase());         // $ExpectType DomComputed
 dom.domComputed(obs, (val: number) => val.toString());    // $ExpectError
-dom.domComputed((use) => 1, (val: number) => '' + val);   // $ExpectType [Node, Node, DomMethod<Node>]
+dom.domComputed((use) => 1, (val: number) => '' + val);   // $ExpectType DomComputed
 dom.domComputed((use) => 1);                              // $ExpectError
-dom.domComputed((use) => use(obs).toUpperCase());         // $ExpectType [Node, Node, DomMethod<Node>]
-dom.domComputed((use) => dom('div'));                     // $ExpectType [Node, Node, DomMethod<Node>]
+dom.domComputed((use) => use(obs).toUpperCase());         // $ExpectType DomComputed
+dom.domComputed((use) => dom('div'));                     // $ExpectType DomComputed
 
 // Check that dom.maybe passes non-null types to its callback.
 interface Foo {

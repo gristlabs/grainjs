@@ -193,16 +193,20 @@ method for that is `dom.maybe`. For example:
 
 ```typescript
 dom('div',
-  dom.*maybe*(isChangedObs, () =>
+  dom.maybe(isChangedObs, () =>
     dom('button', 'Save')
   )
 );
 ```
 
-Whenever `isChangedObs` is true, a BUTTON element will be created and attached to the DIV; whenever it’s false, the BUTTON will be removed. Note that it’s OK for dom.maybe() to be present among other child nodes of the DIV; it will be inserted into the right spot.
+Whenever `isChangedObs` is true, a BUTTON element will be created and attached to the DIV;
+whenever it’s false, the BUTTON will be removed. Note that it’s OK for `dom.maybe()` to be present
+among other child nodes of the DIV; it will be inserted into the right spot.
 
-Sometimes, depending on the observable, you’ll want to insert different DOM elements. For that, use dom.domComputed:
+Sometimes, depending on the observable, you’ll want to insert different DOM elements. For that,
+use `dom.domComputed`:
 
+```typescript
 dom('div',
   dom.*domComputed*(isChangedObs, (isChanged) =>
     isChanged ?
@@ -210,55 +214,75 @@ dom('div',
       dom('button', 'Close')
    )
 );
+```
 
-In this case, when isChangedObs is true, two elements will be inserted — a “Save” and “Revert” buttons (it’s useful to know that an array of elements can be returned!). When it’s false, those two buttons will be removed, and a single “Close” button will be inserted instead.
+In this case, when `isChangedObs` is true, two elements will be inserted — “Save” and “Revert”
+buttons (it’s useful to know that you can return an array of elements!). When it’s false, those
+two buttons will be removed, and a single “Close” button will be inserted instead.
 
-Repeating DOM
+### Repeating DOM
 
-If you want to insert multiple DOM elements, remember that you can simply include an array of them as an argument to the dom() function:
+If you want to insert multiple DOM elements, remember that you can simply include an array of them
+as an argument to the dom() function:
 
+```typescript
 const items = ['Apples', 'Pears', 'Peaches'];
 dom('ul',
   items.map(item => dom('li', item)
 );
+```
 
-But what if items may change? If so, make it an observable, and use dom.forEach:
+But what if items may change? If so, make it an observable, and use `dom.forEach`:
 
+```typescript
 const items = Observable.create(null, ['Apples', 'Pears', 'Peaches']);
 dom('ul',
   dom.forEach(items, item => dom('li', item))
 );
+```
 
-If you now set items.set(['Bananas']), the three LI elements created initially will get removed, and a single LI element for the new item will be inserted.
+If you now set `items.set(['Bananas'])`, the three LI elements created initially will get removed,
+and a single LI element for the new item will be inserted.
 
-For array-valued observables that are likely to change in small increments, GrainJS provides obsArray:
+For array-valued observables that are likely to change in small increments, GrainJS provides
+`obsArray`:
 
+```typescript
 const items = obsArray(['Apples', 'Pears']);
 dom('ul',
   dom.forEach(items, item => dom('li', item))
 );
 items.push('Peaches');          // One more LI element will be appended
 items.splice(1, 1, 'Bananas');  // Replace LI element for Pears with one for Bananas
+```
 
-The purpose of obsArray is to allow observing small changes like those above, and so to update relevant DOM elements without rebuilding them all.
+The purpose of `obsArray` is to allow observing small changes like those above, and so to update
+relevant DOM elements without rebuilding them all.
 
-When using dom.forEach, the per-item callback may not return an array of DOM elements — it may return a single DOM element or null (to omit that item from DOM).
+When using `dom.forEach`, the per-item callback may not return an array of DOM elements — it may
+return a single DOM element or null (to omit that item from DOM).
 
-DOM Events
+### DOM Events
 
 GrainJS provides some convenient methods for listening to DOM events:
 
+```typescript
 dom('button', 'Click Me',
   dom.on('click', (event, elem) => ...),
   dom.on('focus', (event, elem) => ...),
 );
+```
 
-The callback receives the event, as well as the element that the handler is attached to (the BUTTON in the example above). The passed-in element may be different from event.target if the target is some child or descendant of elem.
+The callback receives the event, as well as the element that the handler is attached to (the
+BUTTON in the example above). The passed-in element may be different from `event.target` if the
+target is some child or descendant of `elem`.
 
-You may pass in a third argument of {useCapture: true} for the (very rare) situations when you want to pass true for the useCapture parameter of the native addEventListener method.
+You may pass in a third argument of `{useCapture: true}` for the (rare) situations when you want
+to pass true for the `useCapture` parameter of the native `addEventListener` method.
 
-For keyboard events, there are some extra helpers: dom.onKeyPress() and dom.onKeyDown():
+For keyboard events, there are some extra helpers: `dom.onKeyPress()` and `dom.onKeyDown()`:
 
+```typescript
 dom('input', {type: 'text'},
   dom.onKeyDown({
     Enter: (ev, elem) => ...,
@@ -266,18 +290,32 @@ dom('input', {type: 'text'},
     ArrowLeft$: (ev, elem) => ...,
   })
 );
+```
 
-The keys of the passed-in object are the Key Names (https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values). Normally, handled events are stopped from bubbling with stopPropagation() and preventDefault(). If, however, you register a key with a "$" suffix (i.e. Enter$ instead of Enter), then the event is allowed to bubble normally.
+The keys of the passed-in object are the [Key
+Names](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values). Normally,
+handled events are stopped from bubbling with `stopPropagation()` and `preventDefault()`. If, however,
+you register a key with a `"$"` suffix (i.e. `Enter$` instead of `Enter`), then the event is
+allowed to bubble normally.
 
-For completeness, I should mention dom.onMatch('.some-selector', 'click', (event, elem) => ...). It turns out to be rarely useful. When attached to an element, it listens to DOM events on the descendants of that element which match '.some-selector'. In practice, it listens to the events that bubble up to the element that it’s attached to, but check that there is an ancestor of event.target that matches the selector, and provide that element as the elem argument to the callback.
+For completeness, I should mention `dom.onMatch('.some-selector', 'click', (event, elem) => ...)`,
+analogous to JQuery's delegated event handlers. It turns out to be rarely useful. When attached to
+an element, it listens to DOM events on the descendants of that element which match
+`'.some-selector'`. In practice, it listens to the events that bubble up to the element that it’s
+attached to, but checks that there is an ancestor of `event.target` that matches the selector, and
+provides that element as the `elem` argument to the callback.
 
-Styling DOM
 
-The simplest way to style a DOM element is to assign it a unique CSS class name, and define styles for that class. GrainJS offers a TypeScript-based alternative inspired by React’s Styled Components. The main benefit here is in module-based naming and the various help from TypeScript with names, and with knowing the types of created elements.
+## Styling DOM
+
+The simplest way to style a DOM element is to assign it a unique CSS class name, and define styles
+for that class. GrainJS offers a TypeScript-based alternative inspired by React’s Styled
+Components. The main benefit here is in module-based naming and the various help from TypeScript
+with names, and with knowing the types of created elements.
 
 You can defined a “styled” element like so:
-Usage:
 
+```typescript
 const cssTitle = styled('h1', `
   font-size: 1.5em;
   text-align: center;
@@ -290,30 +328,43 @@ const cssWrapper = styled('section', `
 `);
 
 cssWrapper(cssTitle('Hello world'));
+```
 
-This generates unique class names for cssTitle and cssWrapper, adds the styles to the document on first use, and the result is equivalent to:
+This generates unique class names for `cssTitle` and `cssWrapper`, adds the styles to the document
+on first use, and the result is equivalent to:
 
+```
 dom('section', {className: cssWrapper.className},
   dom('h1', {className: cssTitle.className},
     'Hello world'));
+```
 
-Calls to styled() should happen at the top level, at import time, in order to register all styles upfront. Actual work happens the first time a style is needed to create an element. Calling styled() elsewhere than at top level is wasteful and bad for performance.
+Calls to `styled()` should happen at the top level, at import time, in order to register all
+styles upfront. Actual work to attach styles to the doc happens the first time a style is needed
+to create an element. Calling `styled()` elsewhere than at top level is wasteful and bad for
+performance.
 
-By convention, styled elements are named with css prefix, and are placed at the bottom of the module in which they are  used.
+By convention, styled elements are named with `css` prefix, and are placed at the bottom of the
+module in which they are used.
 
-You may create a style that modifies an existing styled() or other component, e.g.
+You may create a style that modifies an existing `styled()` or other component, or any
+Element-returning function, e.g.
 
+```
 const cssTitle2 = styled(cssTitle, `font-size: 1rem; color: red;`);
+```
 
-Calling cssTitle2('Foo') becomes equivalent to dom('h1') with both cssTitle.className and cssTitle2.className classes turned on.
+Calling `cssTitle2('Foo')` becomes equivalent to `dom('h1')` with both `cssTitle.className` and
+`cssTitle2.className` classes turned on.
 
 Styles may incorporate other related styles by nesting them under the main one as follows:
 
+```
 const cssButton = styled('button', `
     border-radius: 0.5rem;
     border: 1px solid grey;
     font-size: 1rem;
-    
+
     &:active {
         background: lightblue;
     }
@@ -321,17 +372,26 @@ const cssButton = styled('button', `
         font-size: 0.6rem;
     }
 `);
+```
 
-In nested styles, ampersand (&) gets replaced with the generated className of the main element. Only one level of nesting is allowed, and nested blocks must appear after all the styles that apply to the main element.
+In nested styles, ampersand (&) gets replaced with the generated `.className` of the main element.
+Only one level of nesting is allowed, and nested blocks must appear after all the styles that
+apply to the main element.
 
-The resulting styled component provides a .cls() helper to simplify using prefixed classes. It behaves as dom.cls(), but prefixes the class names with the generated className of the main element. E.g. for the example above,
+The resulting styled component provides a `.cls()` helper to simplify using prefixed classes. It
+behaves as `dom.cls()`, but prefixes the class names with the generated `className` of the main
+element. E.g. for the example above,
 
+```
 cssButton(cssButton.cls('-small'), 'Test')
+```
 
-creates a button with both the cssButton style above, and also the style specified under &-small. This can also be used with an observable, e.g. cssButton.cls('-small', useSmallButtonsObs).
+creates a button with both the `cssButton` style above, and the style specified under `&-small`.
+This can also be used with an observable, e.g. `cssButton.cls('-small', useSmallButtonsObs)`.
 
-Animations with @keyframes may be created with a unique name by using the keyframes() helper:
+Animations with `@keyframes` may be created with a unique name by using the `keyframes()` helper:
 
+```
 const rotate360 = keyframes(`
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -341,5 +401,4 @@ const Rotate = styled('div', `
   display: inline-block;
   animation: ${rotate360} 2s linear infinite;
 `);
-
-
+```

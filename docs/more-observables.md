@@ -106,17 +106,17 @@ will listen both to the changes to the top-level observable, and to the changes 
 `ObsArray`:
 
 ```typescript
-const a = obsArray<number>([]);
-const b = obsArray<number>([1, 2, 3]);
+const a = obsArray<string>([]);
+const b = obsArray<string>(['bus', 'bin']);
 const toggle = Observable.create(null, true);
 const array = Computed.create(null, use => use(toggle) ? a : b);
 const mapped = computedArray(array, x => x.toUpperCase());
 
 mapped.get();       // Returns [], reflecting content of a
-a.push(10);
-mapped.get();       // Returns [10]
+a.push('ace');
+mapped.get();       // Returns ['ACE']
 toggle.set(false);  // array now returns b
-mapped.get();       // Returns [1, 2, 3] reflecting content of b
+mapped.get();       // Returns ['BUS', 'BIN'] reflecting content of b
 ```
 
 There is no need or benefit in using `computedArray()` if you have a `computed()` that returns a
@@ -181,10 +181,11 @@ takes care of recomputing them in a correct order: `tax`, then `tip`, then `tota
 the time `total` is calculated, it sees up-to-date values for all of its dependencies.
 
 Note that this is a difference to how Knockout.js works.
-In Knockout, changing the `amount` would trigger an update to `tax` and `tip`, and before it gets
-to `tip`, while recalculating `tax`, it would trigger `total`. So `total` would get calculated
-twice: once in response to the `tax` change (and using a stale value for `tip`), and a second time
-in response to the `tip` change, when it finally becomes correct.
+In Knockout, changing the `amount` would trigger an update to `tax`, `tip`, and `total` (which
+depend on it directly). While recalculating `tax`, it would trigger `total`, which depends on `tax`,
+and it would get recalculated at that point (using a stale value for `tip`). Then when `tip` is
+updated, it would trigger `tax` calculation again (this time getting the correct value). Finally,
+it will recalculate `total` a third time (the time triggered by the initial change to `amount`).
 
 Improving on this is part of the motivation for GrainJS. When a computed is evaluated, it keeps
 track of a "priority" value, updating it to be greater than the priority of any dependency.

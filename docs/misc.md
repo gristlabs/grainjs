@@ -141,7 +141,7 @@ and may return a Node, an array, or any content which may be added to the `dom()
 the returned DOM will be disposed when the containing elemenet is disposed, followed by the
 component instance itself.
 
-## Funcional Components
+## Functional Components
 
 In an analogy to the distinction between React's "class components" and "functional components",
 `dom.create()` may be used with a function. Its purpose, again, is to help with taking

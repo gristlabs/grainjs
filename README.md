@@ -77,6 +77,8 @@ long-lived single-page applications), and an assortment of other related tools.
   - [Event Emitters](docs/misc.md#event-emitters)
   - [Disposing DOM](docs/misc.md#disposing-dom)
   - [DOM Components](docs/misc.md#dom-components)
+    - [Functional Components](docs/misc.md#functional-components)
+  - [Knockout Integration](docs/misc.md#knockout-integration)
 
 - [Reference](docs/reference.md)
   - [DOM Reference](docs/reference.md#dom-reference)

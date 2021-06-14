@@ -15,22 +15,10 @@ This is similar to Backbone events, with more focus on efficiency. Both insertin
 listeners is constant time. For example, emitters are used internally to add listeners to
 observables.
 
-To create an emitter:
-
 ```typescript
-const emitter = new Emitter();
-```
-
-To add a listener:
-
-```typescript
-const listener = emitter.addListener(callback);
-```
-
-To remove a listener:
-
-```typescript
-listener.dispose();
+const emitter = new Emitter();                    // Create an emitter
+const listener = emitter.addListener(callback);   // Add a listener
+listener.dispose();                               // Remove a listener
 ```
 
 The only way to remove a listener is to dispose the `Listener` object returned by `addListener()`.

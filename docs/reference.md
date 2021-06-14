@@ -268,12 +268,12 @@ called for the innermost one.
 
 For example:
 
-    ```typescript
-    dom('ul',
-        dom.forEach(items, item => dom('li', item.name)),
-        dom.onMatch('li', 'click', (ev, elem) => { ... })
-    )
-    ```
+```typescript
+dom('ul',
+    dom.forEach(items, item => dom('li', item.name)),
+    dom.onMatch('li', 'click', (ev, elem) => { ... })
+)
+```
 
 This attaches a single event handler to the `<UL>` element, which gets triggered whenever a click
 target is one of the `<LI>` elements inside it.

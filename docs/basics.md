@@ -237,7 +237,7 @@ as an argument to the `dom()` function:
 ```typescript
 const items = ['Apples', 'Pears', 'Peaches'];
 dom('ul',
-  items.map(item => dom('li', item)
+  items.map(item => dom('li', item))
 );
 ```
 

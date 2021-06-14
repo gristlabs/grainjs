@@ -50,7 +50,7 @@ without knowing the details of the DOM construction.
 In addition, the library provides approaches to create and dispose resources (important for
 long-lived single-page applications), and an assortment of other related tools.
 
-- [DOM & Observables](docs/basics.md#dom--observables)
+- [DOM & Observables](docs/basics.md)
   - [DOM Construction](docs/basics.md#dom-construction)
   - [Observables](docs/basics.md#observables)
     - [Computed Observables](docs/basics.md#computed-observables)
@@ -60,13 +60,13 @@ long-lived single-page applications), and an assortment of other related tools.
     - [DOM Events](docs/basics.md#dom-events)
   - [Styling DOM](docs/basics.md#styling-dom)
 
-- [Disposables](docs/dispose.md#disposables)
+- [Disposables](docs/dispose.md)
   - [Class Disposable](docs/dispose.md#class-disposable)
   - [Taking Ownership](docs/dispose.md#taking-ownership)
   - [Holders](docs/dispose.md#holders)
   - [Further Notes](docs/dispose.md#further-notes)
 
-- [More on Observables](docs/more-observables.md#more-on-observables)
+- [More on Observables](docs/more-observables.md)
   - [Subscribe](docs/more-observables.md#subscribe)
   - [Disposable Values](docs/more-observables.md#disposable-values)
   - [ObsArray](docs/more-observables.md#obsarray)

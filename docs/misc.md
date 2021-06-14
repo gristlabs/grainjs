@@ -41,7 +41,7 @@ support `Emitter.create(owner)` construct for consistency with other recommendat
 
 # Disposing DOM
 
-Sometimes, when you create DOM, you may want to run some cleanup when that DOM element is removed
+Sometimes, when you create DOM, you'll want to run some cleanup when that DOM element is removed
 from the page. For this, you may use `dom.onDispose()` and `dom.autoDispose()` functions.
 
 For example:
@@ -60,7 +60,8 @@ function buildLink(isBigObs: Observable<boolean>) {
 
 This function builds and returns a DOM element. When this element is _disposed_, it will log the
 `"Good bye, link!"` message, and will run `isSmallObs.dispose()`, which is important to avoid a
-leak (what else would have the responsibility to dispose `isSmallObs`?)
+leak -- what else would have the responsibility to dispose `isSmallObs`? (Actually, there is
+an alternative answer to this question with [dom.create](#functional-components).)
 
 (By the way, in this case, you could use `dom.cls('small-link', use => !use(isBigObs))`. Then you
 don't need `isSmallObs`, and there is nothing to dispose.)
@@ -95,11 +96,11 @@ class TCalculator extends Disposable {
   public buildDom() {
     return dom('div',
       dom('p',
-        `Enter temperature in Celsius',
-        dom('input', {type: 'text'}, dom.on('input', (ev, elem) => this._celsius.set(elem.value))),
+        'Enter temperature in Celsius',
+        dom('input', {type: 'text'}, dom.on('input', (ev, elem) => this._celsius.set(parseFloat(elem.value)))),
       ),
       dom('p', 'Result in Fahrenheit: ',
-        dom.text(this._fahrenheit)
+        dom.text(use => String(use(this._fahrenheit)))
       ),
     );
   }
@@ -111,29 +112,24 @@ Such a class, which extends `Disposable`, and provides a public `buildDom()` met
 using `dom.create()`:
 
 ```typescript
-dom('div', dom.create(TCalculator, 25))         // CORRECT USAGE
+dom('div', dom.create(TCalculator, 25))
 ```
 
-Essentially, this is similar to the following:
-
-```typescript
-dom('div', (new TCalculator(25)).buildDom())    // NON-EXAMPLE
-```
-
-The difference is with disposal: using `dom.create()` ensures that the created DOM component will
+Essentially, this is similar to `dom('div', (new TCalculator(25)).buildDom())`, except for
+disposal. Using `dom.create()` ensures that the created DOM component will
 get disposed when the DIV is cleaned up, as well as in case of any exceptions that may occur
 during DOM construction.
 
 The `.buildDom()` method of a DOM component is called exactly once, right after the constructor,
 and may return a Node, an array, or any content which may be added to the `dom()` function. All
-the returned DOM will be disposed when the containing elemenet is disposed, followed by the
+the returned DOM will be disposed when the containing element is disposed, followed by the
 component instance itself.
 
 ## Functional Components
 
 In an analogy to the distinction between React's "class components" and "functional components",
 `dom.create()` may be used with a function. Its purpose, again, is to help with taking
-responsibility for resource (i.e. disposing them when appropriate), and really there is not much
+responsibility for resources (i.e. disposing them when appropriate), and really there is not much
 else to it.
 
 Here's a tweaked example from above:
@@ -158,8 +154,9 @@ The presence of the `owner` argument is the difference between `dom.create(build
 cleanup by creating a `MultiHolder` (see [Holders](dispose.md#holders)) which it promises to
 dispose, and calling the passed-in function with it as the first argument.
 
-In both cases, `dom.create` arranges for the DOM element to which the component is attached to be
-the logical owner of the component. When the DOM element is disposed, so is the component.
+With both classes and functions, `dom.create()` arranges for the DOM element to which the
+component is attached to be the logical owner of the component. When the DOM element is disposed,
+so is the component.
 
 
 # Knockout Integration
@@ -184,8 +181,8 @@ import * as ko from 'knockout';
 toKo(ko, grainObservable)
 ```
 
-This returns a Knockout.js observable that mirrows the passed-in Grain observable or computed.
-Note that `toKo()` must tbe called with the knockout module as an argument. This is to avoid
+This returns a Knockout.js observable that mirrows the passed-in GrainJS observable or computed.
+Note that `toKo()` must tbe called with the `knockout` module as an argument. This is to avoid
 adding Knockout as a dependency of GrainJS.
 
 In both cases, calling `fromKo`/`toKo` twice on the same observable will return the same wrapper,

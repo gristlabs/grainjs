@@ -6,7 +6,7 @@
   - [Functional Components](#functional-components)
 - [Knockout Integration](#knockout-integration)
 
-# Event Emitters
+## Event Emitters
 
 GrainJS offers a simple `Emitter` class which emits events to a list of listeners. Listeners are
 simply functions to call, and "emitting an event" just calls those functions.
@@ -39,7 +39,7 @@ emitter.emit("hello", "world");
 support `Emitter.create(owner)` construct for consistency with other recommendations.)
 
 
-# Disposing DOM
+## Disposing DOM
 
 Sometimes, when you create DOM, you'll want to run some cleanup when that DOM element is removed
 from the page. For this, you may use `dom.onDispose()` and `dom.autoDispose()` functions.
@@ -80,7 +80,7 @@ automatically if some function argument to `dom()` function throws an exception 
 creation. This way any disposers associated with the unfinished element get called.
 
 
-# DOM Components
+## DOM Components
 
 It's convenient to group a component's state, logic, and DOM into a single class.
 
@@ -125,7 +125,7 @@ and may return a Node, an array, or any content which may be added to the `dom()
 the returned DOM will be disposed when the containing element is disposed, followed by the
 component instance itself.
 
-## Functional Components
+### Functional Components
 
 In an analogy to the distinction between React's "class components" and "functional components",
 `dom.create()` may be used with a function. Its purpose, again, is to help with taking
@@ -159,9 +159,9 @@ component is attached to be the logical owner of the component. When the DOM ele
 so is the component.
 
 
-# Knockout Integration
+## Knockout Integration
 
-## Integrating Observables
+### Integrating Observables
 
 GrainJS observables and computeds can work side by side with those from Knockout.js (which served as their inspiration).
 
@@ -189,7 +189,7 @@ In both cases, calling `fromKo`/`toKo` twice on the same observable will return 
 and subscriptions and disposal are appropriately set up to make usage seamless. In particular, the
 returned wrapper should not be disposed; it's tied to the lifetime of the wrapped object.
 
-## Integrating DOM Disposal
+### Integrating DOM Disposal
 
 When mixing libraries, such as GrainJS, Knockout, or JQuery, DOM may be created by different
 libraries, and each has some provisions for cleaning up state associated with the DOM.

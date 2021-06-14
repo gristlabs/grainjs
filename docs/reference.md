@@ -400,7 +400,7 @@ A very simple setup to identify DOM elements for testing purposes. Here's a poss
 usage.
 
 ```typescript
-const testId = makeTestId('test-xyz-');
+const testId = enableTesting ? makeTestId('test-xyz-') : noTestId;
 
 dom('div', testId("some-name"),
   dom('button', testId("some-button"), ...)
@@ -408,7 +408,8 @@ dom('div', testId("some-name"),
 ```
 
 This simply adds CSS classes like `"test-xyz-some-name"` and `"test-xyz-some-button"` to the
-corresponding elements, to allow identifying these elements in browser tests.
+corresponding elements when `enableTesting` is true, to allow identifying these elements in
+browser tests.
 
 This is intentionally separate from CSS classes, so that it would not get used for CSS purposes. A
 testId should not affect application behavior at all. See also `noTestId`.
@@ -419,15 +420,8 @@ testId should not affect application behavior at all. See also `noTestId`.
 const noTestId: TestId
 ```
 
-May be used in place of `makeTestId(...)`, to make `testId()` calls into no-ops. For instance,
-
-```typescript
-const testId = enableTesting ? makeTestId('test-xyz-') : noTestId;
-
-dom('div', testId("some-name"),
-  dom('button', testId("some-button"), ...)
-)
-```
+May be used in place of `makeTestId(...)`, to make `testId()` calls into no-ops. See
+[makeTestId](#makeTestId).
 
 ### styled
 ```typescript

@@ -173,8 +173,10 @@ callback:
 import {Computed} from 'grainjs';
 import * as ko from 'knockout';
 
-const oldCity = ko.Observable("York");
+const oldCity = ko.observable("York");
 const newCity = Computed.create(null, (use) => "New " + use(oldCity));
+oldCity("New York");  // Set knockout observable to a new value.
+newCity.get();        // Will return "New New York".
 ```
 
 If needed you can wrap observables in either direction.

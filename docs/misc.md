@@ -163,7 +163,21 @@ so is the component.
 
 ### Integrating Observables
 
-GrainJS observables and computeds can work side by side with those from Knockout.js (which served as their inspiration).
+GrainJS observables and computeds can work side by side with those from Knockout.js (which served
+as their inspiration).
+
+Most simply, a GrainJS computed can use and depend on a KnockoutJS observable, using the `use()`
+callback:
+
+```typescript
+import {Computed} from 'grainjs';
+import * as ko from 'knockout';
+
+const oldCity = ko.Observable("York");
+const newCity = Computed.create(null, (use) => "New " + use(oldCity));
+```
+
+If needed you can wrap observables in either direction.
 
 ```typescript
 import {fromKo} from 'grainjs';

@@ -1,4 +1,5 @@
 import {dom} from '../../lib/dom';
+import {Disposable} from '../../lib/dispose';
 import {observable} from '../../lib/observable';
 import {assertResetSingleCall, useJsDomWindow} from './testutil2';
 
@@ -57,5 +58,57 @@ describe("domComputed", function() {
       /fake-error/,
     );
     assertResetSingleCall(spyDispose, undefined, "foo");
+  });
+
+  it('should dispose owned objects', function() {
+    const fooConstruct = sinon.spy();
+    const fooDispose = sinon.spy();
+    class Foo extends Disposable {
+      constructor(public val: string) {
+        super();
+        fooConstruct.call(this, val);
+        this.onDispose(fooDispose, this);
+      }
+      public render() { return ["world:", this.val]; }
+    }
+    const obs = observable('foo');
+    let f!: Foo;
+    const elem = dom('div', 'Hello',
+      dom.domComputedOwned(obs, (owner, val) => val && (f = Foo.create(owner, val)).render()));
+
+    const f1 = f;
+    assertResetSingleCall(fooConstruct, f1, "foo");
+    sinon.assert.notCalled(fooDispose);
+    assert.equal(f1.isDisposed(), false);
+    assert.equal(elem.innerHTML, 'Hello<!--a-->world:foo<!--b-->');
+
+    obs.set('BAR');
+    assert.notEqual(f, f1);      // New object was created
+    const f2 = f;
+    assertResetSingleCall(fooDispose, f1);
+    assertResetSingleCall(fooConstruct, f2, "BAR");
+    assert.equal(f1.isDisposed(), true);
+    assert.equal(f2.isDisposed(), false);
+    assert.equal(elem.innerHTML, 'Hello<!--a-->world:BAR<!--b-->');
+
+    obs.set('');
+    assert.strictEqual(f, f2);    // No new object was created
+    assertResetSingleCall(fooDispose, f2);
+    sinon.assert.notCalled(fooConstruct);
+    assert.equal(f2.isDisposed(), true);
+    assert.equal(elem.innerHTML, 'Hello<!--a--><!--b-->');
+
+    obs.set('FOO');
+    assert.notEqual(f, f2);       // New object was created
+    const f3 = f;
+    assertResetSingleCall(fooConstruct, f3, "FOO");
+    sinon.assert.notCalled(fooDispose);
+    assert.equal(f3.isDisposed(), false);
+    assert.equal(elem.innerHTML, 'Hello<!--a-->world:FOO<!--b-->');
+
+    dom.domDispose(elem);
+    assertResetSingleCall(fooDispose, f3);
+    sinon.assert.notCalled(fooConstruct);
+    assert.equal(f3.isDisposed(), true);
   });
 });

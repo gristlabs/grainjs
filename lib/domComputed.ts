@@ -1,5 +1,6 @@
 import {BindableValue, subscribeElem} from './binding';
-import {domDispose} from './domDispose';
+import {Holder, MultiHolder} from './dispose';
+import {autoDisposeElem, domDispose} from './domDispose';
 import {DomArg, DomMethod, frag} from './domImpl';
 
 // Use the browser globals in a way that allows replacing them with mocks in tests.
@@ -9,12 +10,16 @@ import {G} from './browserGlobals';
 // name for use in places where a DomComputed is suitable but a general DomArg is not.
 export type DomComputed = [Node, Node, DomMethod];
 
+export type DomContents = Node | string | DomComputed | void | null | undefined | IDomContentsArray;
+export interface IDomContentsArray extends Array<DomContents> {}
+
+
 /**
  * Replaces the content between nodeBefore and nodeAfter, which should be two siblings within the
  * same parent node. New content may be anything allowed as an argument to dom(), including null
  * to insert nothing. Runs disposers, if any, on all removed content.
  */
-export function replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomArg): void {
+export function replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomContents): void {
   const elem = nodeBefore.parentNode;
   if (elem) {
     let next;
@@ -67,9 +72,9 @@ export function replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomAr
 // Note that DomMethod is excluded because it prevents typescript from inferring the type of
 // the first argument when it's a function (and it's not useful).
 export function domComputed(valueObs: BindableValue<Exclude<DomArg, DomMethod>>): DomComputed;
-export function domComputed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomArg): DomComputed;
+export function domComputed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomContents): DomComputed;
 export function domComputed<T>(
-  valueObs: BindableValue<T>, contentFunc: (val: T) => DomArg = identity as any,
+  valueObs: BindableValue<T>, contentFunc: (val: T) => DomContents = identity as any,
 ): DomComputed {
   const markerPre = G.document.createComment('a');
   const markerPost = G.document.createComment('b');
@@ -80,6 +85,23 @@ export function domComputed<T>(
     subscribeElem(markerPost, valueObs,
       (value) => replaceContent(markerPre, markerPost, contentFunc(value)));
   }];
+}
+
+/**
+ * Like domComputed(), but the callback gets an additional first argument, owner, which may be
+ * used to take ownership of objects created by the callback. These will be disposed before each
+ * new call to the callback, and when the containing DOM is disposed.
+ *
+ *    domComputedOwned(valueObs, (owner, value) => Editor.create(owner, value).renderSomething());
+ */
+export function domComputedOwned<T>(
+  valueObs: BindableValue<T>, contentFunc: (owner: MultiHolder, val: T) => DomContents
+): DomComputed {
+  const holder = Holder.create(null);
+  const [markerPre, markerPost, func] = domComputed(valueObs,
+    (val: T) => contentFunc(MultiHolder.create(holder), val));
+  autoDisposeElem(markerPost, holder);
+  return [markerPre, markerPost, func];
 }
 
 function identity<T>(arg: T): T { return arg; }
@@ -106,6 +128,19 @@ function identity<T>(arg: T): T { return arg; }
  * @param boolValueObs: Observable or function for a computed.
  * @param contentFunc: Called with the result of boolValueObs when it is truthy. Should return DOM.
  */
-export function maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: NonNullable<T>) => DomArg): DomComputed {
+export function maybe<T>(boolValueObs: BindableValue<T>,
+    contentFunc: (val: NonNullable<T>) => DomContents): DomComputed {
   return domComputed(boolValueObs, (value) => value ? contentFunc(value!) : null);
+}
+
+/**
+ * Like maybe(), but the callback gets an additional first argument, owner, which may be used to
+ * take ownership of objects created by the callback. These will be disposed before each new call
+ * to the callback, and when the condition becomes false or the containing DOM gets disposed.
+ *
+ *    maybeOwned(showEditor, (owner) => Editor.create(owner).renderSomething());
+ */
+export function maybeOwned<T>(boolValueObs: BindableValue<T>,
+    contentFunc: (owner: MultiHolder, val: NonNullable<T>) => DomContents): DomComputed {
+  return domComputedOwned(boolValueObs, (owner, value) => value ? contentFunc(owner, value!) : null);
 }

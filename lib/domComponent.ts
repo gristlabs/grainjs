@@ -55,11 +55,7 @@
  * disposed when the containing element is disposed, followed by the `owner` itself.
  */
 import {MultiHolder} from './dispose';
-import {domComputed, DomComputed} from './domComputed';
-import {autoDisposeElem} from './domDispose';
-
-export type DomContents = Node | string | DomComputed | void | null | undefined | IDomContentsArray;
-export interface IDomContentsArray extends Array<DomContents> {}
+import {domComputedOwned, DomContents} from './domComputed';
 
 export interface IDomComponent {
   buildDom(): DomContents;
@@ -83,18 +79,11 @@ type DomCreatorArgs<T> =
   (T extends new (...args: infer P) => any ? P : never);
 
 export function create<Fn extends IDomCreator<any[]>>(fn: Fn, ...args: DomCreatorArgs<Fn>): DomContents {
-  const [markerPre, markerPost, func] = domComputed(null, () => {
-    // Note that the callback to domComputed() is not called until the markers have been attached
-    // to the parent element. We attach the MultiHolder's disposal to markerPost the way
-    // domComputed() normally attaches its own bindings.
-    const owner = MultiHolder.create(null);
-    autoDisposeElem(markerPost, owner);
-
+  return domComputedOwned(null, (owner) => {
     const value: DomComponentReturn = ('create' in fn) ?
       (fn as IDomCreateClass<any[]>).create(owner, ...args) :
       (fn as IDomCreateFunc<any[]>)(owner, ...args);
     return (value && typeof value === 'object' && 'buildDom' in value) ?
       value.buildDom() : value;
   });
-  return [markerPre, markerPost, func];
 }

@@ -118,7 +118,7 @@ Returns the value associated with a DOM element using `dom.data()`
 
 ### dom.maybe _(dom-method)_
 ```typescript
-dom.maybe<T>(boolValue: BindableValue<T>, contentFunc: (val: NonNullable<T>) => DomArg)
+dom.maybe<T>(boolValue: BindableValue<T>, contentFunc: (val: NonNullable<T>) => DomContents)
 ```
 
 Conditionally appends DOM to an element. The value may be an observable or function (from which a
@@ -137,9 +137,18 @@ simpler.
 * `dom(..., dom.maybe(myValue, () => dom(...)));`
 * `dom(..., myValue ? dom(...) : null);`
 
+### dom.maybeOwned _(dom-method)_
+```typescript
+dom.maybeOwned<T>(boolValue: BindableValue<T>, contentFunc: (owner: MultiHolder, val: NonNullable<T>) => DomContents)
+```
+
+Like `dom.maybe()`, but the callback gets an additional first argument `owner`, which may be used
+to take ownership of objects created by the callback. These will be disposed before each new call
+to the callback, and when the condition becomes false or the containing DOM gets disposed.
+
 ### dom.domComputed _(dom-method)_
 ```typescript
-dom.domComputed<T>(value: BindableValue<T>, contentFunc: (val: T) => DomArg)
+dom.domComputed<T>(value: BindableValue<T>, contentFunc: (val: T) => DomContents)
 dom.domComputed(value: BindableValue<Node>)
 ```
 
@@ -172,6 +181,15 @@ If the argument is not an observable, dom.domComputed() may still be used, but i
 
 * `dom(..., dom.domComputed(nlines, n => (n > 1) ? dom('textarea') : dom('input')));`
 * `dom(..., (nlines > 1) ? dom('textarea') : dom('input'));`
+
+### dom.domComputedOwned _(dom-method)_
+```typescript
+dom.domComputedOwned<T>(value: BindableValue<T>, contentFunc: (owner: MultiHolder, val: T) => DomContents)
+```
+
+Like `dom.domComputed()`, but the callback gets an additional first argument `owner`, which may be
+used to take ownership of objects created by the callback. These will be disposed before each new
+call to the callback, and when the containing DOM is disposed.
 
 ### dom.forEach _(dom-method)_
 ```typescript

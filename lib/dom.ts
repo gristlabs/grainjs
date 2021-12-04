@@ -81,7 +81,9 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const getData         = _domMethods.getData;
   export const replaceContent  = _domComputed.replaceContent;
   export const domComputed     = _domComputed.domComputed;
+  export const domComputedOwned = _domComputed.domComputedOwned;
   export const maybe           = _domComputed.maybe;
+  export const maybeOwned      = _domComputed.maybeOwned;
 
   export const forEach         = _domForEach.forEach;
 

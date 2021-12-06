@@ -1,7 +1,8 @@
 # GrainJS
 
 [![npm version](https://badge.fury.io/js/grainjs.svg)](https://badge.fury.io/js/grainjs)
-[![Build Status](https://travis-ci.org/gristlabs/grainjs.svg?branch=master)](https://travis-ci.org/gristlabs/grainjs)
+[![Build status](https://github.com/gristlabs/grainjs/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/gristlabs/grainjs/actions/workflows/build-and-test.yml)
+[![codecov](https://codecov.io/gh/gristlabs/grainjs/branch/master/graph/badge.svg?token=1OIMMBLI6N)](https://codecov.io/gh/gristlabs/grainjs)
 
 GrainJS is a Javascript (and TypeScript) library for building highly performant dynamic
 applications.

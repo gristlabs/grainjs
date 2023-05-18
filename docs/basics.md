@@ -396,7 +396,7 @@ const cssButton = styled('button', `
 
 In nested styles, ampersand (&) gets replaced with the generated `.className` of the main element.
 Blocks of related styles must appear after all the styles that apply to the
-main element.
+main element. Doing otherwise will effecti with class being generated, but without any styles whatsoever. 
 
 The resulting styled component provides a `.cls()` helper to simplify using prefixed classes. It
 behaves as `dom.cls()`, but prefixes the class names with the generated `className` of the main

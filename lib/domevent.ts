@@ -39,6 +39,7 @@
  *    let lis = domevent.onElem(elem, 'mouseup', e => { lis.dispose(); other_work(); });
  */
 
+import {G} from './browserGlobals';
 import {IDisposable} from './dispose';
 import {DomElementMethod, DomMethod} from './domImpl';
 
@@ -186,4 +187,16 @@ export function onKeyPress<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>):
 
 export function onKeyDown<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T> {
   return (elem) => { onKeyElem(elem, 'keydown', keyHandlers); };
+}
+
+/**
+ * Calls handler() once the document is fully loaded; or calls it immediately if the document is
+ * already loaded. Passes in a DOMContentLoaded event in the first case, or null in the second.
+ */
+export function onReady(handler: (ev: Event|null) => void) {
+  if (G.document.readyState !== 'loading'){
+    handler(null);
+  } else {
+    G.document.addEventListener('DOMContentLoaded', (ev) => handler(ev));
+  }
 }

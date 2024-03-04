@@ -96,4 +96,5 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const onKeyElem       = domevent.onKeyElem;
   export const onKeyPress      = domevent.onKeyPress;
   export const onKeyDown       = domevent.onKeyDown;
+  export const onReady         = domevent.onReady;
 }

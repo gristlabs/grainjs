@@ -4,8 +4,8 @@
 
 const domevent = require('../../lib/domevent');
 const {dom} = require('../../lib/dom');
-const {pushGlobals, popGlobals} = require('../../lib/browserGlobals');
-const { assertResetSingleCallStrict } = require('./testutil2');
+const {G, pushGlobals, popGlobals} = require('../../lib/browserGlobals');
+const { assertResetSingleCall, assertResetSingleCallStrict } = require('./testutil2');
 
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
@@ -190,4 +190,28 @@ describe('domevent', function() {
       sinon.assert.notCalled(stubDel);
     });
   });
+
+  describe('onReady', function() {
+    it('should call handler if a document is already loaded', function() {
+      const stub = sinon.stub();
+      domevent.onReady(stub);
+      assertResetSingleCallStrict(stub, undefined, null);
+    });
+
+    it('should call handler on load if a document is not yet loaded', async function() {
+      const stub = sinon.stub();
+      jsdomDoc = new JSDOM("<!doctype html><html><body></body></html>");
+      pushGlobals(jsdomDoc.window);
+      try {
+        domevent.onReady(stub);
+        // Not called right away because jsdom emits DOMContentLoaded asynchronously.
+        sinon.assert.notCalled(stub);
+        await new Promise(r => setTimeout(r, 10));
+        assertResetSingleCall(stub, undefined, sinon.match.instanceOf(G.window.Event));
+      } finally {
+        popGlobals();
+      }
+    });
+  });
+
 });

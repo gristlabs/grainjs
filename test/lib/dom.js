@@ -221,6 +221,8 @@ describe('dom', function() {
                      dom.attr('a1', 'foo'),
                      dom.attr('a2', obs),
                      dom.attr('a3', use => "a3" + use(obs)),
+                     dom.attr('a4', use => use(obs) === 'bar' ? 'a4' : null),
+                     dom.attr('a5', use => use(obs) === 'bar' ? 'a5' : undefined),
                      dom.boolAttr('b1', obs),
                      dom.prop('value', use => "prop" + use(obs) + use(width)),
                      dom.text(obs),
@@ -233,6 +235,8 @@ describe('dom', function() {
       assert.equal(elem.getAttribute('a1'), 'foo');
       assert.equal(elem.getAttribute('a2'), 'bar');
       assert.equal(elem.getAttribute('a3'), 'a3bar');
+      assert.equal(elem.getAttribute('a4'), 'a4');
+      assert.equal(elem.getAttribute('a5'), 'a5');
       assert.equal(elem.getAttribute('b1'), '');
       assert.equal(elem.value, 'propbar17');
       assert.equal(elem.textContent, 'bar');
@@ -246,6 +250,8 @@ describe('dom', function() {
       assert.equal(elem.getAttribute('a1'), 'foo');
       assert.equal(elem.getAttribute('a2'), 'BAZ');
       assert.equal(elem.getAttribute('a3'), 'a3BAZ');
+      assert.equal(elem.getAttribute('a4'), null);
+      assert.equal(elem.getAttribute('a5'), null);
       assert.equal(elem.getAttribute('b1'), '');
       assert.equal(elem.value, 'propBAZ34');
       assert.equal(elem.textContent, 'BAZ');

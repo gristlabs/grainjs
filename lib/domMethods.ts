@@ -34,16 +34,16 @@ export function attrs(attrsObj: IAttrObj): DomElementMethod {
  * observable or function.
  * @param {Element} elem: The element to update.
  * @param {String} attrName: The name of the attribute to bind, e.g. 'href'.
- * @param {String|null} attrValue: The string value or null to remove the attribute.
+ * @param {String|null|undefined} attrValue: The string value, or null or undefined to remove the attribute.
  */
-export function attrElem(elem: Element, attrName: string, attrValue: string|null): void {
+export function attrElem(elem: Element, attrName: string, attrValue: string|null|undefined): void {
   if (attrValue === null || attrValue === undefined) {
     elem.removeAttribute(attrName);
   } else {
     elem.setAttribute(attrName, attrValue);
   }
 }
-export function attr(attrName: string, attrValueObs: BindableValue<string>): DomElementMethod {
+export function attr(attrName: string, attrValueObs: BindableValue<string|null|undefined>): DomElementMethod {
   return (elem) => _subscribe(elem, attrValueObs, (val) => attrElem(elem, attrName, val));
 }
 

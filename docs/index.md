@@ -1,67 +1,90 @@
-# GrainJS: a lightweight typescript frontend framework
+# GrainJS: a light typescript web framework
 
-GrainJS is the framework that powers [Grist](https://github.com/gristlabs/grist-core), a
-spreadsheet-database and a very featureful single-page app. In this, it's proven its ability to
-handle complex situation despite its minimal footprint.
+GrainJS is the framework that powers [Grist](https://github.com/gristlabs/grist-core#grist), a
+spreadsheet-database whose frontend is a very featureful single-page web app. In this, it's proven
+its ability to handle complex situation despite its minimal footprint.
 
-GrainJS is a framework in that it's a collection of libraries that address most of what's
-needed to build interactive web-based applications. Here's a quick tour of what it covers, along
-with examples.
+The modern browser can do a lot without a framework. The available built-in interfaces
+have been refined over the years and are excellent. GrainJS embraces those. On top, it builds a
+collection of tools for building interactive web-based applications.
 
 A key aspect of GrainJS is that it's nothing more than a library. You can use it with TypeScript
 or JavaScript, and aside from that, you don't need special tooling. It has no dependencies, and
 delivers all its value in a minimized size of about 30kb.
 
-In each example, you can see GrainJS code and its output. Try changing the code, to see how it
-affects the output.
+## Quick tour
 
-## Building DOM
+Here are a few examples to give you a taste. In each example, you can see GrainJS code and what it
+produces. Some are interactive: try them out.
+
+### Building DOM
 
 GrainJS embraces TypeScript/JavaScript for building DOM. It's concise,
 type-checked, and convenient. When using GrainJS, you might never write any angle brackets.
 
-{.livecodes data-height="400"}
-```js
-const {dom} = grainjs;
+  {.grainjs-example data-result-height-rem=3}
+  ```js
+  const {dom} = grainjs;
+  dom.update(document.body,
+    // [!code focus:3]
+    dom('p', 'Simple markup and ',
+      dom('a', 'links', {href: '/', target: '_blank'})
+    )
+  );
+  ```
 
-dom.update(document.body,
-  dom('h1', 'Hello world!'),
-  dom('p', 'Simple markup and ',
-    dom('a', 'links', {href: '/', target: '_blank'})
-  )
-);
-```
+### Styling DOM
 
+You can style things right in TypeScript/JavaScript too. No need to worry about
+conflicting class names or CSS build tooling.
 
-## Observables
+  {.grainjs-example data-result-height-rem=3}
+  ```js
+  const {dom, styled} = grainjs;
+
+  // [!code focus:7]
+  const cssButton = styled('button', `
+    padding: 4px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #168a49;
+    color: white;
+  `);
+
+  dom.update(document.body,
+    cssButton('Styled button')      // [!code focus]
+  );
+  ```
+
+### Observables
 
 The DOM you build can react to changes in data by using "observable" values, inspired by
 [Knockout](https://knockoutjs.com/), and analogous to
 [ref](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#ref) in Vue, or observables
 in [RxJS](https://rxjs.dev/).
 
-{.livecodes data-height="400"}
+{.grainjs-example data-result-height-rem=3}
 ```js
 const {dom, Observable} = grainjs;
-const count = Observable.create(null, 0);
+const count = Observable.create(null, 0);   // [!code focus]
 
 dom.update(document.body,
-  dom('p', 'Button pressed ', dom.text(count), ' times.'),
+  // [!code focus:4]
+  'Button pressed ', dom.text(count), ' times. ',
   dom('button', 'Press me',
-    dom.on('click', () => { count.set(count.get() + 1); })
-  )
+    dom.on('click', () => count.set(count.get() + 1))
+  ),
 );
 ```
 
+### Computed values
 
-## Computed values
+These build on observables, and go beyond their [Knockout](https://knockoutjs.com/) origins, with
+explicit dependency tracking and better order of evaluation. They can be created explicitly, or
+inline when setting properties or contents of DOM elements.
 
-These build on Observables, and step away from their
-[Knockout](https://knockoutjs.com/) origins, with explicit dependency tracking and better order
-of evaluation.
-
-{.livecodes data-height="500"}
-```js
+{.grainjs-example data-result-height-rem=7}
+```js{3,9-10}
 const {dom, Computed, Observable} = grainjs;
 const name = Observable.create(null, 'Mad Hatter');
 const upper = Computed.create(null, use => use(name).toUpperCase());
@@ -75,87 +98,18 @@ dom.update(document.body,
 );
 ```
 
-## Disposables
+### Disposables
 
 Everything you create in GrainJS can be disposed. To keep track of it, there is
 a system of ownership. This is important to avoid leaks in a long-lived application.
 
-{.livecodes data-height="500"}
-```js
-// Hmm....
-```
+### Other tools
 
-## Styling
+There are a number of other conveniences, like for DOM properties and events, for custom events,
+for building lists, building components, and more.
 
-There is a simple way to create styled components in TypeScript/JavaScript. It fits
-nicely when all your DOM is constructed dynamically, and you won't have to worry about conflicting
-class names.
-
-{.livecodes data-height="700"}
-```js
-const {dom, Observable, styled} = grainjs;
-const value = Observable.create(null, '');
-
-const render = () =>
-  cssConverter(
-    'Convert number to binary',
-    cssInput({type: 'number'}, dom.on('input', (ev, elem) => value.set(elem.value))),
-    '→',
-    cssOutput(dom.text(use => Number(use(value)).toString(2))),
-  );
-
-const cssConverter = styled('div', `background-color: #def; border-radius: 16px; padding: 16px`);
-const cssInput = styled('input', `width: 100px; border-radius: 8px; border: 1px solid #88a`);
-const cssOutput = styled('span', `border-radius: 8px; background-color: #88a`);
-
-dom.update(document.body, render());
-```
-
-- [Basics](basics.md)
-- [Dispose](dispose.md)
-- [Misc](misc.md)
-- [More observables](more-observables.md)
-- [Reference](reference.md)
-
-
-
-
-
-
-<style>
-.livecodes + div {
-  display: none;
-}
-</style>
-<script setup>
-import { createPlayground } from 'livecodes'
-
-// runs after the markdown is rendered
-requestAnimationFrame(() => {
-  for (const elem of document.querySelectorAll('.livecodes + div')) {
-    const host = elem.previousElementSibling;
-    const code = elem.querySelector('code');
-    if (!host || !code) { continue; }
-    createPlayground(host, {
-      appUrl: 'http://localhost:5173/livecodes/index.html',
-      config: {
-        mode: "simple",
-        layout: "vertical",
-        markup: { hideTitle: true },
-        style: { hideTitle: true },
-        script: {
-          hideTitle: true,
-          language: 'javascript',
-          hiddenContentUrl: 'https://cdn.jsdelivr.net/npm/grainjs@1.0.2/dist/grain-full.min.js',
-          content: code.textContent,
-        },
-        activeEditor: 'script',
-        tools: {
-          status: "none"
-        },
-      },
-      loading: 'lazy',
-    });
-  }
-})
-</script>
+- [Basics](basics)
+- [Dispose](dispose)
+- [Misc](misc)
+- [More observables](more-observables)
+- [Reference](reference)

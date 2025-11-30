@@ -10,6 +10,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Documentation output and cache
+/docs/.vitepress/dist/
+/docs/.vitepress/cache/
+
 # Runtime data
 pids
 *.pid

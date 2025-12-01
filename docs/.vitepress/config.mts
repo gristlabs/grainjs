@@ -11,13 +11,14 @@ export default defineConfig({
       provider: 'local'
     },
     outline: {
-      level: 3
+      level: [2, 3]
     },
     sidebar: [
       {
         text: 'Documentation',
         items: [
           { text: 'Introduction', link: '/' },
+          { text: 'Getting started', link: '/getting-started' },
           { text: 'Basics', link: '/basics' },
           { text: 'Dispose', link: '/dispose' },
           { text: 'Misc', link: '/misc' },

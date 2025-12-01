@@ -10,7 +10,7 @@ collection of tools for building interactive web-based applications.
 
 A key aspect of GrainJS is that it's nothing more than a library. You can use it with TypeScript
 or JavaScript, and aside from that, you don't need special tooling. It has no dependencies, and
-delivers all its value in a minimized size of about 30kb.
+delivers all its value in a minified size of about 30kb.
 
 ## Quick tour
 

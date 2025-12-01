@@ -3,8 +3,28 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
   title: 'GrainJS',
   description: 'GrainJS: a lightweight typescript frontend framework',
-  head: [
-    ['script', {src: 'https://cdn.jsdelivr.net/npm/grainjs@1.0.2/dist/grain-full.min.js'}],
-    ['script', {src: 'index.js'}],
-  ],
+  themeConfig: {
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/gristlabs/grainjs' },
+    ],
+    search: {
+      provider: 'local'
+    },
+    outline: {
+      level: 3
+    },
+    sidebar: [
+      {
+        text: 'Documentation',
+        items: [
+          { text: 'Introduction', link: '/' },
+          { text: 'Basics', link: '/basics' },
+          { text: 'Dispose', link: '/dispose' },
+          { text: 'Misc', link: '/misc' },
+          { text: 'More observables', link: '/more-observables' },
+          { text: 'Reference', link: '/reference' },
+        ]
+      }
+    ]
+  }
 });

@@ -22,39 +22,37 @@ produces. Some are interactive: try them out.
 GrainJS embraces TypeScript/JavaScript for building DOM. It's concise,
 type-checked, and convenient. When using GrainJS, you might never write any angle brackets.
 
-  {.grainjs-example data-result-height-rem=3}
-  ```js
-  const {dom} = grainjs;
-  dom.update(document.body,
-    // [!code focus:3]
-    dom('p', 'Simple markup and ',
-      dom('a', 'links', {href: '/', target: '_blank'})
-    )
-  );
-  ```
+```js{3-5}
+const {dom} = grainjs;
+dom.update(document.body,
+  dom('p', 'Simple markup and ',
+    dom('a', 'links', {href: '/', target: '_blank'})
+  )
+);
+```
+<GrainJsExample heightRem=3 />
 
 ### Styling DOM
 
 You can style things right in TypeScript/JavaScript too. No need to worry about
 conflicting class names or CSS build tooling.
 
-  {.grainjs-example data-result-height-rem=3}
-  ```js
-  const {dom, styled} = grainjs;
+```js{12}
+const {dom, styled} = grainjs;
 
-  // [!code focus:7]
-  const cssButton = styled('button', `
-    padding: 4px 16px;
-    border: none;
-    border-radius: 8px;
-    background-color: #168a49;
-    color: white;
-  `);
+const cssButton = styled('button', `
+  padding: 4px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #168a49;
+  color: white;
+`);
 
-  dom.update(document.body,
-    cssButton('Styled button')      // [!code focus]
-  );
-  ```
+dom.update(document.body,
+  cssButton('Styled button')
+);
+```
+<GrainJsExample heightRem=3 />
 
 ### Observables
 
@@ -63,19 +61,18 @@ The DOM you build can react to changes in data by using "observable" values, ins
 [ref](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#ref) in Vue, or observables
 in [RxJS](https://rxjs.dev/).
 
-{.grainjs-example data-result-height-rem=3}
-```js
+```js{2,5,7}
 const {dom, Observable} = grainjs;
-const count = Observable.create(null, 0);   // [!code focus]
+const count = Observable.create(null, 0);
 
 dom.update(document.body,
-  // [!code focus:4]
   'Button pressed ', dom.text(count), ' times. ',
   dom('button', 'Press me',
     dom.on('click', () => count.set(count.get() + 1))
   ),
 );
 ```
+<GrainJsExample heightRem=3 />
 
 ### Computed values
 
@@ -83,7 +80,6 @@ These build on observables, and go beyond their [Knockout](https://knockoutjs.co
 explicit dependency tracking and better order of evaluation. They can be created explicitly, or
 inline when setting properties or contents of DOM elements.
 
-{.grainjs-example data-result-height-rem=7}
 ```js{3,9-10}
 const {dom, Computed, Observable} = grainjs;
 const name = Observable.create(null, 'Mad Hatter');
@@ -97,6 +93,7 @@ dom.update(document.body,
   dom('p', 'Lowercase: ', dom.text(use => use(name).toLowerCase())),
 );
 ```
+<GrainJsExample heightRem=7 />
 
 ### Disposables
 
@@ -107,9 +104,3 @@ a system of ownership. This is important to avoid leaks in a long-lived applicat
 
 There are a number of other conveniences, like for DOM properties and events, for custom events,
 for building lists, building components, and more.
-
-- [Basics](basics)
-- [Dispose](dispose)
-- [Misc](misc)
-- [More observables](more-observables)
-- [Reference](reference)

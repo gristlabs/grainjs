@@ -19,7 +19,7 @@ export default defineConfig({
         items: [
           { text: 'Introduction', link: '/' },
           { text: 'Getting started', link: '/getting-started' },
-          { text: 'Basics', link: '/basics' },
+          { text: 'DOM & Observables', link: '/basics' },
           { text: 'Dispose', link: '/dispose' },
           { text: 'Misc', link: '/misc' },
           { text: 'More observables', link: '/more-observables' },

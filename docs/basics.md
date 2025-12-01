@@ -2,15 +2,6 @@
 
 In this page, we describe how to build DOM in GrainJS and how to tie it to observables.
 
-- [DOM Construction](#dom-construction)
-- [Observables](#observables)
-  - [Computed Observables](#computed-observables)
-- [DOM Bindings](#dom-bindings)
-  - [Conditional DOM](#conditional-dom)
-  - [Repeating DOM](#repeating-dom)
-  - [DOM Events](#dom-events)
-- [Styling DOM](#styling-dom)
-
 ## DOM Construction
 
 Here’s an example of DOM construction using GrainJS:
@@ -57,42 +48,39 @@ The first `tag` argument is the tag name of the element to create, e.g. `"div"`.
 
 The tag may contain optional `#foo` suffix to add the ID `"foo"` to the element, and zero or more
 `.bar` suffixes to add a CSS class `"bar"` (for example, `dom('div#foo.bar')`), but these optional
-suffixes are not actually recommended. They add minimal convenience and prevent accurate typings.
-For example:
+suffixes interfere with accurate typings, and are neither recommended nor useful.
+- The `id` attributes are almost never needed when using GrainJS (the element constructed
+is always available as a variable). If you were to need it, pass `{id: 'foo'}` instead.
+- CSS classes are usually better auto-assigned by using the `styled()` function. If you need a class
+  with a particular name, use `{className: 'bar'}` or `dom.cls('bar')`.
 
-* `dom('input', {id: 'foo'}, (elem) => ...)` --> elem has type HTMLInputElement (recommended)
-* `dom('input#foo',          (elem) => ...)` --> elem has type HTMLElement
-
-Note that DOM `id` attributes are almost never needed when using GrainJS (the element constructed
-is always available as a variable), and CSS classes are usually better assigned by using the
-`styled()` function of GrainJS. In both cases, by avoiding direct use of DOM IDs and classes, we
+One benefit of GrainJS is that by avoiding direct use of DOM IDs and classes, we
 avoid worrying about name collisions. Javascript does a better job of modularizing code, so it’s
-better to identify things using JS variables (or better yet TypeScript variables).
-
+better to identify things using variables.
 
 ## Observables
 
 Observables are merely variables that allow listening to changes in them. In GrainJS, the
 recommended way to create an observable is:
 
-```typescript
-const showPanelObs: Observable<boolean> = Observable.create(owner, false);
+```ts
+const showBoxObs = Observable.create(owner, false);
 ```
 
 The first argument to `Observable.create` is the owner of the resulting object -- more on that
-later. You may pass in null in its place, as in `Observable.create(null, initialValue)`.
+later. You may pass in null in its place, as in `Observable.create(null, value)`.
 
 Once you have an observable, you can get or set its value:
 
 ```typescript
-showPanelObs.set(true);
-if (!showPanelObs.get()) { ... }
+showBoxObs.set(true);
+if (!showBoxObs.get()) { ... }
 ```
 
 And, importantly, you can subscribe to changes to its value:
 
 ```typescript
-const listener = showPanelObs.addListener(val => console.log("New value:", val));
+const listener = showBoxObs.addListener(val => console.log("Value:", val));
 ```
 
 ### Computed Observables
@@ -124,7 +112,8 @@ There is another, even more explicit way to make a computed depend on another ob
 the dependencies into the constructor:
 
 ```typescript
-const computed2 = Computed.create(owner, obs1, obs2, (use, value1, value2) => value1 + value2);
+const computed2 = Computed.create(owner, obs1, obs2,
+    (use, value1, value2) => value1 + value2);
 ```
 
 Here, `computed2` will depend on `obs1` and `obs2`, and any time either of those is updated, the
@@ -178,7 +167,7 @@ dom('a',
 Such manipulations are common enough that there is a shortcut. You can replace
 an observable argument with a callback which will be used to create a computed automatically:
 
-```
+```ts
 dom('a',
   dom.cls('small-link', use => !use(isBigObs)),
   ...
@@ -191,7 +180,7 @@ corresponding property gets updated directly. There is no constructing of virtua
 figuring out differences. This can be a plus or a minus, depending on the situation.
 
 Notice also that the goal here is to allow you to describe DOM declaratively once. Anything
-dynamic is controlled by observables. You don’t need to tweak DOM later; to update what the user
+dynamic is controlled by observables. You don’t need to tweak DOM directly; to update what the user
 sees, you only set the observables. In other words, the observables are the model of your
 application state, and the DOM with bindings is the view.
 
@@ -269,7 +258,7 @@ The purpose of `obsArray` is to allow observing small changes like those above, 
 relevant DOM elements without rebuilding them all.
 
 When using `dom.forEach`, the per-item callback may not return an array of DOM elements — it may
-return a single DOM element or null (to omit that item from DOM).
+only return a single DOM element or null (to omit that item from DOM).
 
 ### DOM Events
 
@@ -283,7 +272,7 @@ dom('button', 'Click Me',
 ```
 
 The callback receives the event, as well as the element that the handler is attached to (the
-BUTTON in the example above). The passed-in element may be different from `event.target` if the
+BUTTON in this example). The passed-in element may be different from `event.target` if the
 target is some child or descendant of `elem`.
 
 You may pass in a third argument of `{useCapture: true}` for the (rare) situations when you want
@@ -322,14 +311,16 @@ the selector. The matching elememt is then provided as the `elem` argument to th
 
 ## Styling DOM
 
-The simplest way to style a DOM element is to assign it a unique CSS class name, and define styles
-for that class. GrainJS offers a TypeScript-based alternative inspired by React’s Styled
-Components. The main benefit here is in module-based naming and the various help from TypeScript
+GrainJS offers a TypeScript-based approach to styling DOM elements, inspired by React's Styled
+Components. All it does is automate generating and assigning a unique CSS class to
+an element. The main benefit here is in module-based naming and the various help from TypeScript
 with names, and with knowing the types of created elements.
 
 You can defined a “styled” element like so:
 
-```typescript
+```js
+const {dom, styled} = grainjs;
+
 const cssTitle = styled('h1', `
   font-size: 1.5em;
   text-align: center;
@@ -337,12 +328,15 @@ const cssTitle = styled('h1', `
 `);
 
 const cssWrapper = styled('section', `
-  padding: 4em;
+  padding: 0.5em 4em;
   background: papayawhip;
 `);
 
-cssWrapper(cssTitle('Hello world'));
+dom.update(document.body,
+  cssWrapper(cssTitle('Hello world'))
+);
 ```
+<GrainJsExample heightRem=5 />
 
 This generates unique class names for `cssTitle` and `cssWrapper`, adding the styles to the
 document on first use. The result is equivalent to:
@@ -408,6 +402,8 @@ cssButton(cssButton.cls('-small'), 'Test')
 
 creates a button with both the `cssButton` style above, and the style specified under `&-small`.
 This can also be used with an observable, e.g. `cssButton.cls('-small', useSmallButtonsObs)`.
+
+### Animations
 
 In a similar approach to creating CSS classes from Javascript, you can create `@keyframes`
 animations by using the `keyframes()` helper. It returns the generated unique name:

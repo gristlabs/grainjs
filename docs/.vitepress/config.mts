@@ -20,9 +20,12 @@ export default defineConfig({
           { text: 'Introduction', link: '/' },
           { text: 'Getting started', link: '/getting-started' },
           { text: 'DOM & Observables', link: '/basics' },
-          { text: 'Dispose', link: '/dispose' },
-          { text: 'Misc', link: '/misc' },
-          { text: 'More observables', link: '/more-observables' },
+          { text: 'Disposables', link: '/dispose' },
+          { text: 'DOM components', link: '/dom-components' },
+          { text: 'Event Emitters', link: '/event-emitters' },
+          { text: 'Knockout integration', link: '/knockout' },
+          { text: 'More on observables', link: '/more-observables' },
+          { text: 'More on computeds', link: '/more-computeds' },
           { text: 'Reference', link: '/reference' },
         ]
       }

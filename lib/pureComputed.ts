@@ -74,7 +74,7 @@ export class PureComputed<T> extends Observable<T> {
   /**
    * "Sets" the value of the pure computed by calling the write() callback if one was provided in
    * the constructor. Throws an error if there was no such callback (not a "writable" computed).
-   * @param {Object} value: The value to pass to the write() callback.
+   * @param value - The value to pass to the write() callback.
    */
   public set(value: T): void { this._write(value); }
 

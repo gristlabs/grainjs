@@ -68,7 +68,7 @@ export const domDisposeHooks: IDomDisposeHooks = {
  * It is automatically called if one of the function arguments to dom() throws an exception during
  * element creation. This way any onDispose() handlers set on the unfinished element get called.
  *
- * @param {Node} node: The element to run disposers on.
+ * @param node - The element to run disposers on.
  */
 export function domDispose(node: Node): void {
   domDisposeHooks.disposeRecursive(node);
@@ -78,8 +78,8 @@ export function domDispose(node: Node): void {
  * Associate a disposerFunc with a DOM element. It will be called when the element is disposed
  * using domDispose() on it or any of its parents. If onDispose is called multiple times, all
  * disposerFuncs will be called in reverse order.
- * @param {Element} elem: The element to associate the disposer with.
- * @param {Function} disposerFunc(elem): Will be called when domDispose() is called on the
+ * @param elem - The element to associate the disposer with.
+ * @param disposerFunc - Will be called when domDispose() is called on the
  *    element or its ancestor.
  * Note that it is not necessary usually to dispose event listeners attached to an element (e.g.
  * with dom.on()) since their lifetime is naturally limited to the lifetime of the element.
@@ -98,8 +98,8 @@ export function onDispose(disposerFunc: INodeFunc) {
 /**
  * Make the given element own the disposable, and call its dispose method when domDispose() is
  * called on the element or any of its parents.
- * @param {Element} elem: The element to own the disposable.
- * @param {Disposable} disposable: Anything with a .dispose() method.
+ * @param elem - The element to own the disposable.
+ * @param disposable - Anything with a .dispose() method.
  */
 export function autoDisposeElem(elem: Node, disposable: IDisposable|null) {
   if (disposable) {

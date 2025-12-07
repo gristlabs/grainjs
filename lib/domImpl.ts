@@ -51,14 +51,14 @@ export type DomElementArg = DomArg<HTMLElement>;
  *   to add the ID 'foo', and zero or more .bar suffixes to add a CSS class 'bar'.
  *
  *   NOTE that better typings are available when a tag is used directly, e.g.
- *      dom('input', {id: 'foo'}, (elem) => ...) --> elem has type HTMLInputElement
- *      dom('input#foo',          (elem) => ...) --> elem has type HTMLElement
+ *      `dom('input', {id: 'foo'}, (elem) => ...)` -- elem has type HTMLInputElement
+ *      `dom('input#foo',          (elem) => ...)` -- elem has type HTMLElement
  *
  * The rest of the arguments are optional and may be:
  *
  *   Nodes - which become children of the created element;
  *   strings - which become text node children;
- *   objects - of the form {attr: val} to set additional attributes on the element;
+ *   objects - of the form `{attr: val}` to set additional attributes on the element;
  *   Arrays - which are flattened with each item processed recursively;
  *   functions - which are called with elem as the argument, for a chance to modify the
  *       element as it's being created. Return values are processed recursively.
@@ -93,11 +93,11 @@ function _createElementSvg(tag: string): SVGElement {
 /**
  * Internal helper to parse tagString, create an element using createFunc with the given tag, and
  * set its id and classes from the tagString.
- * @param {Funtion} createFunc(tag): Function that should create an element given a tag name.
+ * @param createFunc(tag) - Function that should create an element given a tag name.
  *    It is passed in to allow creating elements in different namespaces (e.g. plain HTML vs SVG).
- * @param {String} tagString: String of the form "tag#id.class1.class2" where id and classes are
+ * @param tagString - String of the form "tag#id.class1.class2" where id and classes are
  *    optional.
- * @return {Element} The result of createFunc(), possibly with id and class attributes also set.
+ * @returns {Element} The result of createFunc(), possibly with id and class attributes also set.
  */
 function _createFromTagString<E extends Element>(createFunc: (tag: string) => E, tagString: string): E {
   // We do careful hand-written parsing rather than use a regexp for speed. Using a regexp is

@@ -106,7 +106,7 @@ export class Computed<T> extends Observable<T> {
   /**
    * "Sets" the value of the computed by calling the write() callback if one was provided in the
    * constructor. Throws an error if there was no such callback (not a "writable" computed).
-   * @param {Object} value: The value to pass to the write() callback.
+   * @param value - The value to pass to the write() callback.
    */
   public set(value: T): void { this._write(value); }
 
@@ -161,10 +161,10 @@ export function computed<T, A, B, C, D, E>(
 
 /**
  * Creates a new Computed.
- * @param {Observable} ...observables: The initial params, of which there may be zero or more, are
+ * @param ...observables - The initial params, of which there may be zero or more, are
  *    observables on which this computed depends. When any of them change, the read() callback
  *    will be called with the values of these observables as arguments.
- * @param {Function} readCallback: Read callback that will be called with (use, ...values),
+ * @param readCallback - Read callback that will be called with (use, ...values),
  *    i.e. the `use` function and values for all of the ...observables. The callback is called
  *    immediately and whenever any dependency changes.
  * @returns {Computed} The newly created computed observable.

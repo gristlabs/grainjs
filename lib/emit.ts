@@ -97,9 +97,9 @@ export class Emitter extends LLink {
 
   /**
    * Adds a listening callback to the list of functions to call on emit().
-   * @param {Function} callback: Function to call.
-   * @param {Object} optContext: Context for the function.
-   * @returns {Listener} Listener object. Its dispose() method removes the callback from the list.
+   * @param callback - Function to call.
+   * @param optContext - Context for the function.
+   * @returns Listener object. Its dispose() method removes the callback from the list.
    */
   public addListener<T>(callback: ListenerCB<T>, optContext?: T): Listener {
     return new Listener(this, callback, optContext);
@@ -114,7 +114,7 @@ export class Emitter extends LLink {
 
   /**
    * Sets the single callback that would get called when a listener is added or removed.
-   * @param {Function} changeCB(hasListeners): Function to call after a listener is added or
+   * @param changeCB - Function to call after a listener is added or
    *    removed. It's called with a boolean indicating whether this Emitter has any listeners.
    *    Pass in `null` to unset the callback. Note that it can be called multiple times in a row
    *    with hasListeners `true`.

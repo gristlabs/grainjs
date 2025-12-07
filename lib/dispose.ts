@@ -56,18 +56,22 @@
  *    http://bin-login.name/ftp/pub/docs/programming_languages/cpp/cffective_cpp/MAGAZINE/SU_FRAME.HTM#destruct
  *
  * Using a parametrized (generic) class as a Disposable is tricky. E.g.
+ * ```
  *    class Bar<T> extends Disposable { ... }
  *    // Bar<T>.create(...)   <-- doesn't work
  *    // Bar.create<T>(...)   <-- doesn't work
  *    // Bar.create(...)      <-- works, but with {} for Bar's type parameters
+ * ```
  *
  * The solution is to expose the constructor type using a helper method:
+ * ```
  *    class Bar<T> extends Disposable {
  *      // Note the tuple below which must match the constructor parameters of Bar<U>.
  *      public static ctor<U>(): IDisposableCtor<Bar<U>, [U, boolean]> { return this; }
  *      constructor(a: T, b: boolean) { ... }
  *    }
  *    Bar.ctor<T>().create(...)   // <-- works, creates Bar<T>, and does type-checking!
+ * ```
  */
 
 import {LLink} from './emit';

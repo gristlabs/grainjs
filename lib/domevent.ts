@@ -89,12 +89,12 @@ class DomEventMatchListener<E extends Event> extends DomEventListener<E, EventTa
 /**
  * Listen to a DOM event. The `on()` variant takes no `elem` argument, and may be used as an
  * argument to dom() function.
- * @param {DOMElement} elem: DOM Element to listen to.
- * @param {String} eventType: Event type to listen for (e.g. 'click').
- * @param {Function} callback: Callback to call as `callback(event, elem)`, where elem is `elem`.
- * @param [Boolean] options.useCapture: Add the listener in the capture phase. This should very
+ * @param elem - DOM Element to listen to.
+ * @param eventType - Event type to listen for (e.g. 'click').
+ * @param callback - Callback to call as `callback(event, elem)`, where elem is `elem`.
+ * @param options - .useCapture: Add the listener in the capture phase. This should very
  *    rarely be useful (e.g. JQuery doesn't even offer it as an option).
- * @returns {Object} Listener object whose .dispose() method will remove the event listener.
+ * @returns Listener object whose .dispose() method will remove the event listener.
  */
 export function onElem<E extends EventName|string, T extends EventTarget>(
   elem: T, eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}): IDisposable {
@@ -110,17 +110,17 @@ export function on<E extends EventName|string, T extends EventTarget>(
 /**
  * Listen to a DOM event on descendants of the given elem matching the given selector. The
  * `onMatch()` variant takes no `elem` argument, and may be used as an argument to dom().
- * @param {DOMElement} elem: DOM Element to whose descendants to listen.
- * @param {String} selector: CSS selector string to filter elements that trigger this event.
+ * @param elem - DOM Element to whose descendants to listen.
+ * @param selector - CSS selector string to filter elements that trigger this event.
  *    JQuery calls it "delegated events" (http://api.jquery.com/on/). The callback will only be
  *    called when the event occurs for an element matching the given selector. If there are
  *    multiple elements matching the selector, the callback is only called for the innermost one.
- * @param {String} eventType: Event type to listen for (e.g. 'click').
- * @param {Function} callback: Callback to call as `callback(event, elem)`, where elem is a
+ * @param eventType - Event type to listen for (e.g. 'click').
+ * @param callback - Callback to call as `callback(event, elem)`, where elem is a
  *    descendent of `elem` which matches `selector`.
- * @param [Boolean] options.useCapture: Add the listener in the capture phase. This should very
+ * @param options - .useCapture: Add the listener in the capture phase. This should very
  *    rarely be useful (e.g. JQuery doesn't even offer it as an option).
- * @returns {Object} Listener object whose .dispose() method will remove the event listener.
+ * @returns Listener object whose .dispose() method will remove the event listener.
  */
 export function onMatchElem(elem: EventTarget, selector: string, eventType: string,
                             callback: EventCB, {useCapture = false} = {}): IDisposable {
@@ -152,7 +152,7 @@ export interface IKeyHandlers<T extends HTMLElement = HTMLElement> {
  * to allow this element to receive keyboard events.
  *
  * For example:
- *
+ * ```
  *    dom('input', ...
  *      dom.onKeyDown({
  *        Enter: (e, elem) => console.log("Enter pressed"),
@@ -160,6 +160,7 @@ export interface IKeyHandlers<T extends HTMLElement = HTMLElement> {
  *        Delete$: (e, elem) => console.log("Delete pressed, will bubble"),
  *      })
  *    )
+ * ```
  */
 export function onKeyElem<T extends HTMLElement>(
   elem: T, evType: KeyEventType, keyHandlers: IKeyHandlers<T>,

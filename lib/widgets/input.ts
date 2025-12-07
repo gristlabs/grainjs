@@ -19,13 +19,15 @@ export interface IInputOptions {
  * number, tel.
  *
  * Note that every change to the observable will affect the input element, but not every change to
- * the input element will affect the observable. Specifically, unless {onInput: true} is set, the
+ * the input element will affect the observable. Specifically, unless `{onInput: true}` is set, the
  * visible content may differ from the observable until the element loses focus or Enter is hit.
  *
  * Example usage:
+ * ```
  *    input(obs, {}, {type: 'text', placeholder: 'Your name...'});
  *    input(obs, {isValid: isValidObs}, {type: 'email', placeholder: 'Your email...'});
  *    input(obs, {onInput: true}, {type: 'text'});
+ * ```
  */
 export function input(
   obs: Observable<string>, options: IInputOptions, ...args: IDomArgs<HTMLInputElement>

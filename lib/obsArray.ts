@@ -15,7 +15,7 @@
  * ObsArray when you map its values.
  *
  * Both ObsArray and ComputedArray may be used with disposable elements as their owners. E.g.
- *
+ * ```
  *    const arr = obsArray<D>();
  *    arr.push(D.create(arr, "x"), D.create(arr, "y"));
  *    arr.pop();      // Element "y" gets disposed.
@@ -26,6 +26,7 @@
  *    values.push("foo", "bar");      // D("foo") and D("bar") get created
  *    values.pop();                   // D("bar") gets disposed.
  *    compArr.dispose();              // D("foo") gets disposed.
+ * ```
  *
  * Note that only the pattern above works: obsArray (or compArray) may only be used to take
  * ownership of those disposables that are added to it as array elements.
@@ -56,7 +57,7 @@ export interface IObsArraySplice<T> {
 export type ISpliceListener<T, C>  = (this: C, val: T[], prev: T[], change?: IObsArraySplice<T>) => void;
 
 /**
- * ObsArray<T> is essentially an array-valued observable. The main difference is that it may be
+ * `ObsArray<T>` is essentially an array-valued observable. The main difference is that it may be
  * used as an owner for disposable array elements.
  */
 export class ObsArray<T> extends BaseObservable<T[]> {
@@ -117,8 +118,8 @@ export class ObsArray<T> extends BaseObservable<T[]> {
 }
 
 /**
- * MutableObsArray<T> adds array-like mutation methods which emit events with splice info, to
- * allow more efficient processing of such changes. It is created with obsArray<T>().
+ * `MutableObsArray<T>` adds array-like mutation methods which emit events with splice info, to
+ * allow more efficient processing of such changes. It is created with `obsArray<T>()`.
  */
 export class MutableObsArray<T> extends ObsArray<T> {
   public push(...args: T[]): number {
@@ -164,7 +165,7 @@ export class MutableObsArray<T> extends ObsArray<T> {
 
 /**
  * Creates a new MutableObsArray with an optional initial value, defaulting to the empty array.
- * It is essentially the same as observable<T[]>, but with array-like mutation methods.
+ * It is essentially the same as `observable<T[]>`, but with array-like mutation methods.
  */
 export function obsArray<T>(value: T[] = []): MutableObsArray<T> {
   return new MutableObsArray<T>(value);
@@ -256,13 +257,15 @@ export class ComputedArray<T, U> extends ObsArray<U> {
 /**
  * Returns an ObsArray that maps all elements of the passed-in ObsArray through a mapper function.
  * Also accepts an observable (e.g. a computed) whose value is an ObsArray. Usage:
- *
+ * ```
  *    computedArray(obsArray, mapper)
+ * ```
  *
  * The result is entirely analogous to:
- *
+ * ```
  *     computed((use) => use(obsArray).map(mapper))       // for ObsArray
  *     computed((use) => use(use(obsArray)).map(mapper))  // for Observable<ObsArray>
+ * ```
  *
  * The benefit of computedArray() is that a small change to the source array (e.g. one item
  * added or removed), causes a small change to the mapped array, rather than a full rebuild.

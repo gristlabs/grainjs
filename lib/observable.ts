@@ -42,14 +42,14 @@ export class BaseObservable<T> {
   /**
    * Returns the value of the observable. It is fast and does not create a subscription.
    * (It is similar to knockout's peek()).
-   * @returns {Object} The current value of the observable.
+   * @returns The current value of the observable.
    */
   public get(): T { return this._value; }
 
   /**
    * Sets the value of the observable. If the value differs from the previously set one, then
    * listeners to this observable will get called with (newValue, oldValue) as arguments.
-   * @param {Object} value: The new value to set.
+   * @param value - The new value to set.
    */
   public set(value: T): void {
     if (value !== this._value) {
@@ -70,9 +70,9 @@ export class BaseObservable<T> {
 
   /**
    * Adds a callback to listen to changes in the observable.
-   * @param {Function} callback: Function, called on changes with (newValue, oldValue) arguments.
-   * @param {Object} optContext: Context for the function.
-   * @returns {Listener} Listener object. Its dispose() method removes the callback.
+   * @param callback - Function, called on changes with (newValue, oldValue) arguments.
+   * @param optContext - Context for the function.
+   * @returns Listener object. Its dispose() method removes the callback.
    */
   public addListener(callback: (val: T, prev: T) => void, optContext?: object): Listener {
     return this._onChange.addListener(callback, optContext);
@@ -88,7 +88,7 @@ export class BaseObservable<T> {
   /**
    * Sets a single callback to be called when a listener is added or removed. It overwrites any
    * previously-set such callback.
-   * @param {Function} changeCB(hasListeners): Function to call after a listener is added or
+   * @param changeCB - Function to call after a listener is added or
    *    removed. It's called with a boolean indicating whether this observable has any listeners.
    *    Pass in `null` to unset the callback. Note that it can be called multiple times in a row
    *    with hasListeners `true`.
@@ -136,6 +136,9 @@ export class BaseObservable<T> {
   }
 }
 
+/**
+ * An Observable holds a value and allows subscribing to changes.
+ */
 export class Observable<T> extends BaseObservable<T> implements IDisposableOwnerT<T & IDisposable> {
   // See module-level holder() function below for documentation.
   public static holder<T>(value: T & IDisposable): Observable<T> {
@@ -178,8 +181,8 @@ export class Observable<T> extends BaseObservable<T> implements IDisposableOwner
 
 /**
  * Creates a new Observable with the initial value of optValue if given or undefined if omitted.
- * @param {Object} optValue: The initial value to set.
- * @returns {Observable} The newly created observable.
+ * @param optValue - The initial value to set.
+ * @returns The newly created observable.
  */
 export function observable<T>(value: T): Observable<T> {
   return new Observable<T>(value);
@@ -187,16 +190,18 @@ export function observable<T>(value: T): Observable<T> {
 
 /**
  * Creates a new Observable with an initial disposable value owned by this observable, e.g.
- *
+ * ```
  *    const obs = obsHolder<D>(D.create(null, ...args));
+ * ```
  *
- * This is needed because using simply observable<D>(value) would not cause the observable to take
+ * This is needed because using simply `observable<D>(value)` would not cause the observable to take
  * ownership of value (i.e. to dispose it later). This function is a less hacky equivalent to:
- *
+ * ```
  *    const obs = observable<D>(null as any);
  *    D.create(obs, ...args);
+ * ```
  *
- * To allow nulls, use observable<D|null>(null); then the obsHolder() constructor is not needed.
+ * To allow nulls, use `observable<D|null>(null)`; then the obsHolder() constructor is not needed.
  */
 export function obsHolder<T>(value: T & IDisposable): Observable<T> {
   return Observable.holder<T>(value);

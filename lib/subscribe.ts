@@ -94,10 +94,9 @@ export class Subscription {
   public _getDepItem(): DepItem { return this._depItem; }
 
   /**
-   * @private
    * Gets called when the callback calls `use(obs)` for an observable. It creates a
    * subscription to `obs` if one doesn't yet exist.
-   * @param {Observable} obs: The observable being used as a dependency.
+   * @param obs - The observable being used as a dependency.
    */
   private _useDependency(_obs: ISubscribable) {
     const obs = ('_getDepItem' in _obs) ? _obs : fromKo(_obs);
@@ -112,7 +111,6 @@ export class Subscription {
   }
 
   /**
-   * @private
    * Calls the callback() with appropriate args, and updates subscriptions when it is done.
    * I.e. adds dynamic subscriptions created via `use(obs)`, and disposes those no longer used.
    */
@@ -140,10 +138,9 @@ export class Subscription {
   }
 
   /**
-   * @private
    * Subscribes this computed to another observable that it depends on.
-   * @param {Observable} obs: The observable to subscribe to.
-   * @returns {Listener} Listener object.
+   * @param obs - The observable to subscribe to.
+   * @returns Listener object.
    */
   private _subscribeTo(_obs: ISubscribable) {
     const obs = ('_getDepItem' in _obs) ? _obs : fromKo(_obs);
@@ -151,7 +148,6 @@ export class Subscription {
   }
 
   /**
-   * @private
    * Adds this item to the recompute queue.
    */
   private _enqueue() {
@@ -188,13 +184,13 @@ export function subscribe<A, B, C, D, E>(
 
 /**
  * Creates a new Subscription.
- * @param {Observable} ...observables: The initial params, of which there may be zero or more, are
+ * @param ...observables - The initial params, of which there may be zero or more, are
  *    observables on which this computed depends. When any of them change, the callback()
  *    will be called with the values of these observables as arguments.
- * @param {Function} callback: will be called with arguments (use, ...values), i.e. the
+ * @param callback - will be called with arguments (use, ...values), i.e. the
  *    `use` function and values for all of the ...observables that precede this argument.
  *    This callback is called immediately, and whenever any dependency changes.
- * @returns {Subscription} The new subscription which may be disposed to unsubscribe.
+ * @returns The new subscription which may be disposed to unsubscribe.
  */
 export function subscribe(...args: any[]): Subscription {
   const cb = args.pop();

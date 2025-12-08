@@ -162,7 +162,7 @@ export function clsElem(elem: Element, className: string, boolValue: boolean = t
  * Sets or toggles a css class className. If className is an observable, it will be replaced when
  * the observable changes. If a plain string, then an optional second boolean observable may be
  * given, which will toggle it.
- * ```
+ * ```ts
  * dom.cls('foo')                                // Sets className 'foo'
  * dom.cls('foo', isFoo);                        // Toggles 'foo' className according to observable.
  * dom.cls('foo', (use) => use(isFoo));          // Toggles 'foo' className according to observable.

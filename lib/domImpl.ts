@@ -179,7 +179,26 @@ function _updateWithArg<T extends Node>(elem: T, arg: DomArg<T>): void {
 }
 
 /**
- * Creates a DocumentFragment processing arguments the same way as the dom() function.
+ * Creates a `DocumentFragment`, processing arguments in the same way as the `dom()` function.
+ *
+ * It's rarely needed since an array of `dom()` arguments is treated the same as a
+ * `DocumentFragment` in most cases.
+ *
+ * @example
+ * ```ts
+ * dom.frag(dom('span', 'Hello'), ' good ', dom('div', 'world'))
+ * ```
+ * creates document fragment with `<span>Hello</span> good <div>world</div>`.
+ *
+ * @example
+ * These two examples are equivalent:
+ * ```ts
+ * const world1 = () => dom.frag(' good ', dom('div', 'world'));
+ * dom('div', 'Hello', world1);
+ *
+ * const world2 = () => [' good ', dom('div', 'world')];
+ * dom('div', 'Hello', world2);
+ * ```
  */
 export function frag(...args: IDomArgs<DocumentFragment>): DocumentFragment {
   const elem = G.document.createDocumentFragment();

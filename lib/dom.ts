@@ -1,28 +1,3 @@
-/**
- * dom.js provides a way to build a DOM tree easily.
- *
- * E.g.
- * ```
- *  import {dom} from 'grainjs';
- *  dom('a#link.c1.c2', {'href': url}, 'Hello ', dom('span', 'world'));
- * ```
- *    creates Node `<a id="link" class="c1 c2" href={{url}}Hello <span>world</span></a>`.
- *
- * ```
- *  dom.frag(dom('span', 'Hello'), ['blah', dom('div', 'world')])
- * ```
- *    creates document fragment with `<span>Hello</span>blah<div>world</div>`.
- *
- * DOM can also be created and modified inline during creation:
- * ```
- *  dom('a#id.c1',
- *      dom.cls('c2'), dom.attr('href', url),
- *      dom.text('Hello '), dom('span', dom.text('world')))
- * ```
- *    creates Node `<a id="link" class="c1 c2" href={{url}}Hello <span>world</span></a>`,
- *    identical to the first example above.
- */
-
 // We keep various dom-related functions organized in private modules, but they are exposed here.
 export * from './domImpl';
 export * from './domComponent';
@@ -43,6 +18,43 @@ import * as domevent from './domevent';
 
 import {dom as _dom, IDomArgs, TagElem, TagName} from './domImpl';
 
+/**
+ * `dom()` provides a way to build a DOM tree easily.
+ *
+ * The first argument is a string consisting of a lowercase tag name (e.g. `"div"`), with optional
+ * `"#foo"` suffix to add the ID `'foo'`, and zero or more `".bar"` suffixes to add a CSS class
+ * `'bar'`.
+ *
+ * The rest of the arguments are optional and may be any number, of these types:
+ *
+ * @param Nodes - become children of the created element
+ * @param strings - become text node children
+ * @param objects - Literal objects to set string attributes on the element.
+ *    E.g. `{title: "foo"}`.
+ * @param null - The values `null` and `undefined` values are ignored completely.
+ * @param Arrays - flattened with each item processed recursively
+ * @param functions - called with the element being built as the argument, for a chance to modify
+ *    the element as it's being created. Return values are processed recursively.
+ * @param functions - "dom methods" are a expressions such as `dom.attr('href', url)` or
+ *    `dom.hide(obs)`, which are special cases of the "functions" category.
+ *
+ * @example
+ * ```ts
+ * import {dom} from 'grainjs';
+ * dom('a', {href: url, className: 'myclass'}, 'Hello ', dom('strong', 'world'));
+ * ```
+ * creates HTML element `<a href={{url}} class="myclass">Hello <strong>world</strong></a>`.
+ *
+ * @example
+ * Here's an equivalent example using dom methods `dom.cls`, `dom.attr`, `dom.text`. In reality,
+ * these methods are useful with observable values rather than constant strings.
+ * ```ts
+ *  dom('a', dom.attr('href', url), dom.cls('myclass'),
+ *      dom.text('Hello '), dom('strong', dom.text('world')));
+ * ```
+ *
+ * @see [DOM & Observables](/basics).
+ */
 // We just want to re-export _domImpl.dom, but to allow adding methods to it in a typesafe way,
 // TypeScript wants us to declare a real function in the same file.
 export function dom<Tag extends TagName>(tagString: Tag, ...args: IDomArgs<TagElem<Tag>>): TagElem<Tag> {
@@ -67,9 +79,7 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const attrs           = _domMethods.attrs;
   export const attrElem        = _domMethods.attrElem;
   export const attr            = _domMethods.attr;
-  /** {@inheritDoc boolAttrElem} */
   export const boolAttrElem    = _domMethods.boolAttrElem;
-  /** {@inheritDoc boolAttr} */
   export const boolAttr        = _domMethods.boolAttr;
   export const textElem        = _domMethods.textElem;
   export const text            = _domMethods.text;

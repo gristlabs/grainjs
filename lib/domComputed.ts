@@ -44,25 +44,30 @@ export function replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomCo
  * changes, previous content is disposed and removed, and new content added in its place.
  *
  * The following are roughly equivalent:
- *  (A) `domComputed(nlinesObs, nlines => nlines > 1 ? dom('textarea') : dom('input'))`
- *  (B) `domComputed(use => use(nlinesObs) > 1 ? dom('textarea') : dom('input'))`
- *  (C) `domComputed(use => use(nlinesObs) > 1, isTall => isTall ? dom('textarea') : dom('input'))`
+ * ```ts
+ * // (A)
+ * domComputed(nlinesObs, nlines => nlines > 1 ? dom('textarea') : dom('input'))
+ * // (B)
+ * domComputed(use => use(nlinesObs) > 1 ? dom('textarea') : dom('input'))
+ * // (C)
+ * domComputed(use => use(nlinesObs) > 1, isTall => isTall ? dom('textarea') : dom('input'))
+ * ```
  *
  * Here, (C) is best. Both (A) and (B) would rebuild DOM for any change in nlinesObs, but (C)
  * encapsulates meaningful changes in the observable, and only recreates DOM when necessary.
  *
  * Syntax (B), without the second argument, may be useful in cases of DOM depending on several
  * observables, e.g.
- * ```
- *    domComputed(use => use(readonlyObs) ? dom('div') :
- *                          (use(nlinesObs) > 1 ? dom('textarea') : dom('input')))
+ * ```ts
+ * domComputed(use => use(readonlyObs) ? dom('div') :
+ *     (use(nlinesObs) > 1 ? dom('textarea') : dom('input')))
  * ```
  *
- * If the argument is not an observable, domComputed() may but should not be used. The following
+ * If the argument is not an observable, `domComputed()` may but should not be used. The following
  * are equivalent:
- * ```
- *    dom(..., domComputed(listValue, list => `Have ${list.length} items`), ...);
- *    dom(..., `Have ${listValue.length} items`, ...);
+ * ```ts
+ * dom(..., domComputed(listValue, list => `Have ${list.length} items`), ...);
+ * dom(..., `Have ${listValue.length} items`, ...);
  * ```
  *
  * In this case, the latter is preferred as the clearly simpler one.
@@ -116,13 +121,13 @@ function identity<T>(arg: T): T { return arg; }
  * Note that if the observable changes between different truthy values, contentFunc gets called
  * for each value, and previous content gets destroyed. To consider all truthy values the same,
  * use an observable that returns a proper boolean, e.g.
- * ```
+ * ```ts
  *    dom.maybe(use => Boolean(use(fooObs)), () => dom(...));
  * ```
  *
  * As with domComputed(), dom.maybe() may but should not be used when the argument is not an
  * observable or function. The following are equivalent:
- * ```
+ * ```ts
  *    dom(..., dom.maybe(myValue, () => dom(...)));
  *    dom(..., myValue ? dom(...) : null);
  * ```
@@ -141,8 +146,9 @@ export function maybe<T>(boolValueObs: BindableValue<T>,
  * Like maybe(), but the callback gets an additional first argument, owner, which may be used to
  * take ownership of objects created by the callback. These will be disposed before each new call
  * to the callback, and when the condition becomes false or the containing DOM gets disposed.
- *
- *    `maybeOwned(showEditor, (owner) => Editor.create(owner).renderSomething())`
+ * ```ts
+ *    maybeOwned(showEditor, (owner) => Editor.create(owner).renderSomething())
+ * ```
  */
 export function maybeOwned<T>(boolValueObs: BindableValue<T>,
     contentFunc: (owner: MultiHolder, val: NonNullable<T>) => DomContents): DomComputed {

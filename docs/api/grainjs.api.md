@@ -159,7 +159,7 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
 // @internal (undocumented)
 export function _disposeNode(node: Node): void;
 
-// @public (undocumented)
+// @public
 export function dom<Tag extends TagName>(tagString: Tag, ...args: IDomArgs<TagElem<Tag>>): TagElem<Tag>;
 
 // @public (undocumented)
@@ -198,8 +198,10 @@ export namespace dom {
     attrElem: typeof _domMethods.attrElem;
     const // (undocumented)
     attr: typeof _domMethods.attr;
-    const boolAttrElem: typeof _domMethods.boolAttrElem;
-    const boolAttr: typeof _domMethods.boolAttr;
+    const // (undocumented)
+    boolAttrElem: typeof _domMethods.boolAttrElem;
+    const // (undocumented)
+    boolAttr: typeof _domMethods.boolAttr;
     const // (undocumented)
     textElem: typeof _domMethods.textElem;
     const // (undocumented)
@@ -541,7 +543,7 @@ export interface ISubscribableObs {
 // @public (undocumented)
 export type KeyEventType = 'keypress' | 'keyup' | 'keydown';
 
-// @public (undocumented)
+// @public
 export function keyframes(styles: string): string;
 
 // @public
@@ -760,7 +762,7 @@ export function showElem(elem: HTMLElement, boolValue: boolean): void;
 // @public (undocumented)
 export function style(property: string, valueObs: BindableValue<string>): DomElementMethod;
 
-// @public (undocumented)
+// @public
 export function styled<Tag extends TagName>(tag: Tag, styles: string): DomCreateFunc<TagElem<Tag>> & IClsName;
 
 // @public (undocumented)

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress';
+import multiMdTable from 'markdown-it-multimd-table';
 
 export default defineConfig({
   title: 'GrainJS',
@@ -30,5 +31,8 @@ export default defineConfig({
         ]
       }
     ]
+  },
+  markdown: {
+    config: (md) => { md.use(multiMdTable, {multiline: true, headerless: true}); }
   }
 });

@@ -1,73 +1,3 @@
-/**
- * In-code styling for DOM components, inspired by Reacts Styled Components.
- *
- * Usage:
- *    const title = styled('h1', `
- *      font-size: 1.5em;
- *      text-align: center;
- *      color: palevioletred;
- *    `);
- *
- *    const wrapper = styled('section', `
- *      padding: 4em;
- *      background: papayawhip;
- *    `);
- *
- *    wrapper(title('Hello world'))
- *
- * This generates class names for title and wrapper, adds the styles to the document on first use,
- * and the result is equivalent to:
- *
- *    dom(`section.${wrapper.className}`, dom(`h1.${title.className}`, 'Hello world'));
- *
- * Calls to styled() should happen at the top level, at import time, in order to register all
- * styles upfront. Actual work happens the first time a style is needed to create an element.
- * Calling styled() elsewhere than at top level is wasteful and bad for performance.
- *
- * You may create a style that modifies an existing styled() or other component, e.g.
- *
- *    const title2 = styled(title, `font-size: 1rem; color: red;`);
- *
- * Calling title2('Foo') becomes equivalent to dom(`h1.${title.className}.${title2.className}`).
- *
- * Styles may incorporate other related styles by nesting them under the main one as follows:
- *
- *     const myButton = styled('button', `
- *       border-radius: 0.5rem;
- *       border: 1px solid grey;
- *       font-size: 1rem;
- *
- *       &:active {
- *         background: lightblue;
- *       }
- *       &-small {
- *         font-size: 0.6rem;
- *       }
- *     `);
- *
- * In nested styles, ampersand (&) gets replaced with the generated .className of the main element.
- *
- * The resulting styled component provides a .cls() helper to simplify using prefixed classes. It
- * behaves as dom.cls(), but prefixes the class names with the generated className of the main
- * element. E.g. for the example above,
- *
- *      myButton(myButton.cls('-small'), 'Test')
- *
- * creates a button with both the myButton style above, and the style specified under "&-small".
- *
- * Animations with @keyframes may be created with a unique name by using the keyframes() helper:
- *
- *    const rotate360 = keyframes(`
- *      from { transform: rotate(0deg); }
- *      to { transform: rotate(360deg); }
- *    `);
- *
- *    const Rotate = styled('div', `
- *      display: inline-block;
- *      animation: ${rotate360} 2s linear infinite;
- *    `);
- */
-
 // Use the browser globals in a way that allows replacing them with mocks in tests.
 import {G} from './browserGlobals';
 import {dom, IDomArgs, TagElem, TagName} from './domImpl';
@@ -82,6 +12,69 @@ export interface IClsName {
 
 export type DomCreateFunc<R, Args extends IDomArgs<R> = IDomArgs<R>> = (...args: Args) => R;
 
+/**
+ * In-code styling for DOM components, inspired by Reacts Styled Components.
+ *
+ * Usage:
+ * ```ts
+ * const title = styled('h1', `
+ *   font-size: 1.5em;
+ *   text-align: center;
+ *   color: palevioletred;
+ * `);
+ *
+ * const wrapper = styled('section', `
+ *   padding: 4em;
+ *   background: papayawhip;
+ * `);
+ *
+ * wrapper(title('Hello world'))
+ * ```
+ *
+ * This generates class names for title and wrapper, adds the styles to the document on first use,
+ * and the result is equivalent to:
+ * ```ts
+ * dom(`section.${wrapper.className}`, dom(`h1.${title.className}`, 'Hello world'));
+ * ```
+ *
+ * Calls to styled() should happen at the top level, at import time, in order to register all
+ * styles upfront. Actual work happens the first time a style is needed to create an element.
+ * Calling styled() elsewhere than at top level is wasteful and bad for performance.
+ *
+ * You may create a style that modifies an existing styled() or other component, e.g.
+ * ```ts
+ * const title2 = styled(title, `font-size: 1rem; color: red;`);
+ * ```
+ *
+ * Calling title2('Foo') becomes equivalent to dom(`h1.${title.className}.${title2.className}`).
+ *
+ * Styles may incorporate other related styles by nesting them under the main one as follows:
+ * ```ts
+ * const myButton = styled('button', `
+ *   border-radius: 0.5rem;
+ *   border: 1px solid grey;
+ *   font-size: 1rem;
+ *
+ *   &:active {
+ *     background: lightblue;
+ *   }
+ *   &-small {
+ *     font-size: 0.6rem;
+ *   }
+ * `);
+ * ```
+ *
+ * In nested styles, ampersand (&) gets replaced with the generated .className of the main element.
+ *
+ * The resulting styled component provides a .cls() helper to simplify using prefixed classes. It
+ * behaves as dom.cls(), but prefixes the class names with the generated className of the main
+ * element. E.g. for the example above,
+ * ```ts
+ * myButton(myButton.cls('-small'), 'Test')
+ * ```
+ *
+ * creates a button with both the myButton style above, and the style specified under "&-small".
+ */
 // See module documentation for details.
 export function styled<Tag extends TagName>(tag: Tag, styles: string): DomCreateFunc<TagElem<Tag>> & IClsName;
 export function styled<Args extends any[], R extends Element>(
@@ -102,8 +95,24 @@ export function styled(creator: any, styles: string): IClsName {
   });
 }
 
-// Keyframes produces simply a string with the generated name. Note that these does not support
-// nesting or ampersand (&) handling, since these would be difficult and are entirely unneeded.
+/**
+ * Animations with `@keyframes` may be created with a unique name by using the keyframes() helper:
+ * ```ts
+ * const rotate360 = keyframes(`
+ *   from { transform: rotate(0deg); }
+ *   to { transform: rotate(360deg); }
+ * `);
+ *
+ * const Rotate = styled('div', `
+ *   display: inline-block;
+ *   animation: ${rotate360} 2s linear infinite;
+ * `);
+ * ```
+ *
+ * This function returns simply a string with the generated name. Note that keyframes do not
+ * support nesting or ampersand (&) handling, like `styled()` does, since these would be difficult
+ * and are entirely unneeded.
+ */
 export function keyframes(styles: string): string {
   return (new KeyframePiece(styles)).className;
 }

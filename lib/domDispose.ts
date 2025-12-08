@@ -29,6 +29,7 @@ function _walkDom(elem: Node, visitFunc: INodeFunc): void {
 }
 
 // Internal helper to run all disposers for a single element.
+/** @internal */
 export function _disposeNode(node: Node): void {
   let disposer = _disposeMap.get(node);
   if (disposer) {

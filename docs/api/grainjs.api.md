@@ -4,7 +4,7 @@
 
 ```ts
 
-// @public (undocumented)
+// @public
 export function attr(attrName: string, attrValueObs: BindableValue<string | null | undefined>): DomElementMethod;
 
 // @public
@@ -52,7 +52,7 @@ export function bindBU<R>(func: (...args: any[]) => R, b: any[]): (arg: any) => 
 // @public
 export function bindUB<U, R>(func: (arg: U, ...args: any[]) => R, b: any[]): (arg: U) => R;
 
-// @public (undocumented)
+// @public
 export function boolAttr(attrName: string, boolValueObs: BindableValue<boolean>): DomElementMethod;
 
 // @public
@@ -156,7 +156,7 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
     wipeOnDispose(): void;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export function _disposeNode(node: Node): void;
 
 // @public (undocumented)
@@ -198,10 +198,8 @@ export namespace dom {
     attrElem: typeof _domMethods.attrElem;
     const // (undocumented)
     attr: typeof _domMethods.attr;
-    const // (undocumented)
-    boolAttrElem: typeof _domMethods.boolAttrElem;
-    const // (undocumented)
-    boolAttr: typeof _domMethods.boolAttr;
+    const boolAttrElem: typeof _domMethods.boolAttrElem;
+    const boolAttr: typeof _domMethods.boolAttr;
     const // (undocumented)
     textElem: typeof _domMethods.textElem;
     const // (undocumented)

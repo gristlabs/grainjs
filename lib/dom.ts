@@ -67,7 +67,9 @@ export namespace dom {      // tslint:disable-line:no-namespace
   export const attrs           = _domMethods.attrs;
   export const attrElem        = _domMethods.attrElem;
   export const attr            = _domMethods.attr;
+  /** {@inheritDoc boolAttrElem} */
   export const boolAttrElem    = _domMethods.boolAttrElem;
+  /** {@inheritDoc boolAttr} */
   export const boolAttr        = _domMethods.boolAttr;
   export const textElem        = _domMethods.textElem;
   export const text            = _domMethods.text;

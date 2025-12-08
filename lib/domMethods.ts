@@ -43,6 +43,16 @@ export function attrElem(elem: Element, attrName: string, attrValue: string|null
     elem.setAttribute(attrName, attrValue);
   }
 }
+
+/**
+ * Sets an attribute of a DOM element to the given value. Removes the attribute when the value is
+ * null or undefined.
+ *
+ * @example
+ * ```ts
+ * dom('a', dom.attr('href', urlObs))
+ * ```
+ */
 export function attr(attrName: string, attrValueObs: BindableValue<string|null|undefined>): DomElementMethod {
   return (elem) => _subscribe(elem, attrValueObs, (val) => attrElem(elem, attrName, val));
 }
@@ -50,7 +60,6 @@ export function attr(attrName: string, attrValueObs: BindableValue<string|null|u
 /**
  * Sets or removes a boolean attribute of a DOM element. According to the spec, empty string is a
  * valid true value for the attribute, and the false value is indicated by the attribute's absence.
- * The `boolAttr()` variant takes no `elem`, and `boolValue` may be an observable or function.
  * @param elem - The element to update.
  * @param attrName - The name of the attribute to bind, e.g. 'checked'.
  * @param boolValue - Boolean value whether to set or unset the attribute.
@@ -58,6 +67,11 @@ export function attr(attrName: string, attrValueObs: BindableValue<string|null|u
 export function boolAttrElem(elem: Element, attrName: string, boolValue: boolean): void {
   attrElem(elem, attrName, boolValue ? '' : null);
 }
+/**
+ * Dom-method that sets or removes a boolean attribute of a DOM element.
+ * @param attrName - The name of the attribute to bind, e.g. 'checked'.
+ * @param boolValueObs - Value, observable, or function for a whether to set or unset the attribute.
+ */
 export function boolAttr(attrName: string, boolValueObs: BindableValue<boolean>): DomElementMethod {
   return (elem) => _subscribe(elem, boolValueObs, (val) => boolAttrElem(elem, attrName, val));
 }

@@ -1,0 +1,8 @@
+.source-link {
+  margin-top: -1rem;
+  font-size: smaller;
+  text-align: end;
+}
+.source-link > a {
+  color: var(--vp-code-lang-color);
+}

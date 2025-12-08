@@ -24,6 +24,21 @@ attrElem(elem: Element, attrName: string, attrValue: string | null | undefined):
 
 <div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
+Sets an attribute of a DOM element to the given value. Removes the attribute when the value is null or undefined. The `attr()` variant takes no `elem` argument, and `attrValue` may be an observable or function.
+
+
+<table><thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>elem</code></td><td>The element to update.
+</td></tr>
+<tr><td><code>attrName</code></td><td>The name of the attribute to bind, e.g. 'href'.
+</td></tr>
+<tr><td><code>attrValue</code></td><td>The string value, or null or undefined to remove the attribute.
+</td></tr>
+</tbody></table>
+
 ## attrs
 ```ts
 attrs(attrsObj: IAttrObj): DomElementMethod;
@@ -37,6 +52,17 @@ attrsElem(elem: Element, attrsObj: IAttrObj): void;
 ```
 
 <div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+
+Sets multiple attributes of a DOM element. The `attrs()` variant takes no `elem` argument. Null and undefined values are omitted, and booleans are either omitted or set to empty string.
+
+
+<table><thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>attrsObj</code></td><td>Object mapping attribute names to attribute values.
+</td></tr>
+</tbody></table>
 
 ## autoDispose
 ```ts

@@ -20,7 +20,7 @@
     "prepack": "npm run build && npm test",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:build-api": "npm run build && api-extractor run --local --verbose",
+    "docs:build-api": "tsc -p tsconfig/tsconfig.es2015.cjs.json && api-extractor run --local --verbose && node scripts/generate-api-md.js",
     "docs:preview": "vitepress preview docs"
   },
   "keywords": [

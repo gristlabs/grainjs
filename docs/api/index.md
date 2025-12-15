@@ -10,8 +10,8 @@ containing that type, or a "use callback" to create a `Computed` from
 Note that all the bindings are one-way: if the supplied value is an observable, the method will
 listen to it, and update something about DOM when that observable changes.
 
-### dom
-```ts
+### dom {#dom}
+```ts refs=TagName=grainjs!TagName:type|IDomArgs=grainjs!IDomArgs:interface|TagElem=grainjs!TagElem:type|TagElem=grainjs!TagElem:type
 dom<Tag extends TagName>(tagString: Tag, ...args: IDomArgs<TagElem<Tag>>): TagElem<Tag>;
 ```
 
@@ -47,7 +47,7 @@ creates HTML element `<a href={{url}} class="myclass">Hello <strong>world</stron
 
 ::: info Example
 
-Here's an equivalent example using dom methods `dom.cls`, `dom.attr`, `dom.text`. In reality, these methods are useful with observable values rather than constant strings.
+Here's an example equivalent to the one above, using dom methods `dom.cls`, `dom.attr`, `dom.text`. In reality, these methods are useful with observable values rather than constant strings.
 ```ts
  dom('a', dom.attr('href', url), dom.cls('myclass'),
      dom.text('Hello '), dom('strong', dom.text('world')));
@@ -62,8 +62,8 @@ Here's an equivalent example using dom methods `dom.cls`, `dom.attr`, `dom.text`
 
 :::
 
-### dom.attr
-```ts
+### dom.attr {#attr}
+```ts refs=BindableValue=grainjs!BindableValue:type|DomElementMethod=grainjs!DomElementMethod:type
 attr(attrName: string, attrValueObs: BindableValue<string | null | undefined>): DomElementMethod;
 ```
 
@@ -80,8 +80,8 @@ dom('a', dom.attr('href', urlObs))
 
 :::
 
-### dom.attrElem
-```ts
+### dom.attrElem {#attrElem}
+```ts refs=Element=!Element:interface
 attrElem(elem: Element, attrName: string, attrValue: string | null | undefined): void;
 ```
 
@@ -96,8 +96,8 @@ Sets an attribute of a DOM element to the given value. Removes the attribute whe
 | `attrValue` | The string value, or null or undefined to remove the attribute. |
 
 
-### dom.attrsElem
-```ts
+### dom.attrsElem {#attrsElem}
+```ts refs=Element=!Element:interface|IAttrObj=grainjs!IAttrObj:interface
 attrsElem(elem: Element, attrsObj: IAttrObj): void;
 ```
 
@@ -110,23 +110,8 @@ Sets multiple attributes of a DOM element. The `attrs()` variant takes no `elem`
 | `attrsObj` | Object mapping attribute names to attribute values. |
 
 
-### dom.autoDisposeElem
-```ts
-autoDisposeElem(elem: Node, disposable: IDisposable | null): void;
-```
-
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
-
-Make the given element own the disposable, and call its dispose method when domDispose() is called on the element or any of its parents.
-
-| Parameter | Description |
-| --- | --- |
-| `elem` | The element to own the disposable. |
-| `disposable` | Anything with a .dispose() method. |
-
-
-### dom.boolAttr
-```ts
+### dom.boolAttr {#boolAttr}
+```ts refs=BindableValue=grainjs!BindableValue:type|DomElementMethod=grainjs!DomElementMethod:type
 boolAttr(attrName: string, boolValueObs: BindableValue<boolean>): DomElementMethod;
 ```
 
@@ -140,8 +125,8 @@ Dom-method that sets or removes a boolean attribute of a DOM element.
 | `boolValueObs` | Value, observable, or function for a whether to set or unset the attribute. |
 
 
-### dom.boolAttrElem
-```ts
+### dom.boolAttrElem {#boolAttrElem}
+```ts refs=Element=!Element:interface
 boolAttrElem(elem: Element, attrName: string, boolValue: boolean): void;
 ```
 
@@ -156,8 +141,8 @@ Sets or removes a boolean attribute of a DOM element. According to the spec, emp
 | `boolValue` | Boolean value whether to set or unset the attribute. |
 
 
-### dom.cls
-```ts
+### dom.cls {#cls}
+```ts refs=BindableValue=grainjs!BindableValue:type|DomElementMethod=grainjs!DomElementMethod:type|BindableValue=grainjs!BindableValue:type|DomElementMethod=grainjs!DomElementMethod:type
 cls(className: string, boolValue?: BindableValue<boolean>): DomElementMethod;
 cls(className: BindableValue<string>): DomElementMethod;
 ```
@@ -174,8 +159,8 @@ dom.cls((use) => `prefix-${use(fooClass)}`);  // Sets className to prefix- plus 
 ```
 
 
-### dom.clsElem
-```ts
+### dom.clsElem {#clsElem}
+```ts refs=Element=!Element:interface
 clsElem(elem: Element, className: string, boolValue?: boolean): void;
 ```
 
@@ -183,8 +168,8 @@ clsElem(elem: Element, className: string, boolValue?: boolean): void;
 
 Sets or toggles the given css class className.
 
-### dom.clsPrefix
-```ts
+### dom.clsPrefix {#clsPrefix}
+```ts refs=BindableValue=grainjs!BindableValue:type|DomElementMethod=grainjs!DomElementMethod:type|BindableValue=grainjs!BindableValue:type|DomElementMethod=grainjs!DomElementMethod:type
 clsPrefix(prefix: string, className: string, boolValue?: BindableValue<boolean>): DomElementMethod;
 clsPrefix(prefix: string, className: BindableValue<string>): DomElementMethod;
 ```
@@ -193,8 +178,8 @@ clsPrefix(prefix: string, className: BindableValue<string>): DomElementMethod;
 
 Just like cls() but prepends a prefix to className, including when it is an observable.
 
-### dom.dataElem
-```ts
+### dom.dataElem {#dataElem}
+```ts refs=Node=!Node:interface
 dataElem(elem: Node, key: string, value: any): void;
 ```
 
@@ -209,8 +194,8 @@ Associate arbitrary data with a DOM element. The `data()` variant takes no `elem
 | `value` | Arbitrary value to associate with elem. |
 
 
-### dom.domComputed
-```ts
+### dom.domComputed {#domComputed}
+```ts refs=BindableValue=grainjs!BindableValue:type|Exclude=!Exclude:type|DomArg=grainjs!DomArg:type|DomMethod=grainjs!DomMethod:type|DomComputed=grainjs!DomComputed:type|BindableValue=grainjs!BindableValue:type|DomContents=grainjs!DomContents:type|DomComputed=grainjs!DomComputed:type
 domComputed(valueObs: BindableValue<Exclude<DomArg, DomMethod>>): DomComputed;
 domComputed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomContents): DomComputed;
 ```
@@ -253,8 +238,8 @@ In this case, the latter is preferred as the clearly simpler one.
 | `contentFunc` | Function called with the result of valueObs as the input, and returning DOM as output. If omitted, defaults to the identity function. |
 
 
-### dom.domComputedOwned
-```ts
+### dom.domComputedOwned {#domComputedOwned}
+```ts refs=BindableValue=grainjs!BindableValue:type|MultiHolder=grainjs!MultiHolder:class|DomContents=grainjs!DomContents:type|DomComputed=grainjs!DomComputed:type
 domComputedOwned<T>(valueObs: BindableValue<T>, contentFunc: (owner: MultiHolder, val: T) => DomContents): DomComputed;
 ```
 
@@ -264,24 +249,8 @@ Like domComputed(), but the callback gets an additional first argument, owner, w
 
 `domComputedOwned(valueObs, (owner, value) => Editor.create(owner, value).renderSomething())`
 
-### dom.domDispose
-```ts
-domDispose(node: Node): void;
-```
-
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
-
-Run disposers associated with any descendant of elem or with elem itself. Disposers get associated with elements using dom.onDispose(). Descendants are processed first.
-
-It is automatically called if one of the function arguments to dom() throws an exception during element creation. This way any onDispose() handlers set on the unfinished element get called.
-
-| Parameter | Description |
-| --- | --- |
-| `node` | The element to run disposers on. |
-
-
-### dom.find
-```ts
+### dom.find {#find}
+```ts refs=Element=!Element:interface
 find(selector: string): Element | null;
 ```
 
@@ -289,8 +258,8 @@ find(selector: string): Element | null;
 
 Find the first element matching a selector; just an abbreviation for document.querySelector().
 
-### dom.findAll
-```ts
+### dom.findAll {#findAll}
+```ts refs=NodeListOf=!NodeListOf:interface|Element=!Element:interface
 findAll(selector: string): NodeListOf<Element>;
 ```
 
@@ -298,8 +267,8 @@ findAll(selector: string): NodeListOf<Element>;
 
 Find all elements matching a selector; just an abbreviation for document.querySelectorAll().
 
-### dom.forEach
-```ts
+### dom.forEach {#forEach}
+```ts refs=MaybeObsArray=grainjs!MaybeObsArray:type|Node=!Node:interface|DomContents=grainjs!DomContents:type
 forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T) => Node | null): DomContents;
 ```
 
@@ -315,8 +284,8 @@ Note that itemCreateFunc() does not receive an index: an index would only be cor
 
 If you'd like to map the DOM node back to its source item, use dom.data() and dom.getData() in itemCreateFunc().
 
-### dom.frag
-```ts
+### dom.frag {#frag}
+```ts refs=IDomArgs=grainjs!IDomArgs:interface|DocumentFragment=!DocumentFragment:interface|DocumentFragment=!DocumentFragment:interface
 frag(...args: IDomArgs<DocumentFragment>): DocumentFragment;
 ```
 
@@ -350,8 +319,8 @@ dom('div', 'Hello', world2);
 
 :::
 
-### dom.hideElem
-```ts
+### dom.hideElem {#hideElem}
+```ts refs=HTMLElement=!HTMLElement:interface
 hideElem(elem: HTMLElement, boolValue: boolean): void;
 ```
 
@@ -365,8 +334,8 @@ The opposite of show, hiding the element when boolValue is true. The `hide()` va
 | `boolValue` | True to hide the element, false to show it. |
 
 
-### dom.maybe
-```ts
+### dom.maybe {#maybe}
+```ts refs=BindableValue=grainjs!BindableValue:type|NonNullable=!NonNullable:type|DomContents=grainjs!DomContents:type|DomComputed=grainjs!DomComputed:type
 maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: NonNullable<T>) => DomContents): DomComputed;
 ```
 
@@ -393,8 +362,8 @@ The latter is preferred for being simpler.
 | `contentFunc` | Called with the result of boolValueObs when it is truthy. Should return DOM. |
 
 
-### dom.maybeOwned
-```ts
+### dom.maybeOwned {#maybeOwned}
+```ts refs=BindableValue=grainjs!BindableValue:type|MultiHolder=grainjs!MultiHolder:class|NonNullable=!NonNullable:type|DomContents=grainjs!DomContents:type|DomComputed=grainjs!DomComputed:type
 maybeOwned<T>(boolValueObs: BindableValue<T>, contentFunc: (owner: MultiHolder, val: NonNullable<T>) => DomContents): DomComputed;
 ```
 
@@ -406,23 +375,8 @@ Like maybe(), but the callback gets an additional first argument, owner, which m
 ```
 
 
-### dom.onDisposeElem
-```ts
-onDisposeElem(elem: Node, disposerFunc: INodeFunc): void;
-```
-
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
-
-Associate a disposerFunc with a DOM element. It will be called when the element is disposed using domDispose() on it or any of its parents. If onDispose is called multiple times, all disposerFuncs will be called in reverse order.
-
-| Parameter | Description |
-| --- | --- |
-| `elem` | The element to associate the disposer with. |
-| `disposerFunc` | Will be called when domDispose() is called on the element or its ancestor. Note that it is not necessary usually to dispose event listeners attached to an element (e.g. with dom.on()) since their lifetime is naturally limited to the lifetime of the element. |
-
-
-### dom.onElem
-```ts
+### dom.onElem {#onElem}
+```ts refs=EventName=grainjs!EventName:type|EventTarget=!EventTarget:interface|EventCB=grainjs!EventCB:type|EventType=grainjs!EventType:type|IDisposable=grainjs!IDisposable:interface
 onElem<E extends EventName | string, T extends EventTarget>(elem: T, eventType: E, callback: EventCB<EventType<E>, T>, { useCapture }?: {
     useCapture?: boolean | undefined;
 }): IDisposable;
@@ -446,8 +400,8 @@ Listen to a DOM event. The `on()` variant takes no `elem` argument, and may be u
 
 :::
 
-### dom.onKeyElem
-```ts
+### dom.onKeyElem {#onKeyElem}
+```ts refs=HTMLElement=!HTMLElement:interface|KeyEventType=grainjs!KeyEventType:type|IKeyHandlers=grainjs!IKeyHandlers:interface|IDisposable=grainjs!IDisposable:interface
 onKeyElem<T extends HTMLElement>(elem: T, evType: KeyEventType, keyHandlers: IKeyHandlers<T>): IDisposable;
 ```
 
@@ -473,8 +427,8 @@ For example:
 ```
 
 
-### dom.onMatchElem
-```ts
+### dom.onMatchElem {#onMatchElem}
+```ts refs=EventTarget=!EventTarget:interface|EventCB=grainjs!EventCB:type|IDisposable=grainjs!IDisposable:interface
 onMatchElem(elem: EventTarget, selector: string, eventType: string, callback: EventCB, { useCapture }?: {
     useCapture?: boolean | undefined;
 }): IDisposable;
@@ -499,8 +453,8 @@ Listen to a DOM event on descendants of the given elem matching the given select
 
 :::
 
-### dom.propElem
-```ts
+### dom.propElem {#propElem}
+```ts refs=Node=!Node:interface
 propElem<T>(elem: Node, property: string, value: T): void;
 ```
 
@@ -515,8 +469,8 @@ Sets the property of a DOM element to the given value. The `prop()` variant take
 | `value` | The value for the property. |
 
 
-### dom.replaceContent
-```ts
+### dom.replaceContent {#replaceContent}
+```ts refs=Node=!Node:interface|Node=!Node:interface|DomContents=grainjs!DomContents:type
 replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomContents): void;
 ```
 
@@ -524,8 +478,8 @@ replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomContents): void;
 
 Replaces the content between nodeBefore and nodeAfter, which should be two siblings within the same parent node. New content may be anything allowed as an argument to dom(), including null to insert nothing. Runs disposers, if any, on all removed content.
 
-### dom.showElem
-```ts
+### dom.showElem {#showElem}
+```ts refs=HTMLElement=!HTMLElement:interface
 showElem(elem: HTMLElement, boolValue: boolean): void;
 ```
 
@@ -539,8 +493,8 @@ Shows or hides the element depending on a boolean value. Note that the element m
 | `boolValue` | True to show the element, false to hide it. |
 
 
-### dom.styleElem
-```ts
+### dom.styleElem {#styleElem}
+```ts refs=Element=!Element:interface
 styleElem(elem: Element, property: string, value: string): void;
 ```
 
@@ -555,8 +509,8 @@ Sets a style property of a DOM element to the given value. The `style()` variant
 | `value` | The value for the property. |
 
 
-### dom.svg
-```ts
+### dom.svg {#svg}
+```ts refs=IDomArgs=grainjs!IDomArgs:interface|SVGElement=!SVGElement:interface|SVGElement=!SVGElement:interface
 svg(tagString: string, ...args: IDomArgs<SVGElement>): SVGElement;
 ```
 
@@ -564,8 +518,8 @@ svg(tagString: string, ...args: IDomArgs<SVGElement>): SVGElement;
 
 svg('tag#id.class1.class2', ...args) Same as dom(...), but creates an SVG element.
 
-### dom.textElem
-```ts
+### dom.textElem {#textElem}
+```ts refs=Node=!Node:interface
 textElem(elem: Node, value: string): void;
 ```
 
@@ -579,8 +533,8 @@ Adds a text node to the element. The `text()` variant takes no `elem`, and `valu
 | `value` | The text value to add. |
 
 
-### dom.update
-```ts
+### dom.update {#update}
+```ts refs=Node=!Node:interface|IDomArgs=grainjs!IDomArgs:interface
 update<T extends Node, Args extends IDomArgs<T>>(elem: T, ...args: Args): T;
 ```
 
@@ -588,17 +542,8 @@ update<T extends Node, Args extends IDomArgs<T>>(elem: T, ...args: Args): T;
 
 Update an element with any number of arguments, as documented in dom().
 
-### domDisposeHooks
-```ts
-domDisposeHooks: IDomDisposeHooks
-```
-
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
-
-Support for extending dom disposal. This is very low-level, and needs utmost care. Any disposers set should take care of calling the original versions of the disposers.
-
-### keyframes
-```ts
+### keyframes {#keyframes}
+```ts refs=
 keyframes(styles: string): string;
 ```
 
@@ -619,8 +564,8 @@ const Rotate = styled('div', `
 
 This function returns simply a string with the generated name. Note that keyframes do not support nesting or ampersand (&) handling, like `styled()` does, since these would be difficult and are entirely unneeded.
 
-### makeTestId
-```ts
+### makeTestId {#makeTestId}
+```ts refs=TestId=grainjs!TestId:type
 makeTestId(prefix: string): TestId;
 ```
 
@@ -628,8 +573,8 @@ makeTestId(prefix: string): TestId;
 
 See documentation for TestId above.
 
-### noTestId
-```ts
+### noTestId {#noTestId}
+```ts refs=TestId=grainjs!TestId:type
 noTestId: TestId
 ```
 
@@ -637,8 +582,8 @@ noTestId: TestId
 
 See documentation for TestId above.
 
-### styled
-```ts
+### styled {#styled}
+```ts refs=TagName=grainjs!TagName:type|DomCreateFunc=grainjs!DomCreateFunc:type|TagElem=grainjs!TagElem:type|IClsName=grainjs!IClsName:interface|Element=!Element:interface|creator=grainjs!~creator:var|IClsName=grainjs!IClsName:interface
 styled<Tag extends TagName>(tag: Tag, styles: string): DomCreateFunc<TagElem<Tag>> & IClsName;
 styled<Args extends any[], R extends Element>(creator: (...args: Args) => R, styles: string): typeof creator & IClsName;
 ```
@@ -702,8 +647,8 @@ myButton(myButton.cls('-small'), 'Test')
 
 creates a button with both the myButton style above, and the style specified under "&-small".
 
-### TestId
-```ts
+### TestId {#TestId}
+```ts refs=DomElementMethod=grainjs!DomElementMethod:type
 type TestId = (name: string) => DomElementMethod | null;
 ```
 
@@ -740,8 +685,8 @@ When myComponent() is created with testId argument omitted, the testId() calls a
 
 See [Disposables](dispose) for background.
 
-### Disposable
-```ts
+### Disposable {#Disposable}
+```ts refs=IDisposable=grainjs!IDisposable:interface|IDisposableOwner=grainjs!IDisposableOwner:interface
 abstract class Disposable implements IDisposable, IDisposableOwner
 ```
 
@@ -749,14 +694,14 @@ abstract class Disposable implements IDisposable, IDisposableOwner
 
 Base class for disposable objects that can own other objects. See the module documentation.
 
-#### autoDispose
-```ts
+### Disposable#autoDispose {#Disposable#autoDispose}
+```ts refs=IDisposable=grainjs!IDisposable:interface
 autoDispose<T extends IDisposable>(obj: T): T;
 ```
 Take ownership of obj, and dispose it when this.dispose() is called.
 
-#### create
-```ts
+### Disposable.create {#Disposable.create}
+```ts refs=IDisposableOwnerT=grainjs!IDisposableOwnerT:interface|InstanceType=!InstanceType:type|ConstructorParameters=!ConstructorParameters:type|InstanceType=!InstanceType:type
 static create<T extends new (...args: any[]) => any>(this: T, owner: IDisposableOwnerT<InstanceType<T>> | null, ...args: ConstructorParameters<T>): InstanceType<T>;
 ```
 Create Disposable instances using `Class.create(owner, ...)` rather than `new Class(...)`.
@@ -765,26 +710,26 @@ This reminds you to provide an owner, and ensures that if the constructor throws
 
 Owner may be null if intend to ensure disposal some other way.
 
-#### dispose
-```ts
+### Disposable#dispose {#Disposable#dispose}
+```ts refs=
 dispose(): void;
 ```
 Clean up `this` by disposing all owned objects, and calling onDispose() callbacks, in reverse order to that in which they were added.
 
-#### isDisposed
-```ts
+### Disposable#isDisposed {#Disposable#isDisposed}
+```ts refs=
 isDisposed(): boolean;
 ```
 Returns whether this object has already been disposed.
 
-#### onDispose
-```ts
+### Disposable#onDispose {#Disposable#onDispose}
+```ts refs=DisposeListener=grainjs!~DisposeListener:class
 onDispose<T>(callback: (this: T) => void, context?: T): DisposeListener;
 ```
 Call the given callback when this.dispose() is called.
 
-#### wipeOnDispose
-```ts
+### Disposable#wipeOnDispose {#Disposable#wipeOnDispose}
+```ts refs=
 wipeOnDispose(): void;
 ```
 Wipe out this object when it is disposed, i.e. set all its properties to null. It is recommended to call this early in the constructor.
@@ -793,8 +738,8 @@ This makes disposal more costly, but has certain benefits: - If anything still r
 
 The recommendation is to use it for complex, longer-lived objects, but to skip for objects which are numerous and short-lived (and less likely to be referenced from unexpected places).
 
-### dom.autoDisposeElem
-```ts
+### dom.autoDisposeElem {#autoDisposeElem}
+```ts refs=Node=!Node:interface|IDisposable=grainjs!IDisposable:interface
 autoDisposeElem(elem: Node, disposable: IDisposable | null): void;
 ```
 
@@ -808,8 +753,8 @@ Make the given element own the disposable, and call its dispose method when domD
 | `disposable` | Anything with a .dispose() method. |
 
 
-### dom.domDispose
-```ts
+### dom.domDispose {#domDispose}
+```ts refs=Node=!Node:interface
 domDispose(node: Node): void;
 ```
 
@@ -824,8 +769,8 @@ It is automatically called if one of the function arguments to dom() throws an e
 | `node` | The element to run disposers on. |
 
 
-### dom.onDisposeElem
-```ts
+### dom.onDisposeElem {#onDisposeElem}
+```ts refs=Node=!Node:interface|INodeFunc=grainjs!INodeFunc:type
 onDisposeElem(elem: Node, disposerFunc: INodeFunc): void;
 ```
 
@@ -839,8 +784,8 @@ Associate a disposerFunc with a DOM element. It will be called when the element 
 | `disposerFunc` | Will be called when domDispose() is called on the element or its ancestor. Note that it is not necessary usually to dispose event listeners attached to an element (e.g. with dom.on()) since their lifetime is naturally limited to the lifetime of the element. |
 
 
-### domDisposeHooks
-```ts
+### domDisposeHooks {#domDisposeHooks}
+```ts refs=IDomDisposeHooks=grainjs!IDomDisposeHooks:interface
 domDisposeHooks: IDomDisposeHooks
 ```
 
@@ -848,8 +793,8 @@ domDisposeHooks: IDomDisposeHooks
 
 Support for extending dom disposal. This is very low-level, and needs utmost care. Any disposers set should take care of calling the original versions of the disposers.
 
-### Holder
-```ts
+### Holder {#Holder}
+```ts refs=IDisposable=grainjs!IDisposable:interface|IDisposable=grainjs!IDisposable:interface|IDisposableOwner=grainjs!IDisposableOwner:interface
 class Holder<T extends IDisposable> implements IDisposable, IDisposableOwner
 ```
 
@@ -859,44 +804,44 @@ Holder keeps a single disposable object. If given responsibility for another obj
 
 If the object is an instance of Disposable, the holder will also notice when the object gets disposed from outside of it, in which case the holder will become empty again.
 
-#### autoDispose
-```ts
+### Holder#autoDispose {#Holder#autoDispose}
+```ts refs=
 autoDispose(obj: T): T;
 ```
 Take ownership of a new object, disposing the previously held one.
 
-#### clear
-```ts
+### Holder#clear {#Holder#clear}
+```ts refs=
 clear(): void;
 ```
 Disposes the held object and empties the holder.
 
-#### dispose
-```ts
+### Holder#dispose {#Holder#dispose}
+```ts refs=
 dispose(): void;
 ```
 When the holder is disposed, it disposes the held object if any.
 
-#### get
-```ts
+### Holder#get {#Holder#get}
+```ts refs=
 get(): T | null;
 ```
 Returns the held object, or null if the Holder is empty.
 
-#### isEmpty
-```ts
+### Holder#isEmpty {#Holder#isEmpty}
+```ts refs=
 isEmpty(): boolean;
 ```
 Returns whether the Holder is empty.
 
-#### release
-```ts
+### Holder#release {#Holder#release}
+```ts refs=IDisposable=grainjs!IDisposable:interface
 release(): IDisposable | null;
 ```
 Releases the held object without disposing it, emptying the holder.
 
-### IDisposable
-```ts
+### IDisposable {#IDisposable}
+```ts refs=
 interface IDisposable
 ```
 
@@ -904,8 +849,8 @@ interface IDisposable
 
 Anything with a .dispose() method is a disposable object, and implements the IDisposable interface.
 
-### IDisposableCtor
-```ts
+### IDisposableCtor {#IDisposableCtor}
+```ts refs=
 interface IDisposableCtor<Derived, CtorArgs extends any[]>
 ```
 
@@ -913,8 +858,8 @@ interface IDisposableCtor<Derived, CtorArgs extends any[]>
 
 The static portion of class Disposable.
 
-### IDisposableOwner
-```ts
+### IDisposableOwner {#IDisposableOwner}
+```ts refs=
 interface IDisposableOwner
 ```
 
@@ -922,8 +867,8 @@ interface IDisposableOwner
 
 Type that can own an object of any disposable type.
 
-### IDisposableOwnerT
-```ts
+### IDisposableOwnerT {#IDisposableOwnerT}
+```ts refs=IDisposable=grainjs!IDisposable:interface
 interface IDisposableOwnerT<T extends IDisposable>
 ```
 
@@ -931,8 +876,8 @@ interface IDisposableOwnerT<T extends IDisposable>
 
 Anything with .autoDispose() can be the owner of a disposable object. This is a type-specific class that can only own a disposable object of type T.
 
-### MultiHolder
-```ts
+### MultiHolder {#MultiHolder}
+```ts refs=Disposable=grainjs!Disposable:class
 class MultiHolder extends Disposable
 ```
 
@@ -940,8 +885,8 @@ class MultiHolder extends Disposable
 
 MultiHolder keeps multiple disposable object. It disposes all held object when the holder itself is disposed. It's actually nothing more than the Disposable base class itself, just exposed with a clearer name that describes its purpose.
 
-### setDisposeOwner
-```ts
+### setDisposeOwner {#setDisposeOwner}
+```ts refs=IDisposable=grainjs!IDisposable:interface|IDisposableOwnerT=grainjs!IDisposableOwnerT:interface
 setDisposeOwner<T extends IDisposable>(owner: IDisposableOwnerT<T> | null, obj: T): T;
 ```
 
@@ -950,8 +895,127 @@ setDisposeOwner<T extends IDisposable>(owner: IDisposableOwnerT<T> | null, obj: 
 Sets owner of obj (i.e. calls owner.autoDispose(obj)) unless owner is null. Returns obj.
 
 ## Observables reference
-### computed
-```ts
+### BaseObservable {#BaseObservable}
+```ts refs=
+class BaseObservable<T>
+```
+
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+
+Base class for several variants of observable values.
+
+### BaseObservable#addListener {#BaseObservable#addListener}
+```ts refs=Listener=grainjs!Listener:class
+addListener(callback: (val: T, prev: T) => void, optContext?: object): Listener;
+```
+Adds a callback to listen to changes in the observable.
+
+| Parameter | Description |
+| --- | --- |
+| `callback` | Function, called on changes with (newValue, oldValue) arguments. |
+| `optContext` | Context for the function. |
+
+
+::: info Returns
+
+ Listener object. Its dispose() method removes the callback.
+
+:::
+
+### BaseObservable#dispose {#BaseObservable#dispose}
+```ts refs=
+dispose(): void;
+```
+Disposes the observable.
+
+### BaseObservable#get {#BaseObservable#get}
+```ts refs=
+get(): T;
+```
+Returns the value of the observable. It is fast and does not create a subscription. (It is similar to knockout's peek()).
+
+::: info Returns
+
+ The current value of the observable.
+
+:::
+
+### BaseObservable#hasListeners {#BaseObservable#hasListeners}
+```ts refs=
+hasListeners(): boolean;
+```
+Returns whether this observable has any listeners.
+
+### BaseObservable#isDisposed {#BaseObservable#isDisposed}
+```ts refs=
+isDisposed(): boolean;
+```
+Returns whether this observable is disposed.
+
+### BaseObservable#set {#BaseObservable#set}
+```ts refs=
+set(value: T): void;
+```
+Sets the value of the observable. If the value differs from the previously set one, then listeners to this observable will get called with (newValue, oldValue) as arguments.
+
+| Parameter | Description |
+| --- | --- |
+| `value` | The new value to set. |
+
+
+### BaseObservable#setAndTrigger {#BaseObservable#setAndTrigger}
+```ts refs=
+setAndTrigger(value: T): void;
+```
+Sets the value of the observable AND calls listeners even if the value is unchanged.
+
+### BaseObservable#setListenerChangeCB {#BaseObservable#setListenerChangeCB}
+```ts refs=
+setListenerChangeCB(changeCB: (hasListeners: boolean) => void, optContext?: any): void;
+```
+Sets a single callback to be called when a listener is added or removed. It overwrites any previously-set such callback.
+
+| Parameter | Description |
+| --- | --- |
+| `changeCB` | Function to call after a listener is added or removed. It's called with a boolean indicating whether this observable has any listeners. Pass in `null` to unset the callback. Note that it can be called multiple times in a row with hasListeners `true`. |
+
+
+### BindableValue {#BindableValue}
+```ts refs=BaseObservable=grainjs!BaseObservable:class|ComputedCallback=grainjs!ComputedCallback:type|IKnockoutReadObservable=grainjs!IKnockoutReadObservable:interface
+type BindableValue<T> = BaseObservable<T> | ComputedCallback<T> | T | IKnockoutReadObservable<T>;
+```
+
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
+
+Any of the value types that DOM methods know how to subscribe to: a plain value (like a string); an Observable (including a Computed); a knockout observable; a function.
+
+If a function, it's used to create a `Computed`, and will be called with a context function `use`, allowing it to depend on other observable values (see documentation for `Computed`).
+
+### Computed#dispose {#Computed#dispose}
+```ts refs=
+dispose(): void;
+```
+Disposes the computed, unsubscribing it from all observables it depends on.
+
+### Computed#onWrite {#Computed#onWrite}
+```ts refs=Computed=grainjs!Computed:class
+onWrite(writeFunc: (value: T) => void): Computed<T>;
+```
+Set callback to call when this.set(value) is called, to make it a writable computed. If not set, attempting to write to this computed will throw an exception.
+
+### Computed#set {#Computed#set}
+```ts refs=
+set(value: T): void;
+```
+"Sets" the value of the computed by calling the write() callback if one was provided in the constructor. Throws an error if there was no such callback (not a "writable" computed).
+
+| Parameter | Description |
+| --- | --- |
+| `value` | The value to pass to the write() callback. |
+
+
+### computed {#computed}
+```ts refs=UseCB=grainjs!UseCBOwner:interface|Computed=grainjs!Computed:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCBOwner:interface|Computed=grainjs!Computed:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCBOwner:interface|Computed=grainjs!Computed:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCBOwner:interface|Computed=grainjs!Computed:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCBOwner:interface|Computed=grainjs!Computed:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCBOwner:interface|Computed=grainjs!Computed:class
 computed<T>(cb: (use: UseCB) => T): Computed<T>;
 computed<T, A>(a: Obs<A>, cb: (use: UseCB, a: A) => T): Computed<T>;
 computed<T, A, B>(a: Obs<A>, b: Obs<B>, cb: (use: UseCB, a: A, b: B) => T): Computed<T>;
@@ -964,8 +1028,8 @@ computed<T, A, B, C, D, E>(a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>
 
 This is the type-checking interface for computed(), which allows TypeScript to do helpful type-checking when using it. We can only support a fixed number of argumnets (explicit dependencies), but 5 should almost always be enough.
 
-### ComputedArray
-```ts
+### ComputedArray {#ComputedArray}
+```ts refs=ObsArray=grainjs!ObsArray:class
 class ComputedArray<T, U> extends ObsArray<U>
 ```
 
@@ -973,8 +1037,8 @@ class ComputedArray<T, U> extends ObsArray<U>
 
 See computedArray() below for documentation.
 
-### computedArray
-```ts
+### computedArray {#computedArray}
+```ts refs=BaseObservable=grainjs!BaseObservable:class|Observable=grainjs!Observable:class|BaseObservable=grainjs!BaseObservable:class|ComputedArray=grainjs!ComputedArray:class|ObsArray=grainjs!ObsArray:class
 computedArray<T, U>(obsArr: BaseObservable<T[]> | Observable<BaseObservable<T[]>>, mapper: (item: T, index: number, arr: ComputedArray<T, U>) => U): ObsArray<U>;
 ```
 
@@ -997,8 +1061,8 @@ This is useful with an ObsArray or with an observable whose value is an ObsArray
 
 Note that the mapper function is called with (item, index, array) as for a standard array.map(), but that the index is only accurate at the time of the call, and will stop reflecting the true index if more items are inserted into the array later.
 
-### IObsArraySplice
-```ts
+### IObsArraySplice {#IObsArraySplice}
+```ts refs=
 interface IObsArraySplice<T>
 ```
 
@@ -1006,8 +1070,8 @@ interface IObsArraySplice<T>
 
 Info about a modification to ObsArray contents. It is included as a third argument to change listeners when available. When not available, listeners should assume that the array changed completely.
 
-### makeLiveIndex
-```ts
+### makeLiveIndex {#makeLiveIndex}
+```ts refs=IDisposableOwnerT=grainjs!IDisposableOwnerT:interface|LiveIndex=grainjs!LiveIndex:class|ObsArray=grainjs!ObsArray:class|LiveIndex=grainjs!LiveIndex:class
 makeLiveIndex<T>(owner: IDisposableOwnerT<LiveIndex> | null, obsArr: ObsArray<T>, initialIndex?: number): LiveIndex;
 ```
 
@@ -1019,8 +1083,8 @@ As the array changes, the index is adjusted to continue pointing to the same ele
 
 The returned observable has an additional .setLive(bool) method. While set to false, the observable will not be adjusted as the array changes, except to keep it valid.
 
-### MaybeObsArray
-```ts
+### MaybeObsArray {#MaybeObsArray}
+```ts refs=BaseObservable=grainjs!BaseObservable:class
 type MaybeObsArray<T> = BaseObservable<T[]> | T[];
 ```
 
@@ -1028,8 +1092,8 @@ type MaybeObsArray<T> = BaseObservable<T[]> | T[];
 
 Either an observable or a plain array of T. This is useful for functions like dom.forEach() which are convenient to have available for both.
 
-### MutableObsArray
-```ts
+### MutableObsArray {#MutableObsArray}
+```ts refs=ObsArray=grainjs!ObsArray:class
 class MutableObsArray<T> extends ObsArray<T>
 ```
 
@@ -1037,8 +1101,8 @@ class MutableObsArray<T> extends ObsArray<T>
 
 `MutableObsArray<T>` adds array-like mutation methods which emit events with splice info, to allow more efficient processing of such changes. It is created with `obsArray<T>()`.
 
-### ObsArray
-```ts
+### ObsArray {#ObsArray}
+```ts refs=BaseObservable=grainjs!BaseObservable:class
 class ObsArray<T> extends BaseObservable<T[]>
 ```
 
@@ -1046,8 +1110,8 @@ class ObsArray<T> extends BaseObservable<T[]>
 
 `ObsArray<T>` is essentially an array-valued observable. The main difference is that it may be used as an owner for disposable array elements.
 
-### obsArray
-```ts
+### obsArray {#obsArray}
+```ts refs=MutableObsArray=grainjs!MutableObsArray:class
 obsArray<T>(value?: T[]): MutableObsArray<T>;
 ```
 
@@ -1055,8 +1119,8 @@ obsArray<T>(value?: T[]): MutableObsArray<T>;
 
 Creates a new MutableObsArray with an optional initial value, defaulting to the empty array. It is essentially the same as `observable<T[]>`, but with array-like mutation methods.
 
-### Observable
-```ts
+### Observable {#Observable}
+```ts refs=BaseObservable=grainjs!BaseObservable:class|IDisposableOwnerT=grainjs!IDisposableOwnerT:interface|IDisposable=grainjs!IDisposable:interface
 class Observable<T> extends BaseObservable<T> implements IDisposableOwnerT<T & IDisposable>
 ```
 
@@ -1064,8 +1128,8 @@ class Observable<T> extends BaseObservable<T> implements IDisposableOwnerT<T & I
 
 An Observable holds a value and allows subscribing to changes.
 
-#### autoDispose
-```ts
+### Observable#autoDispose {#Observable#autoDispose}
+```ts refs=IDisposable=grainjs!IDisposable:interface|IDisposable=grainjs!IDisposable:interface
 autoDispose(value: T & IDisposable): T & IDisposable;
 ```
 The use an observable for a disposable object, use it a DisposableOwner:
@@ -1074,14 +1138,14 @@ D.create(obs, ...args) // Preferred obs.autoDispose(D.create(null, ...args)) // 
 
 Either of these usages will set the observable to the newly created value. The observable will dispose the owned value when it's set to another value, or when it itself is disposed.
 
-#### create
-```ts
+### Observable.create {#Observable.create}
+```ts refs=IDisposableOwnerT=grainjs!IDisposableOwnerT:interface|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class
 static create<T>(owner: IDisposableOwnerT<Observable<T>> | null, value: T): Observable<T>;
 ```
 Creates a new Observable with the given initial value, and owned by owner.
 
-### observable
-```ts
+### observable {#observable}
+```ts refs=Observable=grainjs!Observable:class
 observable<T>(value: T): Observable<T>;
 ```
 
@@ -1100,8 +1164,8 @@ Creates a new Observable with the initial value of optValue if given or undefine
 
 :::
 
-### obsHolder
-```ts
+### obsHolder {#obsHolder}
+```ts refs=IDisposable=grainjs!IDisposable:interface|Observable=grainjs!Observable:class
 obsHolder<T>(value: T & IDisposable): Observable<T>;
 ```
 
@@ -1120,8 +1184,31 @@ This is needed because using simply `observable<D>(value)` would not cause the o
 
 To allow nulls, use `observable<D|null>(null)`; then the obsHolder() constructor is not needed.
 
-### pureComputed
-```ts
+### PureComputed#dispose {#PureComputed#dispose}
+```ts refs=
+dispose(): void;
+```
+Disposes the pureComputed, unsubscribing it from all observables it depends on.
+
+### PureComputed#onWrite {#PureComputed#onWrite}
+```ts refs=PureComputed=grainjs!PureComputed:class
+onWrite(writeFunc: (value: T) => void): PureComputed<T>;
+```
+Set callback to call when this.set(value) is called, to make it a writable computed. If not set, attempting to write to this computed will throw an exception.
+
+### PureComputed#set {#PureComputed#set}
+```ts refs=
+set(value: T): void;
+```
+"Sets" the value of the pure computed by calling the write() callback if one was provided in the constructor. Throws an error if there was no such callback (not a "writable" computed).
+
+| Parameter | Description |
+| --- | --- |
+| `value` | The value to pass to the write() callback. |
+
+
+### pureComputed {#pureComputed}
+```ts refs=UseCB=grainjs!UseCB:type|PureComputed=grainjs!PureComputed:class|Observable=grainjs!Observable:class|UseCB=grainjs!UseCB:type|PureComputed=grainjs!PureComputed:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|UseCB=grainjs!UseCB:type|PureComputed=grainjs!PureComputed:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|UseCB=grainjs!UseCB:type|PureComputed=grainjs!PureComputed:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|UseCB=grainjs!UseCB:type|PureComputed=grainjs!PureComputed:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|Observable=grainjs!Observable:class|UseCB=grainjs!UseCB:type|PureComputed=grainjs!PureComputed:class
 pureComputed<T>(cb: (use: UseCB) => T): PureComputed<T>;
 pureComputed<A, T>(a: Observable<A>, cb: (use: UseCB, a: A) => T): PureComputed<T>;
 pureComputed<A, B, T>(a: Observable<A>, b: Observable<B>, cb: (use: UseCB, a: A, b: B) => T): PureComputed<T>;
@@ -1134,8 +1221,8 @@ pureComputed<A, B, C, D, E, T>(a: Observable<A>, b: Observable<B>, c: Observable
 
 This is the type-checking interface for pureComputed(), which allows TypeScript to do helpful type-checking when using it. We can only support a fixed number of argumnets (explicit dependencies), but 5 should almost always be enough.
 
-### subscribe
-```ts
+### subscribe {#subscribe}
+```ts refs=UseCB=grainjs!UseCB:type|Subscription=grainjs!Subscription:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCB:type|Subscription=grainjs!Subscription:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCB:type|Subscription=grainjs!Subscription:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCB:type|Subscription=grainjs!Subscription:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCB:type|Subscription=grainjs!Subscription:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|Obs=grainjs!BaseObservable:class|UseCB=grainjs!UseCB:type|Subscription=grainjs!Subscription:class
 subscribe(cb: (use: UseCB) => void): Subscription;
 subscribe<A>(a: Obs<A>, cb: (use: UseCB, a: A) => void): Subscription;
 subscribe<A, B>(a: Obs<A>, b: Obs<B>, cb: (use: UseCB, a: A, b: B) => void): Subscription;
@@ -1148,8 +1235,8 @@ subscribe<A, B, C, D, E>(a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>, 
 
 This is the type-checking interface for subscribe(), which allows TypeScript to do helpful type-checking when using it. We can only support a fixed number of argumnets (explicit dependencies), but 5 should almost always be enough.
 
-### subscribeBindable
-```ts
+### subscribeBindable {#subscribeBindable}
+```ts refs=IKnockoutReadObservable=grainjs!IKnockoutReadObservable:interface|InferKoType=grainjs!InferKoType:type|IDisposable=grainjs!IDisposable:interface|BindableValue=grainjs!BindableValue:type|IDisposable=grainjs!IDisposable:interface
 subscribeBindable<KObs extends IKnockoutReadObservable<any>>(valueObs: KObs, callback: (val: InferKoType<KObs>) => void): IDisposable | null;
 subscribeBindable<T>(valueObs: BindableValue<T>, callback: (val: T) => void): IDisposable | null;
 ```
@@ -1162,8 +1249,8 @@ In all cases, `callback(newValue, oldValue)` is called immediately and whenever 
 
 Returns an object which should be disposed to remove the created subscriptions, or null.
 
-### subscribeElem
-```ts
+### subscribeElem {#subscribeElem}
+```ts refs=Node=!Node:interface|BindableValue=grainjs!BindableValue:type
 subscribeElem<T>(elem: Node, valueObs: BindableValue<T>, callback: (newVal: T, oldVal?: T) => void): void;
 ```
 
@@ -1171,9 +1258,15 @@ subscribeElem<T>(elem: Node, valueObs: BindableValue<T>, callback: (newVal: T, o
 
 Subscribes a callback to valueObs (which may be a value, observable, or function) using subscribe(), and disposes the subscription with the passed-in element.
 
+### Subscription#dispose {#Subscription#dispose}
+```ts refs=
+dispose(): void;
+```
+Disposes the computed, unsubscribing it from all observables it depends on.
+
 ## Other
-### bindB
-```ts
+### bindB {#bindB}
+```ts refs=
 bindB<R>(func: (...args: any[]) => R, b: any[]): () => R;
 ```
 
@@ -1181,8 +1274,8 @@ bindB<R>(func: (...args: any[]) => R, b: any[]): () => R;
 
 Returns f such that f() calls func(...boundArgs), i.e. optimizes `() => func(...boundArgs)`. It is faster on node6 by 57-92%.
 
-### bindBU
-```ts
+### bindBU {#bindBU}
+```ts refs=
 bindBU<R>(func: (...args: any[]) => R, b: any[]): (arg: any) => R;
 ```
 
@@ -1190,8 +1283,8 @@ bindBU<R>(func: (...args: any[]) => R, b: any[]): (arg: any) => R;
 
 Returns f such that f(unboundArg) calls func(...boundArgs, unboundArg). I.e. optimizes `(arg) => func(...boundArgs, arg)`. It is faster on node6 by 0-92%.
 
-### bindUB
-```ts
+### bindUB {#bindUB}
+```ts refs=
 bindUB<U, R>(func: (arg: U, ...args: any[]) => R, b: any[]): (arg: U) => R;
 ```
 
@@ -1199,8 +1292,8 @@ bindUB<U, R>(func: (arg: U, ...args: any[]) => R, b: any[]): (arg: U) => R;
 
 Returns f such that f(unboundArg) calls func(unboundArg, ...boundArgs). I.e. optimizes `(arg) => func(arg, ...boundArgs)`. It is faster on node6 by 0-92%.
 
-### bundleChanges
-```ts
+### bundleChanges {#bundleChanges}
+```ts refs=
 bundleChanges<T>(func: () => T): T;
 ```
 
@@ -1210,8 +1303,55 @@ Defer recomputations of all computed observables and subscriptions until func() 
 
 Note that this intentionally does not wait for promises to be resolved, since that would block all updates to all computeds while waiting.
 
-### fromKo
-```ts
+### Emitter#addListener {#Emitter#addListener}
+```ts refs=ListenerCB=grainjs!ListenerCB:type|Listener=grainjs!Listener:class
+addListener<T>(callback: ListenerCB<T>, optContext?: T): Listener;
+```
+Adds a listening callback to the list of functions to call on emit().
+
+| Parameter | Description |
+| --- | --- |
+| `callback` | Function to call. |
+| `optContext` | Context for the function. |
+
+
+::: info Returns
+
+ Listener object. Its dispose() method removes the callback from the list.
+
+:::
+
+### Emitter#dispose {#Emitter#dispose}
+```ts refs=
+dispose(): void;
+```
+Disposes the Emitter. It breaks references between the emitter and all the items, allowing for better garbage collection. It effectively disposes all current listeners.
+
+### Emitter#emit {#Emitter#emit}
+```ts refs=
+emit(...args: any[]): void;
+```
+Calls all listener callbacks, passing all arguments to each of them.
+
+### Emitter#hasListeners {#Emitter#hasListeners}
+```ts refs=
+hasListeners(): boolean;
+```
+Returns whether this Emitter has any listeners.
+
+### Emitter#setChangeCB {#Emitter#setChangeCB}
+```ts refs=ChangeCB=grainjs!ChangeCB:type
+setChangeCB(changeCB: ChangeCB, optContext?: any): void;
+```
+Sets the single callback that would get called when a listener is added or removed.
+
+| Parameter | Description |
+| --- | --- |
+| `changeCB` | Function to call after a listener is added or removed. It's called with a boolean indicating whether this Emitter has any listeners. Pass in `null` to unset the callback. Note that it can be called multiple times in a row with hasListeners `true`. |
+
+
+### fromKo {#fromKo}
+```ts refs=IKnockoutObservable=grainjs!IKnockoutObservable:interface|Observable=grainjs!Observable:class|InferKoType=grainjs!InferKoType:type
 fromKo<KObs extends IKnockoutObservable<any>>(koObs: KObs): Observable<InferKoType<KObs>>;
 ```
 
@@ -1221,8 +1361,8 @@ Returns a Grain.js observable which mirrors a Knockout observable.
 
 Do not dispose this wrapper, as it is shared by all code using koObs, and its lifetime is tied to the lifetime of koObs. If unused, it consumes minimal resources, and should get garbage collected along with koObs.
 
-### input
-```ts
+### input {#input}
+```ts refs=Observable=grainjs!Observable:class|IInputOptions=grainjs!IInputOptions:interface|IDomArgs=grainjs!IDomArgs:interface|HTMLInputElement=!HTMLInputElement:interface|HTMLInputElement=!HTMLInputElement:interface
 input(obs: Observable<string>, options: IInputOptions, ...args: IDomArgs<HTMLInputElement>): HTMLInputElement;
 ```
 
@@ -1242,8 +1382,8 @@ Example usage:
 ```
 
 
-### KoWrapObs
-```ts
+### KoWrapObs {#KoWrapObs}
+```ts refs=Observable=grainjs!Observable:class
 class KoWrapObs<T> extends Observable<T>
 ```
 
@@ -1253,8 +1393,8 @@ An Observable that wraps a Knockout observable, created via fromKo(). It keeps m
 
 This way, when unused, the only reference is from the wrapper to the wrapped object. KoWrapObs should not be disposed; its lifetime is tied to that of the wrapped object.
 
-### Listener
-```ts
+### Listener {#Listener}
+```ts refs=LLink=grainjs!LLink:class
 class Listener extends LLink
 ```
 
@@ -1262,8 +1402,8 @@ class Listener extends LLink
 
 Listener object wraps a callback added to an Emitter, allowing for O(1) removal when the listener is disposed.
 
-### ListenerCB
-```ts
+### ListenerCB {#ListenerCB}
+```ts refs=
 type ListenerCB<T> = (this: T, ...args: any[]) => void;
 ```
 
@@ -1281,8 +1421,8 @@ The only way to remove a listener is to dispose the Listener object returned by 
 
 To emit an event, call emit() with any number of arguments: emitter.emit("hello", "world");
 
-### LLink
-```ts
+### LLink {#LLink}
+```ts refs=
 class LLink
 ```
 
@@ -1290,8 +1430,8 @@ class LLink
 
 This is an implementation of a doubly-linked list, with just the minimal functionality we need.
 
-### select
-```ts
+### select {#select}
+```ts refs=Observable=grainjs!Observable:class|MaybeObsArray=grainjs!MaybeObsArray:type|IOption=grainjs!IOption:type|HTMLSelectElement=!HTMLSelectElement:interface
 select<T>(obs: Observable<T>, optionArray: MaybeObsArray<IOption<T>>, options?: {
     defLabel?: string;
 }): HTMLSelectElement;
@@ -1320,8 +1460,8 @@ Usage:
 ```
 
 
-### setupKoDisposal
-```ts
+### setupKoDisposal {#setupKoDisposal}
+```ts refs=IKnockoutModule=grainjs!IKnockoutModule:interface
 setupKoDisposal(ko: IKnockoutModule): void;
 ```
 
@@ -1335,8 +1475,8 @@ This method ensures that this happens.
 
 Note: grainjs disposes text nodes too, but nothing relies on it. When disposal is triggered via knockout, we are forced to rely on knockout's node traversal which ignores text nodes.
 
-### toKo
-```ts
+### toKo {#toKo}
+```ts refs=IKnockoutModule=grainjs!IKnockoutModule:interface|Observable=grainjs!Observable:class|IKnockoutObservable=grainjs!IKnockoutObservable:interface
 toKo<T>(knockout: IKnockoutModule, grainObs: Observable<T>): IKnockoutObservable<T>;
 ```
 

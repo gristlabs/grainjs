@@ -90,6 +90,7 @@ export class Subscription {
 
   /**
    * For use by computed(): returns this subscription's hook into the _computed_queue.
+   * @internal
    */
   public _getDepItem(): DepItem { return this._depItem; }
 

@@ -126,6 +126,7 @@ export class Emitter extends LLink {
 
   /**
    * Helper used by Listener class, but not intended for public usage.
+   * @internal
    */
   public _triggerChangeCB(): void {
     this._changeCB.call(this._changeCBContext, this.hasListeners());

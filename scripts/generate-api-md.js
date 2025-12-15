@@ -4,6 +4,7 @@ const path = require('path');
 const escape = require('lodash/escape');
 const sortBy = require('lodash/sortBy');
 const {TSDocEmitter, TSDocParser, StringBuilder, DocNodeKind} = require('@microsoft/tsdoc');
+const {DeclarationReference} = require('@microsoft/tsdoc');
 
 const apiJsonPath = "temp/grainjs.api.json";
 const outPath = "docs/api/index.md";
@@ -21,7 +22,7 @@ containing that type, or a "use callback" to create a \`Computed\` from
 Note that all the bindings are one-way: if the supplied value is an observable, the method will
 listen to it, and update something about DOM when that observable changes.
 `,
-  memberFiles: /^(dom|styled)/,
+  memberFiles: /^(dom(?!Dispose)|styled)/,
 }, {
   name: 'Disposable reference',
   description: `
@@ -67,19 +68,34 @@ function apiJsonToMarkdown(json, markdown) {
   }
 
   function renderItem(member, level) {
+    renderOneItem(member, level);
+    if (member.members) {
+      collectFunctionOverrides(member.members);
+      for (const item of member.members) {
+        renderItem(item, level);
+      }
+    }
+  }
+
+  function renderOneItem(member, level) {
     // Don't emit undocumented members or those without a name (api-extractor generates some
     // unnamed 'constructor' entries).
     if (!member.docComment || !member.name) { return; }
 
+    // Parse the canonical reference.
+    const name = member.useName || extractCanonicalName(member.canonicalReference) || member.name;
+
     // Heading.
-    emit("#".repeat(level) + ' ' + member.name);
+    emit("#".repeat(level) + ' ' + name + ' {#'  + extractCanonicalName(member.canonicalReference) + '}');
 
     // Function signature.
-    let excerpts = [
+    const excerpts = [
       getSignature(member.excerptTokens),
       ...(member.overrides || []).map(t => getSignature(t))
     ];
-    emit("```ts\n" + excerpts.join('\n') + "\n```");
+    const refs = [getRefs(member.excerptTokens),
+      ...(member.overrides || []).map(t => getRefs(t))].flat();
+    emit("```ts refs=" + refs.join('|') + "\n" + excerpts.join('\n') + "\n```");
 
     // Link to source code.
     if (member.fileUrlPath) {
@@ -90,12 +106,6 @@ function apiJsonToMarkdown(json, markdown) {
     // Documentation.
     const {docComment} = tsdocParser.parseString(member.docComment);
     emit(renderNode(docComment));
-    if (member.members) {
-      collectFunctionOverrides(member.members);
-      for (const item of member.members) {
-        renderItem(item, level + 1);
-      }
-    }
   }
 }
 
@@ -108,11 +118,11 @@ function collectDomMethodsUnderDom(entrypoint) {
   const domMembers = new Set(domNamespace.members.map(m => m.name));
   for (const member of entrypoint.members) {
     if (domMembers.has(member.name)) {
-      member.name = `dom.${member.name}`;
+      member.useName = `dom.${member.name}`;
     }
   }
   entrypoint.members = entrypoint.members.filter(m => m !== domNamespace);
-  entrypoint.members = sortBy(entrypoint.members, m => m.name.toLowerCase());
+  entrypoint.members = sortBy(entrypoint.members, m => (m.useName || m.name).toLowerCase());
 }
 
 function collectFunctionOverrides(members) {
@@ -137,6 +147,16 @@ function getSourceUrl(file) {
 function getSignature(excerptTokens) {
   return excerptTokens.map(t => t.text).join("")
     .replace(/(export\s+)?(declare\s+)?(function\s+)?/, '').trim();
+}
+
+function getRefs(excerptTokens) {
+  return excerptTokens.filter(t => t.kind === "Reference")
+    .map(t => `${t.text}=${t.canonicalReference}`);
+}
+
+function extractCanonicalName(canonicalReference) {
+  const match = canonicalReference.match(/^([^!]+)!([^:]+):.*$/);
+  return match?.[2];
 }
 
 function renderNode(node) {

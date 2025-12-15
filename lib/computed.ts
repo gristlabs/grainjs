@@ -98,6 +98,7 @@ export class Computed<T> extends Observable<T> {
 
   /**
    * Used by subscriptions to keep track of dependencies.
+   * @internal
    */
   public _getDepItem(): DepItem {
     return this._sub._getDepItem();

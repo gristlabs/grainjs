@@ -27,6 +27,9 @@ import {Emitter, Listener} from './emit';
 
 export {bundleChanges} from './_computed_queue';
 
+/**
+ * Base class for several variants of observable values.
+ */
 export class BaseObservable<T> {
   private _onChange: Emitter;
   private _value: T;
@@ -100,6 +103,7 @@ export class BaseObservable<T> {
   /**
    * Used by subscriptions to keep track of dependencies. An observable that has dependnecies,
    * such as a computed observable, would override this method.
+   * @internal
    */
   public _getDepItem(): DepItem|null {
     return null;
@@ -126,6 +130,7 @@ export class BaseObservable<T> {
   /**
    * Allow derived classes to emit change events with an additional third argument describing the
    * change. It always emits the event without checking for value equality.
+   * @internal
    */
   protected _setWithArg(value: T, arg: any) {
     const prev = this._value;

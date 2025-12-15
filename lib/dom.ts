@@ -46,8 +46,9 @@ import {dom as _dom, IDomArgs, TagElem, TagName} from './domImpl';
  * creates HTML element `<a href={{url}} class="myclass">Hello <strong>world</strong></a>`.
  *
  * @example
- * Here's an equivalent example using dom methods `dom.cls`, `dom.attr`, `dom.text`. In reality,
- * these methods are useful with observable values rather than constant strings.
+ * Here's an example equivalent to the one above, using dom methods `dom.cls`, `dom.attr`,
+ * `dom.text`. In reality, these methods are useful with observable values rather than constant
+ * strings.
  * ```ts
  *  dom('a', dom.attr('href', url), dom.cls('myclass'),
  *      dom.text('Hello '), dom('strong', dom.text('world')));

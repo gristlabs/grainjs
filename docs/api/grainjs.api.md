@@ -22,7 +22,7 @@ export function autoDispose(disposable: IDisposable | null): ((elem: Node) => vo
 // @public
 export function autoDisposeElem(elem: Node, disposable: IDisposable | null): void;
 
-// @public (undocumented)
+// @public
 export class BaseObservable<T> {
     constructor(value: T);
     addListener(callback: (val: T, prev: T) => void, optContext?: object): Listener;
@@ -31,16 +31,19 @@ export class BaseObservable<T> {
     protected _disposeOwned(arg?: any): void;
     get(): T;
     // Warning: (ae-forgotten-export) The symbol "DepItem" needs to be exported by the entry point index.d.ts
+    //
+    // @internal
     _getDepItem(): DepItem | null;
     hasListeners(): boolean;
     isDisposed(): boolean;
     set(value: T): void;
     setAndTrigger(value: T): void;
     setListenerChangeCB(changeCB: (hasListeners: boolean) => void, optContext?: any): void;
+    // @internal
     protected _setWithArg(value: T, arg: any): void;
 }
 
-// @public (undocumented)
+// @public
 export type BindableValue<T> = BaseObservable<T> | ComputedCallback<T> | T | IKnockoutReadObservable<T>;
 
 // @public
@@ -97,6 +100,7 @@ export class Computed<T> extends Observable<T> {
     // (undocumented)
     static create<T, A, B, C, D, E>(owner: Owner<T>, a: BaseObservable<A>, b: BaseObservable<B>, c: BaseObservable<C>, d: BaseObservable<D>, e: BaseObservable<E>, cb: (use: UseCBOwner, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
     dispose(): void;
+    // @internal
     _getDepItem(): DepItem;
     onWrite(writeFunc: (value: T) => void): Computed<T>;
     set(value: T): void;
@@ -319,6 +323,7 @@ export class Emitter extends LLink {
     emit(...args: any[]): void;
     hasListeners(): boolean;
     setChangeCB(changeCB: ChangeCB, optContext?: any): void;
+    // @internal
     _triggerChangeCB(): void;
 }
 
@@ -802,6 +807,7 @@ export function subscribeElem<T>(elem: Node, valueObs: BindableValue<T>, callbac
 export class Subscription {
     constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ReadonlyArray<ISubscribable>, owner?: any);
     dispose(): void;
+    // @internal
     _getDepItem(): DepItem;
 }
 

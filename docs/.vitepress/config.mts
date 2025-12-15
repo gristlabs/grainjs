@@ -29,7 +29,6 @@ export default defineConfig({
           { text: 'More on observables', link: '/more-observables' },
           { text: 'More on computeds', link: '/more-computeds' },
           { text: 'API reference', link: '/api/' },
-          { text: 'OLD Reference', link: '/reference' },
         ]
       }
     ]

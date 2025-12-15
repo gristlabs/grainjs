@@ -17,6 +17,10 @@ import {G} from './browserGlobals';
 export type DomMethod<T = Node> = (elem: T) => DomArg<T>|void;
 export type DomElementMethod = DomMethod<HTMLElement>;
 
+/**
+ * Object mapping attribute names to attribute values. When applied to a DOM element, null and
+ * undefined values are omitted, and booleans are either omitted or set to empty string.
+ */
 export interface IAttrObj {
   [attrName: string]: string|boolean|null|undefined;
 }

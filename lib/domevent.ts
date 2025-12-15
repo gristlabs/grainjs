@@ -1,44 +1,3 @@
-/**
- * domevent provides a way to listen to DOM events, similar to JQuery's `on()` function. Its
- * methods are also exposed via the dom.js module, as `dom.on()`, etc.
- *
- * It is typically used as an argument to the dom() function:
- *
- *    dom('div', dom.on('click', (event, elem) => { ... }));
- *
- * When the div is disposed, the listener is automatically removed.
- *
- * The underlying interface to listen to an event is this:
- *
- *    let listener = dom.onElem(elem, 'click', (event, elem) => { ... });
- *
- * The callback is called with the event and the element to which it was attached. Unlike in
- * JQuery, the callback's return value is ignored. Use event.stopPropagation() and
- * event.preventDefault() explicitly if needed.
- *
- * To stop listening:
- *
- *    listener.dispose();
- *
- * Disposing the listener returned by .onElem() is the only way to stop listening to an event. You
- * can use autoDispose to stop listening automatically when subscribing in a Disposable object:
- *
- *    this.autoDispose(domevent.onElem(document, 'mouseup', callback));
- *
- * To listen to descendants of an element matching the given selector (what JQuery calls
- * "delegated events", see http://api.jquery.com/on/):
- *
- *    dom('div', dom.onMatch('.selector', 'click', (event, elem) => { ... }));
- * or
- *    let lis = domevent.onMatchElem(elem, '.selector', 'click', (event, el) => { ... });
- *
- * In this usage, the element passed to the callback will be a DOM element matching the given
- * selector. If there are multiple matches, the callback is only called for the innermost one.
- *
- * If you need to remove the callback on first call, here's a useful pattern:
- *    let lis = domevent.onElem(elem, 'mouseup', e => { lis.dispose(); other_work(); });
- */
-
 import {IDisposable} from './dispose';
 import {DomElementMethod, DomMethod} from './domImpl';
 
@@ -87,20 +46,59 @@ class DomEventMatchListener<E extends Event> extends DomEventListener<E, EventTa
 }
 
 /**
- * Listen to a DOM event. The `on()` variant takes no `elem` argument, and may be used as an
- * argument to dom() function.
+ * Listen to a DOM event, returning the listener object.
+ * ```ts
+ * const listener = dom.onElem(elem, 'click', (event, elem) => { ... });
+ * ```
+ *
+ * To stop listening:
+ * ```ts
+ * listener.dispose();
+ * ```
+ *
+ * Disposing the listener returned by `onElem()` is the only way to stop listening to an event. You
+ * can use `autoDispose` to stop listening automatically when subscribing in a `Disposable` object:
+ * ```ts
+ * this.autoDispose(domevent.onElem(document, 'mouseup', callback));
+ * ```
+ *
+ * If you need "once" semantics, i.e. to remove the callback on first call, here's a useful pattern:
+ * ```ts
+ * const lis = domevent.onElem(elem, 'mouseup', e => { lis.dispose(); other_work(); });
+ * ```
+ *
  * @param elem - DOM Element to listen to.
- * @param eventType - Event type to listen for (e.g. 'click').
+ * @param eventType - Event type to listen for (e.g. `'click'`).
  * @param callback - Callback to call as `callback(event, elem)`, where elem is `elem`.
- * @param options - .useCapture: Add the listener in the capture phase. This should very
+ * @param options - `useCapture: boolean`: Add the listener in the capture phase. This should very
  *    rarely be useful (e.g. JQuery doesn't even offer it as an option).
- * @returns Listener object whose .dispose() method will remove the event listener.
+ * @returns Listener object whose `.dispose()` method will remove the event listener.
  */
 export function onElem<E extends EventName|string, T extends EventTarget>(
   elem: T, eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}): IDisposable {
   return new DomEventListener(elem, eventType, callback, useCapture);
 }
 
+/**
+ * Listen to a DOM event. It is typically used as an argument to the `dom()` function:
+ * ```ts
+ * dom('div', dom.on('click', (event, elem) => { ... }));
+ * ```
+ *
+ * When the div is disposed, the listener is automatically removed.
+ *
+ * The callback is called with the event and the element to which it was attached. Unlike in, say,
+ * JQuery, the callback's return value is ignored. Use `event.stopPropagation()` and
+ * `event.preventDefault()` explicitly if needed.
+ *
+ * To listen to descendants of an element matching the given selector (what JQuery calls
+ * "delegated events", see http://api.jquery.com/on/), see [`onMatch`](#onMatch).
+ *
+ * @param eventType - Event type to listen for (e.g. `'click'`).
+ * @param callback - Callback to call as `callback(event, elem)`, where `elem` is the element this
+ *    listener is attached to.
+ * @param options - `useCapture?: boolean`: Add the listener in the capture phase.
+ */
 export function on<E extends EventName|string, T extends EventTarget>(
   eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}): DomMethod<T> {
   // tslint:disable-next-line:no-unused-expression
@@ -108,8 +106,12 @@ export function on<E extends EventName|string, T extends EventTarget>(
 }
 
 /**
- * Listen to a DOM event on descendants of the given elem matching the given selector. The
- * `onMatch()` variant takes no `elem` argument, and may be used as an argument to dom().
+ * Listen to a DOM event on descendants of the given elem matching the given selector.
+ *
+ * ```ts
+ * const let lis = domevent.onMatchElem(elem, '.selector', 'click', (event, el) => { ... });
+ * ```
+ *
  * @param elem - DOM Element to whose descendants to listen.
  * @param selector - CSS selector string to filter elements that trigger this event.
  *    JQuery calls it "delegated events" (http://api.jquery.com/on/). The callback will only be
@@ -118,14 +120,32 @@ export function on<E extends EventName|string, T extends EventTarget>(
  * @param eventType - Event type to listen for (e.g. 'click').
  * @param callback - Callback to call as `callback(event, elem)`, where elem is a
  *    descendent of `elem` which matches `selector`.
- * @param options - .useCapture: Add the listener in the capture phase. This should very
- *    rarely be useful (e.g. JQuery doesn't even offer it as an option).
- * @returns Listener object whose .dispose() method will remove the event listener.
+ * @param options - `useCapture?: boolean`: Add the listener in the capture phase.
+ * @returns Listener object whose `.dispose()` method will remove the event listener.
  */
 export function onMatchElem(elem: EventTarget, selector: string, eventType: string,
                             callback: EventCB, {useCapture = false} = {}): IDisposable {
   return new DomEventMatchListener(elem, eventType, callback, useCapture, selector);
 }
+
+/**
+ * Listen to a DOM event on descendants of the given element matching the given selector.
+ *
+ * This is similar to JQuery's [delegated events](https://api.jquery.com/on/#direct-and-delegated-events)
+ *
+ * ```ts
+ * dom('div', dom.onMatch('.selector', 'click', (event, elem) => { ... }));
+ * ```
+ *
+ * In this usage, the element passed to the callback will be a DOM element matching the given
+ * selector. If there are multiple matches, the callback is only called for the innermost one.
+ *
+ * @param selector - CSS selector string to filter elements that trigger this event.
+ * @param eventType - Event type to listen for (e.g. `'click'`).
+ * @param callback - Callback to call as `callback(event, elem)`, where `elem` is an element
+ *    matching `selector`.
+ * @param options - `useCapture?: boolean`: Add the listener in the capture phase.
+ */
 export function onMatch(selector: string, eventType: string, callback: EventCB,
                         {useCapture = false} = {}): DomElementMethod {
   // tslint:disable-next-line:no-unused-expression
@@ -141,8 +161,6 @@ export interface IKeyHandlers<T extends HTMLElement = HTMLElement> {
 /**
  * Listen to key events (typically 'keydown' or 'keypress'), with specified per-key callbacks.
  * Key names are listed at https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
- *
- * Methods onKeyPress() and onKeyDown() are intended to be used as arguments to dom().
  *
  * By default, handled events are stopped from bubbling with stopPropagation() and
  * preventDefault(). If, however, you register a key with a "$" suffix (i.e. "Enter$" instead of
@@ -181,10 +199,16 @@ export function onKeyElem<T extends HTMLElement>(
   });
 }
 
+/**
+ * Add listeners to `"keypress"` events. See [`onKeyElem`](#onKeyElem) for details.
+ */
 export function onKeyPress<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T> {
   return (elem) => { onKeyElem(elem, 'keypress', keyHandlers); };
 }
 
+/**
+ * Add listeners to `"keydown"` events. See [`onKeyElem`](#onKeyElem) for details.
+ */
 export function onKeyDown<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T> {
   return (elem) => { onKeyElem(elem, 'keydown', keyHandlers); };
 }

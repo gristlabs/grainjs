@@ -71,8 +71,8 @@ export function subscribeBindable<T>(
 }
 
 /**
- * Subscribes a callback to valueObs (which may be a value, observable, or function) using
- * subscribe(), and disposes the subscription with the passed-in element.
+ * Subscribes a callback to `valueObs` (which may be a value, observable, or function) using
+ * `subscribeBindable()`, and ties the disposal of this subscription to the passed-in element.
  */
 export function subscribeElem<T>(elem: Node, valueObs: BindableValue<T>,
                                  callback: (newVal: T, oldVal?: T) => void): void {

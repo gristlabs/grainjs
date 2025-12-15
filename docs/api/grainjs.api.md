@@ -10,13 +10,13 @@ export function attr(attrName: string, attrValueObs: BindableValue<string | null
 // @public
 export function attrElem(elem: Element, attrName: string, attrValue: string | null | undefined): void;
 
-// @public (undocumented)
+// @public
 export function attrs(attrsObj: IAttrObj): DomElementMethod;
 
 // @public
 export function attrsElem(elem: Element, attrsObj: IAttrObj): void;
 
-// @public (undocumented)
+// @public
 export function autoDispose(disposable: IDisposable | null): ((elem: Node) => void) | undefined;
 
 // @public
@@ -27,7 +27,7 @@ export class BaseObservable<T> {
     constructor(value: T);
     addListener(callback: (val: T, prev: T) => void, optContext?: object): Listener;
     dispose(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _disposeOwned(arg?: any): void;
     get(): T;
     // Warning: (ae-forgotten-export) The symbol "DepItem" needs to be exported by the entry point index.d.ts
@@ -64,7 +64,7 @@ export function boolAttrElem(elem: Element, attrName: string, boolValue: boolean
 // @public
 export function bundleChanges<T>(func: () => T): T;
 
-// @public (undocumented)
+// @public
 export type ChangeCB = (hasListeners: boolean) => void;
 
 // @public
@@ -82,12 +82,10 @@ export function clsPrefix(prefix: string, className: string, boolValue?: Bindabl
 // @public (undocumented)
 export function clsPrefix(prefix: string, className: BindableValue<string>): DomElementMethod;
 
-// @public (undocumented)
+// @public
 export class Computed<T> extends Observable<T> {
     constructor(callback: (use: UseCBOwner, ...args: any[]) => T, dependencies: ISubscribable[]);
     // Warning: (ae-forgotten-export) The symbol "Owner" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
     static create<T>(owner: Owner<T>, cb: (use: UseCBOwner) => T): Computed<T>;
     // (undocumented)
     static create<T, A>(owner: Owner<T>, a: BaseObservable<A>, cb: (use: UseCBOwner, a: A) => T): Computed<T>;
@@ -127,7 +125,7 @@ export function computed<T, A, B, C, D, E>(a: BaseObservable<A>, b: BaseObservab
 // @public
 export class ComputedArray<T, U> extends ObsArray<U> {
     constructor(obsArr: BaseObservable<T[]> | Observable<BaseObservable<T[]>>, _mapper: (item: T, index: number, arr: ComputedArray<T, U>) => U);
-    // (undocumented)
+    // @internal (undocumented)
     dispose(): void;
 }
 
@@ -137,12 +135,10 @@ export function computedArray<T, U>(obsArr: BaseObservable<T[]> | Observable<Bas
 // @public (undocumented)
 export type ComputedCallback<T> = (use: UseCBOwner, ...args: any[]) => T;
 
-// Warning: (ae-forgotten-export) The symbol "DomCreatorArgs" needs to be exported by the entry point index.d.ts
-//
-// @public (undocumented)
+// @public
 export function create<Fn extends IDomCreator<any[]>>(fn: Fn, ...args: DomCreatorArgs<Fn>): DomContents;
 
-// @public (undocumented)
+// @public
 export function data(key: string, valueObs: BindableValue<any>): DomMethod;
 
 // @public
@@ -155,8 +151,7 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
     static create<T extends new (...args: any[]) => any>(this: T, owner: IDisposableOwnerT<InstanceType<T>> | null, ...args: ConstructorParameters<T>): InstanceType<T>;
     dispose(): void;
     isDisposed(): boolean;
-    // Warning: (ae-forgotten-export) The symbol "DisposeListener" needs to be exported by the entry point index.d.ts
-    onDispose<T>(callback: (this: T) => void, context?: T): DisposeListener;
+    onDispose<T>(callback: (this: T) => void, context?: T): IDisposable;
     wipeOnDispose(): void;
 }
 
@@ -300,6 +295,9 @@ export type DomContents = Node | string | DomComputed | void | null | undefined 
 // @public (undocumented)
 export type DomCreateFunc<R, Args extends IDomArgs<R> = IDomArgs<R>> = (...args: Args) => R;
 
+// @public (undocumented)
+export type DomCreatorArgs<T> = T extends (owner: MultiHolder, ...args: infer P) => any ? P : (T extends new (...args: infer P) => any ? P : never);
+
 // @public
 export function domDispose(node: Node): void;
 
@@ -315,9 +313,10 @@ export type DomElementMethod = DomMethod<HTMLElement>;
 // @public (undocumented)
 export type DomMethod<T = Node> = (elem: T) => DomArg<T> | void;
 
-// @public (undocumented)
+// Warning: (ae-incompatible-release-tags) The symbol "Emitter" is marked as @public, but its signature references "LLink" which is marked as @internal
+//
+// @public
 export class Emitter extends LLink {
-    constructor();
     addListener<T>(callback: ListenerCB<T>, optContext?: T): Listener;
     dispose(): void;
     emit(...args: any[]): void;
@@ -351,10 +350,10 @@ export function frag(...args: IDomArgs<DocumentFragment>): DocumentFragment;
 // @public
 export function fromKo<KObs extends IKnockoutObservable<any>>(koObs: KObs): Observable<InferKoType<KObs>>;
 
-// @public (undocumented)
+// @public
 export function getData(elem: Node, key: string): any;
 
-// @public (undocumented)
+// @public
 export function hide(boolValueObs: BindableValue<boolean>): DomElementMethod;
 
 // @public
@@ -364,17 +363,16 @@ export function hideElem(elem: HTMLElement, boolValue: boolean): void;
 export class Holder<T extends IDisposable> implements IDisposable, IDisposableOwner {
     autoDispose(obj: T): T;
     clear(): void;
-    // (undocumented)
     static create<T extends IDisposable>(owner: IDisposableOwnerT<Holder<T>> | null): Holder<T>;
     dispose(): void;
     get(): T | null;
     isEmpty(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected _owned: T | null;
     release(): IDisposable | null;
 }
 
-// @public (undocumented)
+// @public
 export interface IAttrObj {
     // (undocumented)
     [attrName: string]: string | boolean | null | undefined;
@@ -509,9 +507,9 @@ export function input(obs: Observable<string>, options: IInputOptions, ...args: 
 // @public
 export interface IObsArraySplice<T> {
     // (undocumented)
-    deleted: T[];
+    deleted: T[]; /** asdf */
     // (undocumented)
-    numAdded: number;
+    numAdded: number; /** asdf */
     // (undocumented)
     start: number;
 }
@@ -541,7 +539,7 @@ export interface ISubscribableObs {
     addListener(callback: (val: any, prev: any) => void, optContext?: object): Listener;
     // (undocumented)
     get(): any;
-    // (undocumented)
+    // @internal (undocumented)
     _getDepItem(): DepItem | null;
 }
 
@@ -554,38 +552,40 @@ export function keyframes(styles: string): string;
 // @public
 export class KoWrapObs<T> extends Observable<T> {
     constructor(_koObs: IKnockoutObservable<T>);
-    // (undocumented)
+    // @override (undocumented)
     dispose(): void;
-    // (undocumented)
+    // @override (undocumented)
     get(): T;
-    // (undocumented)
+    // @override (undocumented)
     set(value: T): void;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "Listener" is marked as @public, but its signature references "LLink" which is marked as @internal
+//
 // @public
 export class Listener extends LLink {
     constructor(emitter: Emitter, callback: ListenerCB<any>, context?: any);
-    // (undocumented)
+    // @internal (undocumented)
     static callAll(begin: LLink, end: LLink, args: any[]): void;
-    // (undocumented)
+    // @internal (undocumented)
     dispose(): void;
 }
 
-// @public
+// @public (undocumented)
 export type ListenerCB<T> = (this: T, ...args: any[]) => void;
 
-// @public (undocumented)
+// @public
 export class LiveIndex extends Observable<number | null> {
     constructor(_obsArray: ObsArray<any>, initialIndex?: number);
-    // (undocumented)
+    // @override (undocumented)
     dispose(): void;
-    // (undocumented)
     set(index: number | null): void;
-    // (undocumented)
     setLive(value: boolean): void;
 }
 
-// @public
+// Warning: (ae-internal-missing-underscore) The name "LLink" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal
 export class LLink {
     constructor();
     // (undocumented)
@@ -623,15 +623,10 @@ export class MultiHolder extends Disposable {
 
 // @public
 export class MutableObsArray<T> extends ObsArray<T> {
-    // (undocumented)
     pop(): T | undefined;
-    // (undocumented)
     push(...args: T[]): number;
-    // (undocumented)
     shift(): T | undefined;
-    // (undocumented)
     splice(start: number, deleteCount?: number, ...newValues: T[]): T[];
-    // (undocumented)
     unshift(...args: T[]): number;
 }
 
@@ -640,17 +635,15 @@ export const noTestId: TestId;
 
 // @public
 export class ObsArray<T> extends BaseObservable<T[]> {
-    // (undocumented)
     addListener(callback: ISpliceListener<T, void>): Listener;
     // (undocumented)
     addListener<C>(callback: ISpliceListener<T, C>, context: C): Listener;
-    // (undocumented)
     autoDispose(value: T & IDisposable): T & IDisposable;
-    // (undocumented)
+    // @override (undocumented)
     dispose(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _disposeOwned(splice?: IObsArraySplice<T>): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _setWithSplice(value: T[], splice: IObsArraySplice<T>): void;
 }
 
@@ -661,9 +654,9 @@ export function obsArray<T>(value?: T[]): MutableObsArray<T>;
 export class Observable<T> extends BaseObservable<T> implements IDisposableOwnerT<T & IDisposable> {
     autoDispose(value: T & IDisposable): T & IDisposable;
     static create<T>(owner: IDisposableOwnerT<Observable<T>> | null, value: T): Observable<T>;
-    // (undocumented)
+    // @internal (undocumented)
     protected _disposeOwned(): void;
-    // (undocumented)
+    // @internal (undocumented)
     static holder<T>(value: T & IDisposable): Observable<T>;
 }
 
@@ -673,12 +666,12 @@ export function observable<T>(value: T): Observable<T>;
 // @public
 export function obsHolder<T>(value: T & IDisposable): Observable<T>;
 
-// @public (undocumented)
+// @public
 export function on<E extends EventName | string, T extends EventTarget>(eventType: E, callback: EventCB<EventType<E>, T>, { useCapture }?: {
     useCapture?: boolean | undefined;
 }): DomMethod<T>;
 
-// @public (undocumented)
+// @public
 export function onDispose(disposerFunc: INodeFunc): (elem: Node) => void;
 
 // @public
@@ -689,16 +682,16 @@ export function onElem<E extends EventName | string, T extends EventTarget>(elem
     useCapture?: boolean | undefined;
 }): IDisposable;
 
-// @public (undocumented)
+// @public
 export function onKeyDown<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T>;
 
 // @public
 export function onKeyElem<T extends HTMLElement>(elem: T, evType: KeyEventType, keyHandlers: IKeyHandlers<T>): IDisposable;
 
-// @public (undocumented)
+// @public
 export function onKeyPress<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T>;
 
-// @public (undocumented)
+// @public
 export function onMatch(selector: string, eventType: string, callback: EventCB, { useCapture }?: {
     useCapture?: boolean | undefined;
 }): DomElementMethod;
@@ -708,19 +701,19 @@ export function onMatchElem(elem: EventTarget, selector: string, eventType: stri
     useCapture?: boolean | undefined;
 }): IDisposable;
 
-// @public (undocumented)
+// @public
 export function prop<T>(property: string, valueObs: BindableValue<T>): DomMethod;
 
 // @public
 export function propElem<T>(elem: Node, property: string, value: T): void;
 
-// @public (undocumented)
+// @public
 export class PureComputed<T> extends Observable<T> {
     constructor(callback: (use: UseCB, ...args: any[]) => T, dependencies: ReadonlyArray<ISubscribable>);
     dispose(): void;
-    // (undocumented)
+    // @override (undocumented)
     get(): T;
-    // (undocumented)
+    // @internal (undocumented)
     _getDepItem(): DepItem;
     onWrite(writeFunc: (value: T) => void): PureComputed<T>;
     set(value: T): void;
@@ -758,13 +751,13 @@ export function setDisposeOwner<T extends IDisposable>(owner: IDisposableOwnerT<
 // @public
 export function setupKoDisposal(ko: IKnockoutModule): void;
 
-// @public (undocumented)
+// @public
 export function show(boolValueObs: BindableValue<boolean>): DomElementMethod;
 
 // @public
 export function showElem(elem: HTMLElement, boolValue: boolean): void;
 
-// @public (undocumented)
+// @public
 export function style(property: string, valueObs: BindableValue<string>): DomElementMethod;
 
 // @public
@@ -803,7 +796,7 @@ export function subscribeBindable<T>(valueObs: BindableValue<T>, callback: (val:
 // @public
 export function subscribeElem<T>(elem: Node, valueObs: BindableValue<T>, callback: (newVal: T, oldVal?: T) => void): void;
 
-// @public (undocumented)
+// @public
 export class Subscription {
     constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ReadonlyArray<ISubscribable>, owner?: any);
     dispose(): void;
@@ -823,7 +816,7 @@ export type TagName = keyof HTMLElementTagNameMap | string;
 // @public
 export type TestId = (name: string) => DomElementMethod | null;
 
-// @public (undocumented)
+// @public
 export function text(valueObs: BindableValue<string>): DomMethod;
 
 // @public

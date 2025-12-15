@@ -34,9 +34,7 @@ export class BaseObservable<T> {
   private _onChange: Emitter;
   private _value: T;
 
-  /**
-   * Internal constructor for an Observable. You should use observable() function instead.
-   */
+  // Internal constructor for an Observable. You should use observable() function instead.
   constructor(value: T) {
     this._onChange = new Emitter();
     this._value = value;
@@ -125,6 +123,7 @@ export class BaseObservable<T> {
     return this._onChange.isDisposed();
   }
 
+  /** @internal */
   protected _disposeOwned(arg?: any) { /* noop */ }
 
   /**
@@ -145,6 +144,7 @@ export class BaseObservable<T> {
  * An Observable holds a value and allows subscribing to changes.
  */
 export class Observable<T> extends BaseObservable<T> implements IDisposableOwnerT<T & IDisposable> {
+  /** @internal */
   // See module-level holder() function below for documentation.
   public static holder<T>(value: T & IDisposable): Observable<T> {
     const obs = new Observable<T>(value);
@@ -176,6 +176,7 @@ export class Observable<T> extends BaseObservable<T> implements IDisposableOwner
     return value;
   }
 
+  /** @internal */
   protected _disposeOwned() {
     if (this._owned) {
       this._owned.dispose();

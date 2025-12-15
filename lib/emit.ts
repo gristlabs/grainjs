@@ -1,48 +1,16 @@
-/**
- * emit.js implements an Emitter class which emits events to a list of listeners. Listeners are
- * simply functions to call, and "emitting an event" just calls those functions.
- *
- * This is similar to Backbone events, with more focus on efficiency. Both inserting and removing
- * listeners is constant time.
- *
- * To create an emitter:
- *    let emitter = new Emitter();
- *
- * To add a listener:
- *    let listener = fooEmitter.addListener(callback);
- * To remove a listener:
- *    listener.dispose();
- *
- * The only way to remove a listener is to dispose the Listener object returned by addListener().
- * You can often use autoDispose to do this automatically when subscribing in a constructor:
- *    this.autoDispose(fooEmitter.addListener(this.onFoo, this));
- *
- * To emit an event, call emit() with any number of arguments:
- *    emitter.emit("hello", "world");
- */
-
-// Note about a possible alternative implementation.
-//
-// We could implement the same interface using an array of listeners. Certain issues apply, in
-// particular with removing listeners from inside emit(), and in ensuring that removals are
-// constant time on average. Such an implementation was attempted and timed. The result is that
-// compared to the linked-list implementation here, add/remove combination could be made nearly
-// twice faster (on average), while emit and add/remove/emit are consistently slightly slower.
-//
-// The implementation here was chosen based on those timings, and as the simpler one. For example,
-// on one setup (macbook, node4, 5-listener queue), add+remove take 0.1us, while add+remove+emit
-// take 3.82us. (In array-based implementation with same set up, add+remove is 0.06us, while
-// add+remove+emit is 4.80us.)
-
-// The private property name to hold next/prev pointers.
-
 function _noop() { /* noop */}
 
 export type ListenerCB<T> = (this: T, ...args: any[]) => void;
+
+/**
+ * A callback that listens to _changes_ in the Emitter listeners. This is mainly used for
+ * internal purposes.
+ */
 export type ChangeCB = (hasListeners: boolean) => void;
 
 /**
  * This is an implementation of a doubly-linked list, with just the minimal functionality we need.
+ * @internal
  */
 export class LLink {
   protected _next: LLink|null = null;
@@ -86,14 +54,57 @@ export class LLink {
   }
 }
 
+/**
+ * An `Emitter` emits events to a list of listeners. Listeners are
+ * simply functions to call, and "emitting an event" just calls those functions.
+ *
+ * This is similar to Backbone events, with more focus on efficiency. Both inserting and removing
+ * listeners is constant time.
+ *
+ * To create an emitter:
+ * ```ts
+ * const emitter = new Emitter();
+ * ```
+ *
+ * To add a listener:
+ * ```ts
+ * const listener = fooEmitter.addListener(callback);
+ * ```
+ *
+ * To remove a listener:
+ * ```ts
+ * listener.dispose();
+ * ```
+ *
+ * The only way to remove a listener is to dispose the `Listener` object returned by `addListener()`.
+ * You can often use autoDispose to do this automatically when subscribing in a constructor:
+ * ```ts
+ * this.autoDispose(fooEmitter.addListener(this.onFoo, this));
+ * ```
+ *
+ * To emit an event, call `emit()` with any number of arguments:
+ * ```ts
+ * emitter.emit("hello", "world");
+ * ```
+ *
+ * @privateRemarks
+ *
+ * Note about a possible alternative implementation.
+ *
+ * We could implement the same interface using an array of listeners. Certain issues apply, in
+ * particular with removing listeners from inside emit(), and in ensuring that removals are
+ * constant time on average. Such an implementation was attempted and timed. The result is that
+ * compared to the linked-list implementation here, add/remove combination could be made nearly
+ * twice faster (on average), while emit and add/remove/emit are consistently slightly slower.
+ *
+ * The implementation here was chosen based on those timings, and as the simpler one. For example,
+ * on one setup (macbook, node4, 5-listener queue), add+remove take 0.1us, while add+remove+emit
+ * take 3.82us. (In array-based implementation with same set up, add+remove is 0.06us, while
+ * add+remove+emit is 4.80us.)
+ */
 export class Emitter extends LLink {
   private _changeCB: ChangeCB = _noop;
   private _changeCBContext: any = undefined;
-
-  /**
-   * Constructs an Emitter object.
-   */
-  constructor() { super(); }
 
   /**
    * Adds a listening callback to the list of functions to call on emit().
@@ -151,10 +162,11 @@ export class Emitter extends LLink {
 }
 
 /**
- * Listener object wraps a callback added to an Emitter, allowing for O(1) removal when the
- * listener is disposed.
+ * The `Listener` object wraps a callback added to an Emitter, allowing for O(1) removal when the
+ * listener is disposed. It implements `IDisposable`.
  */
 export class Listener extends LLink {
+  /** @internal */
   public static callAll(begin: LLink, end: LLink, args: any[]): void {
     while (begin !== end) {
       const lis = begin as Listener;
@@ -171,6 +183,7 @@ export class Listener extends LLink {
     emitter._triggerChangeCB();
   }
 
+  /** @internal */
   public dispose(): void {
     if (this.isDisposed()) { return; }
     this._removeNode(this);

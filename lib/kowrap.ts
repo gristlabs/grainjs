@@ -65,10 +65,10 @@ export function fromKo<KObs extends IKnockoutObservable<any>>(koObs: KObs): Obse
 }
 
 /**
- * An Observable that wraps a Knockout observable, created via fromKo(). It keeps minimal overhead
+ * An Observable that wraps a Knockout observable, created via `fromKo()`. It keeps minimal overhead
  * when unused by only subscribing to the wrapped observable while it itself has subscriptions.
  *
- * This way, when unused, the only reference is from the wrapper to the wrapped object. KoWrapObs
+ * This way, when unused, the only reference is from the wrapper to the wrapped object. `KoWrapObs`
  * should not be disposed; its lifetime is tied to that of the wrapped object.
  */
 export class KoWrapObs<T> extends Observable<T> {
@@ -88,8 +88,11 @@ export class KoWrapObs<T> extends Observable<T> {
       }
     });
   }
+  /** @override */
   public get(): T { return this._koObs.peek(); }
+  /** @override */
   public set(value: T): void { bundleChanges(() => this._koObs(value)); }
+  /** @override */
   public dispose(): void { throw new Error("KoWrapObs should not be disposed"); }
 }
 

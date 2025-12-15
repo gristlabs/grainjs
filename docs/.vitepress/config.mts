@@ -21,6 +21,7 @@ export default defineConfig({
         items: [
           { text: 'Introduction', link: '/' },
           { text: 'Getting started', link: '/getting-started' },
+          { text: 'Examples', link: '/examples' },
           { text: 'DOM & Observables', link: '/basics' },
           { text: 'Disposables', link: '/dispose' },
           { text: 'DOM components', link: '/dom-components' },

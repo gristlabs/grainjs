@@ -62,7 +62,7 @@ dom.update(document.body,
   dom('h1', 'Hello world!')
 );
 ```
-<GrainJsExample heightRem=4 />
+<GrainJsExample heightRem=6 />
 
 This only does two things:
 1. `dom('h1', ...)` creates an `H1` (heading) element. Additional

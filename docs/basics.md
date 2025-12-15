@@ -336,7 +336,7 @@ dom.update(document.body,
   cssWrapper(cssTitle('Hello world'))
 );
 ```
-<GrainJsExample heightRem=5 />
+<GrainJsExample heightRem=6 />
 
 This generates unique class names for `cssTitle` and `cssWrapper`, adding the styles to the
 document on first use. The result is equivalent to:

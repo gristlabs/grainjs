@@ -342,7 +342,7 @@ export function find(selector: string): Element | null;
 export function findAll(selector: string): NodeListOf<Element>;
 
 // @public
-export function forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T) => Node | null): DomContents;
+export function forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T, index: number) => Node | null): DomContents;
 
 // @public
 export function frag(...args: IDomArgs<DocumentFragment>): DocumentFragment;

@@ -23,9 +23,9 @@ This constructs an element equivalent to the following HTML:
 </a>
 ```
 
-The workhorse of DOM construction is the function `dom()`. Various helpers useful with it are
-available as its properties, e.g. `dom.cls()`, `dom.attr()`, etc. The function has the following
-usage:
+The workhorse of DOM construction is the function [`dom()`](api/#dom). Various helpers useful with it are
+available as its properties, e.g. [`dom.cls()`](api/#cls), [`dom.attr()`](api/#attr), etc.
+The function has the following usage:
 
 ```typescript
 dom(tag, ...args)
@@ -51,8 +51,8 @@ The tag may contain optional `#foo` suffix to add the ID `"foo"` to the element,
 suffixes interfere with accurate typings, and are neither recommended nor useful.
 - The `id` attributes are almost never needed when using GrainJS (the element constructed
 is always available as a variable). If you were to need it, pass `{id: 'foo'}` instead.
-- CSS classes are usually better auto-assigned by using the `styled()` function. If you need a class
-  with a particular name, use `{className: 'bar'}` or `dom.cls('bar')`.
+- CSS classes are usually better auto-assigned by using the [`styled()`](api/#styled) function.
+If you need a class with a particular name, use `{className: 'bar'}` or `dom.cls('bar')`.
 
 One benefit of GrainJS is that by avoiding direct use of DOM IDs and classes, we
 avoid worrying about name collisions. Javascript does a better job of modularizing code, so it’s
@@ -67,8 +67,10 @@ recommended way to create an observable is:
 const showBoxObs = Observable.create(owner, false);
 ```
 
-The first argument to `Observable.create` is the owner of the resulting object -- more on that
-later. You may pass in null in its place, as in `Observable.create(null, value)`.
+The first argument to [`Observable.create`](api/#Observable.create) is the owner of the resulting
+object -- more on that later. You may pass in null in its place, as in
+`Observable.create(null,
+value)`.
 
 Once you have an observable, you can get or set its value:
 
@@ -103,10 +105,10 @@ The call `use(obs1)` returns the same value as `obs1.get()`, but also tells the 
 on this observable. So if you call `obs1.set(10)`, then `computed1` will get recomputed, and
 `computed1.get()` will evaluate to 22.
 
-The `use()` function, made available to the callback supplied to the Computed, is one significant
-difference to Knockout.js (which inspired this feature). Knockout creates a dependency on any
-observable used while the callback is executing; GrainJS intentionally makes dependency-creation
-explicit -- it only happens when the `use` function is, well, used.
+The `use()` function, made available to the callback supplied to the [Computed](api/#Computed),
+is one significant difference to Knockout.js (which inspired this feature). Knockout creates a
+dependency on any observable used while the callback is executing; GrainJS intentionally makes
+dependency-creation explicit -- it only happens when the `use` function is, well, used.
 
 There is another, even more explicit way to make a computed depend on another observable: pass in
 the dependencies into the constructor:

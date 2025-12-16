@@ -357,7 +357,7 @@ Find all elements matching a selector; just an abbreviation for document.querySe
 
 ### dom.forEach {#forEach}
 ```ts refs=MaybeObsArray=grainjs!MaybeObsArray:type|Node=mdn#Node|DomContents=grainjs!DomContents:type
-forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T) => Node | null): DomContents;
+forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T, index: number) => Node | null): DomContents;
 ```
 
 <div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domForEach.ts" target="_blank">Defined in domForEach.ts</a></div>
@@ -368,7 +368,7 @@ The given itemCreateFunc() should return a single DOM node for each item, or nul
 
 If the created nodes are removed from their parent externally, forEach() will cope with it, but will consider these elements as no longer owned, and will not run domDispose() on them.
 
-Note that itemCreateFunc() does not receive an index: an index would only be correct at the time the item is created, and would not reflect further changes to the array.
+Note that itemCreateFunc() is called with an index as the second argument, but that index is only accurate at the time of the call, and will stop reflecting the true index if more items are inserted or removed before it.
 
 If you'd like to map the DOM node back to its source item, use dom.data() and dom.getData() in itemCreateFunc().
 
@@ -849,33 +849,35 @@ In-code styling for DOM components, inspired by Reacts Styled Components.
 
 Usage:
 ```ts
-const title = styled('h1', `
+const cssTitle = styled('h1', `
   font-size: 1.5em;
   text-align: center;
   color: palevioletred;
 `);
 
-const wrapper = styled('section', `
+const cssWrapper = styled('section', `
   padding: 4em;
   background: papayawhip;
 `);
 
-wrapper(title('Hello world'))
+cssWrapper(cssTitle('Hello world'))
 ```
 
-This generates class names for title and wrapper, adds the styles to the document on first use, and the result is equivalent to:
+This generates class names for `cssTitle` and `cssWrapper`, adds the styles to the document on first use, and the result is equivalent to:
 ```ts
-dom(`section.${wrapper.className}`, dom(`h1.${title.className}`, 'Hello world'));
+dom(`section.${cssWrapper.className}`, dom(`h1.${cssTitle.className}`, 'Hello world'));
 ```
 
-Calls to styled() should happen at the top level, at import time, in order to register all styles upfront. Actual work happens the first time a style is needed to create an element. Calling styled() elsewhere than at top level is wasteful and bad for performance.
+What `styled(tag)` returns is a function that takes the same arguments `...args` as `dom(tag, ...args)`. In particular, you may call it with all the arguments that [`dom()`](#dom) takes: content, DOM methods, event handlers, etc.
 
-You may create a style that modifies an existing styled() or other component, e.g.
+Calls to `styled()` should happen at the top level, at import time, in order to register all styles upfront. Actual work happens the first time a style is needed to create an element. Calling `styled()` elsewhere than at top level is wasteful and bad for performance.
+
+You may create a style that modifies an existing `styled()` or other component, e.g.
 ```ts
-const title2 = styled(title, `font-size: 1rem; color: red;`);
+const cssTitle2 = styled(cssTitle, `font-size: 1rem; color: red;`);
 ```
 
-Calling title2('Foo') becomes equivalent to dom(`h1.${title.className}.${title2.className}`).
+Now calling `cssTitle2('Foo')` becomes equivalent to `dom('h1', {className: cssTitle.className + ' ' + cssTitle2.className})`.
 
 Styles may incorporate other related styles by nesting them under the main one as follows:
 ```ts
@@ -895,12 +897,12 @@ const myButton = styled('button', `
 
 In nested styles, ampersand (&) gets replaced with the generated .className of the main element.
 
-The resulting styled component provides a .cls() helper to simplify using prefixed classes. It behaves as dom.cls(), but prefixes the class names with the generated className of the main element. E.g. for the example above,
+The resulting styled component provides a `.cls()` helper to simplify using prefixed classes. It behaves as `dom.cls()`, but prefixes the class names with the generated className of the main element. E.g. for the example above,
 ```ts
 myButton(myButton.cls('-small'), 'Test')
 ```
 
-creates a button with both the myButton style above, and the style specified under "&-small".
+creates a button with both the `myButton` style above, and the style specified under "&-small".
 
 ### TestId {#TestId}
 ```ts refs=DomElementMethod=grainjs!DomElementMethod:type

@@ -17,36 +17,41 @@ export type DomCreateFunc<R, Args extends IDomArgs<R> = IDomArgs<R>> = (...args:
  *
  * Usage:
  * ```ts
- * const title = styled('h1', `
+ * const cssTitle = styled('h1', `
  *   font-size: 1.5em;
  *   text-align: center;
  *   color: palevioletred;
  * `);
  *
- * const wrapper = styled('section', `
+ * const cssWrapper = styled('section', `
  *   padding: 4em;
  *   background: papayawhip;
  * `);
  *
- * wrapper(title('Hello world'))
+ * cssWrapper(cssTitle('Hello world'))
  * ```
  *
- * This generates class names for title and wrapper, adds the styles to the document on first use,
- * and the result is equivalent to:
+ * This generates class names for `cssTitle` and `cssWrapper`, adds the styles to the document on
+ * first use, and the result is equivalent to:
  * ```ts
- * dom(`section.${wrapper.className}`, dom(`h1.${title.className}`, 'Hello world'));
+ * dom(`section.${cssWrapper.className}`, dom(`h1.${cssTitle.className}`, 'Hello world'));
  * ```
  *
- * Calls to styled() should happen at the top level, at import time, in order to register all
+ * What `styled(tag)` returns is a function that takes the same arguments `...args` as
+ * `dom(tag, ...args)`. In particular, you may call it with all the arguments that
+ * [`dom()`](#dom) takes: content, DOM methods, event handlers, etc.
+ *
+ * Calls to `styled()` should happen at the top level, at import time, in order to register all
  * styles upfront. Actual work happens the first time a style is needed to create an element.
- * Calling styled() elsewhere than at top level is wasteful and bad for performance.
+ * Calling `styled()` elsewhere than at top level is wasteful and bad for performance.
  *
- * You may create a style that modifies an existing styled() or other component, e.g.
+ * You may create a style that modifies an existing `styled()` or other component, e.g.
  * ```ts
- * const title2 = styled(title, `font-size: 1rem; color: red;`);
+ * const cssTitle2 = styled(cssTitle, `font-size: 1rem; color: red;`);
  * ```
  *
- * Calling title2('Foo') becomes equivalent to dom(`h1.${title.className}.${title2.className}`).
+ * Now calling `cssTitle2('Foo')` becomes equivalent to
+ * `dom('h1', {className: cssTitle.className + ' ' + cssTitle2.className})`.
  *
  * Styles may incorporate other related styles by nesting them under the main one as follows:
  * ```ts
@@ -66,14 +71,14 @@ export type DomCreateFunc<R, Args extends IDomArgs<R> = IDomArgs<R>> = (...args:
  *
  * In nested styles, ampersand (&) gets replaced with the generated .className of the main element.
  *
- * The resulting styled component provides a .cls() helper to simplify using prefixed classes. It
- * behaves as dom.cls(), but prefixes the class names with the generated className of the main
+ * The resulting styled component provides a `.cls()` helper to simplify using prefixed classes. It
+ * behaves as `dom.cls()`, but prefixes the class names with the generated className of the main
  * element. E.g. for the example above,
  * ```ts
  * myButton(myButton.cls('-small'), 'Test')
  * ```
  *
- * creates a button with both the myButton style above, and the style specified under "&-small".
+ * creates a button with both the `myButton` style above, and the style specified under "&-small".
  */
 // See module documentation for details.
 export function styled<Tag extends TagName>(tag: Tag, styles: string): DomCreateFunc<TagElem<Tag>> & IClsName;

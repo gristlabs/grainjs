@@ -29,16 +29,6 @@ jobs:
           google-chrome --version || true
           chromedriver --version || true
 
-      # Ensure Chrome exists + has required system deps
-      - uses: browser-actions/setup-chrome@v2
-        id: chrome
-        with:
-          chrome-version: stable
-
-      - run: |
-          ${{ steps.chrome.outputs.chrome-path }} --version
-          node -p "require('selenium-webdriver/package.json').version"
-
       - run: yarn install
       - run: yarn run build
       - run: yarn test

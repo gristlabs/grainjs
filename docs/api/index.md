@@ -1,7 +1,7 @@
 # API Reference
-- [DOM reference](dom-reference)
-- [Disposable reference](disposable-reference)
-- [Observables reference](observables-reference)
+- [DOM reference](#dom-reference)
+- [Disposable reference](#disposable-reference)
+- [Observables reference](#observables-reference)
 - [Other](#other)
 - [Misc Types](#misc-types)
 ## DOM reference {#dom-reference}
@@ -940,7 +940,7 @@ When myComponent() is created with testId argument omitted, the testId() calls a
 
 ## Disposable reference {#disposable-reference}
 
-See [Disposables](dispose) for background.
+See [Disposables](/dispose) for background.
 
 ### Disposable {#Disposable}
 ```ts refs=IDisposable=grainjs!IDisposable:interface|IDisposableOwner=grainjs!IDisposableOwner:interface
@@ -1332,7 +1332,7 @@ Sets owner of obj (i.e. calls owner.autoDispose(obj)) unless owner is null. Retu
 
 ## Observables reference {#observables-reference}
 
-See [Observables](basics#observables) for background.
+See [Observables](/basics#observables) for background.
 
 ### BaseObservable {#BaseObservable}
 ```ts refs=

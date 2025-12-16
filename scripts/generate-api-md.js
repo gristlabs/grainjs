@@ -28,14 +28,14 @@ listen to it, and update something about DOM when that observable changes.
   name: 'Disposable reference',
   anchor: 'disposable-reference',
   description: `
-See [Disposables](dispose) for background.
+See [Disposables](/dispose) for background.
 `,
   memberFiles: /^(dispose|domDispose)/,
 }, {
   name: 'Observables reference',
   anchor: 'observables-reference',
   description: `
-See [Observables](basics#observables) for background.
+See [Observables](/basics#observables) for background.
 `,
   memberFiles: /^(computed|pureComputed|obs|binding|subscribe)/,
 }];
@@ -91,7 +91,7 @@ function apiJsonToMarkdown(json, markdown) {
   const refsPresent = new Set(Object.keys(externalRefLinks));
 
   for (const grouping of groupings) {
-    emit(`- [${grouping.name}](${grouping.anchor})`);
+    emit(`- [${grouping.name}](#${grouping.anchor})`);
   }
   emit(`- [Other](#other)`);
   emit(`- [Misc Types](#misc-types)`);

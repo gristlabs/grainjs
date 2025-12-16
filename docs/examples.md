@@ -2,6 +2,27 @@
 
 To give you a taste of GrainJS in action, here are some examples built in GrainJS.
 
+These examples show only JS code, since all of the UI, styling, and behavior is there.
+
+:::details See HTML stub
+
+This HTML file is sufficient to run any of the examples below. It is just a stub that loads
+GrainJS and our code (assumed to be in `./index.js`).
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/grainjs@1/dist/grain-full.min.js" defer></script>
+    <script src="./index.js" defer></script>
+  </head>
+  <body>
+  </body>
+</html>
+```
+
+:::
+
 ## Unix timestamp converter
 
 This is an extra simple example: it lets the user enter or paste in a unix timestamp (seconds
@@ -263,23 +284,5 @@ const cssVerdict = styled('p', `
 dom.update(document.body, dom.create(buildCalculator));
 ```
 <GrainJsExample heightRem=15 />
-
-:::details HTML file
-
-The HTML file is just a stub that loads GrainJS and our code (assumed to be in `./index.js`).
-
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <script src="https://cdn.jsdelivr.net/npm/grainjs@1/dist/grain-full.min.js" defer></script>
-    <script src="./index.js" defer></script>
-  </head>
-  <body>
-  </body>
-</html>
-```
-
-:::
 
 [Try it in Codepen.](https://codepen.io/dsagal/pen/EaKBYXQ?editors=0010)

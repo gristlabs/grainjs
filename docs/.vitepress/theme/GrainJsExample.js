@@ -4,7 +4,6 @@
  * Renders the preview in an iframe (that's not same-origin) to allow it to render examples
  * written by users too, reasonably safely.
  */
-import {onMounted} from 'vue';
 import {dom, Observable, styled} from '../../..';
 
 const iframeSandbox = [
@@ -16,20 +15,22 @@ const iframeSandbox = [
   'allow-top-navigation-by-user-activation',
 ];
 
-onMounted(() => {
-  // We watch for changes to <html> element's classes, because we need to manually update previews
-  // for changes to light/dark mode (because the previews are in iframes).
-  const getColorScheme = () => getComputedStyle(document.documentElement).colorScheme;
-  const colorSchemeObs = Observable.create(null, getColorScheme());
-  const observer = new MutationObserver((mutations) => { colorSchemeObs.set(getColorScheme()); });
-  observer.observe(document.documentElement, {attributes: true, attributeFilter: ['class']});
-});
+let colorSchemeObs = null;
+let observer = null;
 
 export function prepareExample(elem, heightRem) {
+  if (!observer) {
+    // We watch for changes to <html> element's classes, because we need to manually update previews
+    // for changes to light/dark mode (because the previews are in iframes).
+    const getColorScheme = () => getComputedStyle(document.documentElement).colorScheme;
+    colorSchemeObs = Observable.create(null, getColorScheme());
+    observer = new MutationObserver((mutations) => { colorSchemeObs.set(getColorScheme()); });
+    observer.observe(document.documentElement, {attributes: true, attributeFilter: ['class']});
+  }
+
   const pre = elem.previousElementSibling?.querySelector('pre');
   let code = pre?.innerText;
   if (code) {
-    const colorScheme = getComputedStyle(pre).colorScheme;
     dom.update(elem,
       cssResult.cls(''),
       cssIframe({sandbox: iframeSandbox.join(' '), style: `height: ${heightRem}rem`},

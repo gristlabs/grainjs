@@ -15,7 +15,7 @@ delivers all its value in a minified size of about 30kb.
 ## Quick tour
 
 Here are a few examples to give you a taste. In each example, you can see GrainJS code and what it
-produces. Some are interactive: try them out.
+produces.
 
 ### Building DOM
 

@@ -8,9 +8,9 @@ GrainJS is a JavaScript / TypeScript library for building dynamic web applicatio
 
 - It's in part inspired by [React](https://reactjs.org/), but based on observables (like
 [Knockout](http://knockoutjs.com/documentation/introduction.html)) instead of virtual dom.
-- It is lightweight, with a focus on performance. It has no dependencies and is only ~30KB.
+- It is lightweight, has no dependencies, and takes only ~30KB minified.
 - It needs no special tooling. It's nothing more than a library.
-- It includes convenient DOM-building in JS, event dispatching, DOM event subscriptions,
+- It supports convenient DOM-building in JS, event dispatching, DOM event subscriptions,
   disposable components, and in-code CSS styling.
 - It's fully typed for use with TypeScript.
 - It's proven its worth by powering [Grist](https://github.com/gristlabs/grist-core#grist)'s rich
@@ -30,9 +30,8 @@ Or see [Getting started with GrainJS](https://gristlabs.github.io/grainjs/gettin
 
 ## Examples
 
-See basic examples in [Introduction](https://gristlabs.github.io/grainjs/) or complete examples
-(which you can play with yourself) at
-[Examples](https://gristlabs.github.io/grainjs/examples.html).
+See basic examples in [Quick tour](https://gristlabs.github.io/grainjs/#quick-tour) or complete examples
+at [Examples](https://gristlabs.github.io/grainjs/examples.html).
 
 ## License
 

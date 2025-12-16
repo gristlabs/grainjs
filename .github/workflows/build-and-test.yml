@@ -22,16 +22,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: yarn
 
-      - name: Browser sanity
-        run: |
-          which google-chrome || true
-          which chromedriver || true
-          google-chrome --version || true
-          chromedriver --version || true
-
       - run: yarn install
       - run: yarn run build
-      - run: yarn test
+      - run: SELENIUM_BROWSER=chrome yarn test
 
       - uses: codecov/codecov-action@v5
         with:

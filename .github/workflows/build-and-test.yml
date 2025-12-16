@@ -36,8 +36,8 @@ jobs:
           chrome-version: stable
 
       - run: |
-        ${{ steps.chrome.outputs.chrome-path }} --version
-        node -p "require('selenium-webdriver/package.json').version"
+          ${{ steps.chrome.outputs.chrome-path }} --version
+          node -p "require('selenium-webdriver/package.json').version"
 
       - run: yarn install
       - run: yarn run build

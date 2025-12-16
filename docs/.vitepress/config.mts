@@ -5,6 +5,7 @@ import {linkifyRefs} from './theme/linkifyRefs';
 export default defineConfig({
   title: 'GrainJS',
   description: 'GrainJS: a lightweight typescript frontend framework',
+  base: '/grainjs/',
   themeConfig: {
     socialLinks: [
       { icon: 'github', link: 'https://github.com/gristlabs/grainjs' },

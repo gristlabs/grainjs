@@ -14,17 +14,35 @@ jobs:
           - 22.17.0
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: yarn
+
+      - name: Browser sanity
+        run: |
+          which google-chrome || true
+          which chromedriver || true
+          google-chrome --version || true
+          chromedriver --version || true
+
+      # Ensure Chrome exists + has required system deps
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: stable
+
+      - run: |
+        ${{ steps.chrome.outputs.chrome-path }} --version
+        node -p "require('selenium-webdriver/package.json').version"
 
       - run: yarn install
       - run: yarn run build
       - run: yarn test
 
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v5
         with:
           file: ./coverage/lcov.info

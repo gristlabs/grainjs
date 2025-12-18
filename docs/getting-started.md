@@ -30,7 +30,7 @@ Pre-built versions of GrainJS are available on some CDNs:
 <script src="https://cdn.jsdelivr.net/npm/grainjs@1/dist/grain-full.min.js" defer></script>
 ```
 
-These create a global `grainjs` objects, which you can use like so:
+These create a global `grainjs` object, which you can use like so:
 
 ```js
 const {dom} = grainjs;

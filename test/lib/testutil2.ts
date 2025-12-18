@@ -76,7 +76,7 @@ function _capture(messages: string[], methodName: string, format: any, ...args: 
   // Format the message, nice and simple.
   let i = 0;
   if (typeof format === 'string') {
-    format = format.replace(/\%s|\%d/g, () => args[i++]);
+    format = format.replace(/%s|%d/g, () => args[i++]);
   }
   let message = methodName + ': ' + format;
   for ( ; i < args.length; i++) {

@@ -13,8 +13,7 @@ echo "Rebuilding typescript (es2015 modules)"
 $BINDIR/tsc -p tsconfig/tsconfig.es2015.esm.json
 
 echo "Linting"
-$BINDIR/tslint -p . || true
-$BINDIR/jshint lib/ test/ || true
+$BINDIR/eslint index.ts lib test/{browser,lib,tools} || true
 
 ( echo "Building dist/grain-full*.js" \
   && $BINDIR/browserify dist/cjs/index.js -o dist/grain-full.debug.js -s grainjs \

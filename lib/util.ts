@@ -1,3 +1,4 @@
+/* eslint-disable prefer-spread */
 
 /**
  * Returns f such that f() calls func(...boundArgs), i.e. optimizes `() => func(...boundArgs)`.

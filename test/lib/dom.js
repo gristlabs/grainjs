@@ -121,10 +121,10 @@ describe('dom', function() {
   describe("dom.domDispose", function() {
     it("should call disposers on elem and descendants", function() {
       let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy();
-      let div, span, b, u;
+      let div, span, u;
       div = dom('div', dom.onDispose(spy1),
         span = dom('span', dom.onDispose(spy2),
-          b = dom('b', 'hello'),
+          dom('b', 'hello'),
           u = dom('u', 'world', dom.onDispose(spy3))));
 
       dom.domDispose(div);
@@ -157,12 +157,11 @@ describe('dom', function() {
 
     it("should call disposers when a function argument throws exception", function() {
       let spy1 = sinon.spy(), spy2 = sinon.spy(), spy3 = sinon.spy(), spy4 = sinon.spy();
-      let div, span, input;
       assert.throws(() =>
-        div = dom('div', dom.onDispose(spy1),
-          span = dom('span',
+        dom('div', dom.onDispose(spy1),
+          dom('span',
             dom.onDispose(spy2),
-            input = dom('input', dom.onDispose(spy3)),
+            dom('input', dom.onDispose(spy3)),
             elem => { throw new Error("fake"); },
             dom.onDispose(spy4))),
         /fake/);

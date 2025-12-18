@@ -63,7 +63,7 @@ export function dom<Tag extends TagName>(tagString: Tag, ...args: IDomArgs<TagEl
 }
 
 // Additionally export all methods as properties of dom() function.
-export namespace dom {      // tslint:disable-line:no-namespace
+export namespace dom {      // eslint-disable-line @typescript-eslint/no-namespace
   export const svg             = _domImpl.svg;
   export const frag            = _domImpl.frag;
   export const update          = _domImpl.update;

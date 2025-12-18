@@ -44,7 +44,7 @@ export class LLink {
   }
 
   protected _disposeList(): void {
-    let node: LLink = this;
+    let node: LLink = this;     // eslint-disable-line @typescript-eslint/no-this-alias
     let next = node._next;
     while (next !== null) {
       node._next = node._prev = null;

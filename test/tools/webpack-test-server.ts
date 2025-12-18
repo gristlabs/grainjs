@@ -1,6 +1,5 @@
 import {IMochaServer} from 'mocha-webdriver';
 import * as webpack from 'webpack';
-// @ts-ignore
 import * as WebpackDevServer from 'webpack-dev-server';
 
 // tslint:disable:no-console

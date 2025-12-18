@@ -1,75 +1,3 @@
-/**
- * dispose.js provides tools to objects that needs to dispose resources, such as destroy DOM, and
- * unsubscribe from events. The motivation with examples is presented here:
- *
- *    https://phab.getgrist.com/w/disposal/
- *
- * Disposable is a class for components that need cleanup (e.g. maintain DOM, listen to events,
- * subscribe to anything). It provides a .dispose() method that should be called to destroy the
- * component, and .onDispose()/.autoDispose() methods that the component should use to take
- * responsibility for other pieces that require cleanup.
- *
- * To define a disposable class:
- *    class Foo extends Disposable { ... }
- *
- * To create Foo:
- *    const foo = Foo.create(owner, ...args);
- * This is better than `new Foo` for two reasons:
- *    1. If Foo's constructor throws an exception, any disposals registered in that constructor
- *       before the exception are honored.
- *    2. It ensures you specify the owner of the new instance (but you can use null to skip it).
- *
- * In Foo's constructor (or rarely methods), take ownership of other Disposable objects:
- *    this.bar = Bar.create(this, ...);
- *
- * For objects that are not instances of Disposable but have a .dispose() methods, use:
- *    this.bar = this.autoDispose(createSomethingDisposable());
- *
- * To call a function on disposal (e.g. to add custom disposal logic):
- *    this.onDispose(() => this.myUnsubscribeAllMethod());
- *    this.onDispose(this.myUnsubscribeAllMethod, this);    // slightly more efficient
- *
- * To mark this object to be wiped out on disposal (i.e. set all properties to null):
- *    this.wipeOnDispose();
- * See the documentation of that method for more info.
- *
- * To dispose Foo directly:
- *    foo.dispose();
- * To determine if an object has already been disposed:
- *    foo.isDisposed()
- *
- * If you need to replace an owned object, or release, or dispose it early, use a Holder:
- *    this._holder = Holder.create(this);
- *    Bar.create(this._holder, 1);      // creates new Bar(1)
- *    Bar.create(this._holder, 2);      // creates new Bar(2) and disposes previous object
- *    this._holder.clear();             // disposes contained object
- *    this._holder.release();           // releases contained object
- *
- * If you need a container for multiple objects and dispose them all together, use a MultiHolder:
- *    this._mholder = MultiHolder.create(null);
- *    Bar.create(this._mholder, 1);     // create new Bar(1)
- *    Bar.create(this._mholder, 2);     // create new Bar(2)
- *    this._mholder.dispose();          // disposes both objects
- *
- * If creating your own class with a dispose() method, do NOT throw exceptions from dispose().
- * These cannot be handled properly in all cases. Read here about the same issue in C++:
- *    http://bin-login.name/ftp/pub/docs/programming_languages/cpp/cffective_cpp/MAGAZINE/SU_FRAME.HTM#destruct
- *
- * Using a parametrized (generic) class as a Disposable is tricky. E.g.
- *    class Bar<T> extends Disposable { ... }
- *    // Bar<T>.create(...)   <-- doesn't work
- *    // Bar.create<T>(...)   <-- doesn't work
- *    // Bar.create(...)      <-- works, but with {} for Bar's type parameters
- *
- * The solution is to expose the constructor type using a helper method:
- *    class Bar<T> extends Disposable {
- *      // Note the tuple below which must match the constructor parameters of Bar<U>.
- *      public static ctor<U>(): IDisposableCtor<Bar<U>, [U, boolean]> { return this; }
- *      constructor(a: T, b: boolean) { ... }
- *    }
- *    Bar.ctor<T>().create(...)   // <-- works, creates Bar<T>, and does type-checking!
- */
-
 import {LLink} from './emit';
 
 /**
@@ -80,7 +8,7 @@ export interface IDisposable {
 }
 
 /**
- * Anything with .autoDispose() can be the owner of a disposable object. This is a type-specific
+ * Anything with `.autoDispose()` can be the owner of a disposable object. This is a type-specific
  * class that can only own a disposable object of type T.
  */
 export interface IDisposableOwnerT<T extends IDisposable> {
@@ -114,16 +42,87 @@ export interface IDisposableCtor<Derived, CtorArgs extends any[]> {
 }
 
 /**
- * Base class for disposable objects that can own other objects. See the module documentation.
+ * Base class for disposable objects that can own other objects.
+ *
+ * For background and motivation, see [Disposables](/dispose).
+ *
+ * `Disposable` is a class for components that need cleanup (e.g. maintain DOM, listen to events,
+ * subscribe to anything). It provides a `.dispose()` method that should be called to destroy the
+ * component, and `.onDispose()` / `.autoDispose()` methods that the component should use to take
+ * responsibility for other pieces that require cleanup.
+ *
+ * To define a disposable class:
+ * ```ts
+ * class Foo extends Disposable { ... }
+ * ```
+ *
+ * To create `Foo`:
+ * ```ts
+ * const foo = Foo.create(owner, ...args);
+ * ```
+ * This is better than `new Foo` for two reasons:
+ *    1. If `Foo`'s constructor throws an exception, any disposals registered in that constructor
+ *       before the exception are honored.
+ *    2. It ensures you specify the owner of the new instance (but you can use null to skip it).
+ *
+ * In `Foo`'s constructor (or rarely methods), take ownership of other Disposable objects:
+ * ```ts
+ * this.bar = Bar.create(this, ...);
+ * ```
+ *
+ * For objects that are not instances of Disposable but have a .dispose() methods, use:
+ * ```ts
+ * this.bar = this.autoDispose(createSomethingDisposable());
+ * ```
+ *
+ * To call a function on disposal (e.g. to add custom disposal logic):
+ * ```ts
+ * this.onDispose(() => this.myUnsubscribeAllMethod());
+ * this.onDispose(this.myUnsubscribeAllMethod, this);
+ * ```
+ *
+ * To mark this object to be wiped out on disposal (i.e. set all properties to null):
+ * ```ts
+ * this.wipeOnDispose();
+ * ```
+ * See the documentation of that method for more info.
+ *
+ * To dispose Foo directly: `foo.dispose()`.
+ *
+ * To determine if an object has already been disposed: `foo.isDisposed()`.
+ *
+ * If you need to replace an owned object, or release, or dispose it early, use a
+ * [`Holder`](#Holder) or [`MultiHolder`](#MultiHolder).
+ *
+ * If creating your own class with a `dispose()` method, do NOT throw exceptions from `dispose()`.
+ * These cannot be handled properly in all cases.
+ *
+ * Using a parametrized (generic) class as a Disposable is tricky. E.g.
+ * ```ts
+ * class Bar<T> extends Disposable { ... }
+ * // Bar<T>.create(...)   <-- doesn't work
+ * // Bar.create<T>(...)   <-- doesn't work
+ * // Bar.create(...)      <-- works, but with {} for Bar's type parameters
+ * ```
+ *
+ * The solution is to expose the constructor type using a helper method:
+ * ```ts
+ * class Bar<T> extends Disposable {
+ *   // Note the tuple below which must match the constructor parameters of Bar<U>.
+ *   public static ctor<U>(): IDisposableCtor<Bar<U>, [U, boolean]> { return this; }
+ *   constructor(a: T, b: boolean) { ... }
+ * }
+ * Bar.ctor<T>().create(...)   // <-- works, creates Bar<T>, and does type-checking!
+ * ```
  */
 export abstract class Disposable implements IDisposable, IDisposableOwner {
   /**
    * Create Disposable instances using `Class.create(owner, ...)` rather than `new Class(...)`.
    *
    * This reminds you to provide an owner, and ensures that if the constructor throws an
-   * exception, dispose() gets called to clean up the partially-constructed object.
+   * exception, `dispose()` gets called to clean up the partially-constructed object.
    *
-   * Owner may be null if intend to ensure disposal some other way.
+   * Owner may be `null` if you intend to ensure disposal some other way.
    */
   public static create<T extends new (...args: any[]) => any>(
     this: T, owner: IDisposableOwnerT<InstanceType<T>>|null, ...args: ConstructorParameters<T>): InstanceType<T> {
@@ -161,14 +160,14 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
     _defaultDisposableOwner = _noopOwner;
   }
 
-  /** Take ownership of obj, and dispose it when this.dispose() is called. */
+  /** Take ownership of `obj`, and dispose it when `this.dispose()` is called. */
   public autoDispose<T extends IDisposable>(obj: T): T {
     this.onDispose(obj.dispose, obj);
     return obj;
   }
 
-  /** Call the given callback when this.dispose() is called. */
-  public onDispose<T>(callback: (this: T) => void, context?: T): DisposeListener {
+  /** Call the given callback when `this.dispose()` is called. */
+  public onDispose<T>(callback: (this: T) => void, context?: T): IDisposable {
     return this._disposalList.addListener(callback, context);
   }
 
@@ -177,10 +176,13 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
    * recommended to call this early in the constructor.
    *
    * This makes disposal more costly, but has certain benefits:
+   *
    * - If anything still refers to the object and uses it, we'll get an early error, rather than
    *   silently keep going, potentially doing useless work (or worse) and wasting resources.
+   *
    * - If anything still refers to the object (even without using it), the fields of the object
    *   can still be garbage-collected.
+   *
    * - If there are circular references involving this object, they get broken, making the job
    *   easier for the garbage collector.
    *
@@ -199,7 +201,7 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
   }
 
   /**
-   * Clean up `this` by disposing all owned objects, and calling onDispose() callbacks, in reverse
+   * Clean up `this` by disposing all owned objects, and calling `onDispose()` callbacks, in reverse
    * order to that in which they were added.
    */
   public dispose(): void {
@@ -229,19 +231,33 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
 
 /**
  * Holder keeps a single disposable object. If given responsibility for another object using
- * holder.autoDispose() or Foo.create(holder, ...), it automatically disposes the currently held
+ * `holder.autoDispose()` or `Foo.create(holder, ...)`, it automatically disposes the currently held
  * object. It also disposes it when the holder itself is disposed.
  *
- * If the object is an instance of Disposable, the holder will also notice when the object gets
+ * If the object is an instance of `Disposable`, the holder will also notice when the object gets
  * disposed from outside of it, in which case the holder will become empty again.
+ *
+ * If you need a container for multiple objects and dispose them all together, use a `MultiHolder`:
+ *
+ * :::info Example
+ * ```ts
+ * this._holder = Holder.create(this);
+ * Bar.create(this._holder, 1);      // creates new Bar(1), assuming it's a Disposable
+ * Bar.create(this._holder, 2);      // creates new Bar(2) and disposes previous object
+ * this._holder.clear();             // disposes contained object
+ * this._holder.release();           // releases contained object
+ * ```
+ * :::
  */
 export class Holder<T extends IDisposable> implements IDisposable, IDisposableOwner {
+  /** `Holder.create(owner)` creates a new `Holder`. */
   public static create<T extends IDisposable>(owner: IDisposableOwnerT<Holder<T>>|null): Holder<T> {
     return setDisposeOwner(owner, new Holder<T>());
   }
 
+  /** @internal */
   protected _owned: T|null = null;
-  private _disposalListener: DisposeListener|undefined = undefined;
+  private _disposalListener: IDisposable|undefined = undefined;
 
   /** Take ownership of a new object, disposing the previously held one. */
   public autoDispose(obj: T): T {
@@ -296,9 +312,18 @@ export class Holder<T extends IDisposable> implements IDisposable, IDisposableOw
 }
 
 /**
- * MultiHolder keeps multiple disposable object. It disposes all held object when the holder
- * itself is disposed. It's actually nothing more than the Disposable base class itself, just
+ * `MultiHolder` keeps multiple disposable objects. It disposes all held object when the holder
+ * itself is disposed. It's actually nothing more than the `Disposable` base class itself, just
  * exposed with a clearer name that describes its purpose.
+ *
+ * :::info Example
+ * ```ts
+ * this._mholder = MultiHolder.create(null);
+ * Bar.create(this._mholder, 1);     // create new Bar(1)
+ * Bar.create(this._mholder, 2);     // create new Bar(2)
+ * this._mholder.dispose();          // disposes both objects
+ * ```
+ * :::
  */
 export class MultiHolder extends Disposable {}
 

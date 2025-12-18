@@ -1,36 +1,3 @@
-/**
- * ObsArray extends a plain Observable to allow for more efficient observation of array changes.
- *
- * As for any array-valued Observable, when the contents of the observed array changes, the
- * listeners get called with new and previous values which are the same array. For simple changes,
- * such as those made with .push() and .splice() methods, ObsArray allows for more efficient
- * handling of the change by calling listeners with splice info in the third argument.
- *
- * This module also provides computedArray(), which allows mapping each item of an ObsArray
- * through a function, passing through splice info for efficient handling of small changes. It
- * also allows mapping an observable or a computed whose value is an ObsArray.
- *
- * There is no need or benefit in using computedArray() if you have a computed() that returns a
- * plain array. It is specifically for the case when you want to preserve the efficiency of
- * ObsArray when you map its values.
- *
- * Both ObsArray and ComputedArray may be used with disposable elements as their owners. E.g.
- *
- *    const arr = obsArray<D>();
- *    arr.push(D.create(arr, "x"), D.create(arr, "y"));
- *    arr.pop();      // Element "y" gets disposed.
- *    arr.dispose();  // Element "x" gets disposed.
- *
- *    const values = obsArray<string>();
- *    const compArr = computedArray<D>(values, (val, i, compArr) => D.create(compArr, val));
- *    values.push("foo", "bar");      // D("foo") and D("bar") get created
- *    values.pop();                   // D("bar") gets disposed.
- *    compArr.dispose();              // D("foo") gets disposed.
- *
- * Note that only the pattern above works: obsArray (or compArray) may only be used to take
- * ownership of those disposables that are added to it as array elements.
- */
-
 import {IDisposable, IDisposableOwnerT, setDisposeOwner} from './dispose';
 import {Listener} from './emit';
 import {BaseObservable, Observable} from './observable';
@@ -48,7 +15,7 @@ export type MaybeObsArray<T> = BaseObservable<T[]> | T[];
  * completely.
  */
 export interface IObsArraySplice<T> {
-  start: number;
+  start: number;        /** asdf */
   numAdded: number;
   deleted: T[];
 }
@@ -56,24 +23,50 @@ export interface IObsArraySplice<T> {
 export type ISpliceListener<T, C>  = (this: C, val: T[], prev: T[], change?: IObsArraySplice<T>) => void;
 
 /**
- * ObsArray<T> is essentially an array-valued observable. The main difference is that it may be
+ * `ObsArray<T>` is essentially an array-valued observable. It extends a plain Observable to allow
+ * for more efficient observation of array changes. It also may be
  * used as an owner for disposable array elements.
+ *
+ * As for any array-valued `Observable`, when the contents of the observed array changes, the
+ * listeners get called with new and previous values which are the same array. For simple changes,
+ * such as those made with `.push()` and `.splice()` methods, `ObsArray` allows for more efficient
+ * handling of the change by calling listeners with splice info in the third argument.
+ *
+ * `ObsArray` may be used with disposable elements as their owner. E.g.
+ * ```ts
+ * const arr = obsArray<D>();
+ * arr.push(D.create(arr, "x"), D.create(arr, "y"));
+ * arr.pop();      // Element "y" gets disposed.
+ * arr.dispose();  // Element "x" gets disposed.
+ * ```
+ *
+ * Note that only the pattern above works: `obsArray` may only be used to take
+ * ownership of those disposables that are added to it as array elements.
  */
 export class ObsArray<T> extends BaseObservable<T[]> {
   private _ownedItems?: Set<T & IDisposable> = undefined;
 
+  /**
+   * Adds a callback to listen to changes in the observable. In case of `ObsArray`, the listener
+   * gets additional information.
+   */
   public addListener(callback: ISpliceListener<T, void>): Listener;
   public addListener<C>(callback: ISpliceListener<T, C>, context: C): Listener;
   public addListener(callback: ISpliceListener<T, any>, optContext?: any): Listener {
     return super.addListener(callback, optContext);
   }
 
+  /**
+   * Take ownership of an item added to this array. This should _only_ be used for array elements,
+   * not any unrelated items.
+   */
   public autoDispose(value: T & IDisposable): T & IDisposable {
     if (!this._ownedItems) { this._ownedItems = new Set<T & IDisposable>(); }
     this._ownedItems.add(value);
     return value;
   }
 
+  /** @override */
   public dispose(): void {
     if (this._ownedItems) {
       for (const item of this.get() as Array<T & IDisposable>) {
@@ -86,10 +79,12 @@ export class ObsArray<T> extends BaseObservable<T[]> {
     super.dispose();
   }
 
+  /** @internal */
   protected _setWithSplice(value: T[], splice: IObsArraySplice<T>): void {
     return this._setWithArg(value, splice);
   }
 
+  /** @internal */
   protected _disposeOwned(splice?: IObsArraySplice<T>): void {
     if (!this._ownedItems) { return; }
     if (splice) {
@@ -117,10 +112,11 @@ export class ObsArray<T> extends BaseObservable<T[]> {
 }
 
 /**
- * MutableObsArray<T> adds array-like mutation methods which emit events with splice info, to
- * allow more efficient processing of such changes. It is created with obsArray<T>().
+ * `MutableObsArray<T>` adds array-like mutation methods which emit events with splice info, to
+ * allow more efficient processing of such changes. It is created with `obsArray<T>()`.
  */
 export class MutableObsArray<T> extends ObsArray<T> {
+  /** Appends elements to the end and returns the new length (like `Array#push`). */
   public push(...args: T[]): number {
     const value = this.get();
     const start = value.length;
@@ -129,6 +125,7 @@ export class MutableObsArray<T> extends ObsArray<T> {
     return newLen;
   }
 
+  /** Removes and returns the last element (like `Array#pop`). */
   public pop(): T|undefined {
     const value = this.get();
     if (value.length === 0) { return undefined; }
@@ -137,6 +134,7 @@ export class MutableObsArray<T> extends ObsArray<T> {
     return ret;
   }
 
+  /** Prepends elements to the start and returns the new length (like `Array#unshift`). */
   public unshift(...args: T[]) {
     const value = this.get();
     const newLen = value.unshift(...args);
@@ -144,6 +142,7 @@ export class MutableObsArray<T> extends ObsArray<T> {
     return newLen;
   }
 
+  /** Removes and returns the first element (like `Array#shift`). */
   public shift(): T|undefined {
     const value = this.get();
     if (value.length === 0) { return undefined; }
@@ -152,6 +151,10 @@ export class MutableObsArray<T> extends ObsArray<T> {
     return ret;
   }
 
+  /**
+   * Removes and/or inserts elements at a given index and returns the removed elements (like
+   * `Array#splice`).
+   */
   public splice(start: number, deleteCount: number = Infinity, ...newValues: T[]) {
     const value = this.get();
     const len = value.length;
@@ -164,7 +167,7 @@ export class MutableObsArray<T> extends ObsArray<T> {
 
 /**
  * Creates a new MutableObsArray with an optional initial value, defaulting to the empty array.
- * It is essentially the same as observable<T[]>, but with array-like mutation methods.
+ * It is essentially the same as `observable<T[]>`, but with array-like mutation methods.
  */
 export function obsArray<T>(value: T[] = []): MutableObsArray<T> {
   return new MutableObsArray<T>(value);
@@ -178,7 +181,7 @@ function isObsArray(val: BaseObservable<any>): val is BaseObservable<any[]> {
 }
 
 /**
- * See computedArray() below for documentation.
+ * See [`computedArray()`](#computedArray) for documentation.
  */
 export class ComputedArray<T, U> extends ObsArray<U> {
   private _sub: Subscription;
@@ -196,6 +199,7 @@ export class ComputedArray<T, U> extends ObsArray<U> {
       subscribe(obsArr, (use, obsArrayValue) => { use(obsArrayValue); return this._syncMap(obsArrayValue); });
   }
 
+  /** @internal */
   public dispose() {
     this._unsync();
     this._sub.dispose();
@@ -254,25 +258,43 @@ export class ComputedArray<T, U> extends ObsArray<U> {
 }
 
 /**
- * Returns an ObsArray that maps all elements of the passed-in ObsArray through a mapper function.
- * Also accepts an observable (e.g. a computed) whose value is an ObsArray. Usage:
+ * Returns an `ObsArray` that maps all elements of the passed-in `ObsArray` through a mapper
+ * function. Also accepts an observable (e.g. a computed) whose value is an `ObsArray`.
+ * ```ts
+ * computedArray(obsArray, mapper)
+ * ```
  *
- *    computedArray(obsArray, mapper)
+ * The result is analogous to:
+ * ```ts
+ * computed((use) => use(obsArray).map(mapper))       // for ObsArray
+ * computed((use) => use(use(obsArray)).map(mapper))  // for Observable<ObsArray>
+ * ```
  *
- * The result is entirely analogous to:
- *
- *     computed((use) => use(obsArray).map(mapper))       // for ObsArray
- *     computed((use) => use(use(obsArray)).map(mapper))  // for Observable<ObsArray>
- *
- * The benefit of computedArray() is that a small change to the source array (e.g. one item
+ * The benefit of `computedArray()` is that a small change to the source array (e.g. one item
  * added or removed), causes a small change to the mapped array, rather than a full rebuild.
  *
- * This is useful with an ObsArray or with an observable whose value is an ObsArray, and also
- * when the computed array owns its disposable items.
+ * This is useful with an `ObsArray` or with an observable whose value is an `ObsArray`, and also
+ * when the computed array's items are disposable and it owns them.
  *
- * Note that the mapper function is called with (item, index, array) as for a standard
- * array.map(), but that the index is only accurate at the time of the call, and will stop
+ * There is no need or benefit to using `computedArray()` if you have a `computed()` that returns
+ * a plain array. It is specifically for the case when you want to preserve the efficiency of
+ * `ObsArray` when you map its values.
+ *
+ * Note that the mapper function is called with `(item, index, array)` as for a standard
+ * `array.map()`, but that the index is only accurate at the time of the call, and will stop
  * reflecting the true index if more items are inserted into the array later.
+ *
+ * As with `ObsArray`, a `ComputedArray` may be used with disposable elements as their owners. E.g.
+ * ```ts
+ * const values = obsArray<string>();
+ * const compArr = computedArray<D>(values, (val, i, compArr) => D.create(compArr, val));
+ * values.push("foo", "bar");      // D("foo") and D("bar") get created
+ * values.pop();                   // D("bar") gets disposed.
+ * compArr.dispose();              // D("foo") gets disposed.
+ * ```
+ *
+ * Note that only the pattern above works: obsArray (or compArray) may only be used to take
+ * ownership of those disposables that are added to it as array elements.
  */
 export function computedArray<T, U>(
   obsArr: BaseObservable<T[]> | Observable<BaseObservable<T[]>>,
@@ -296,6 +318,9 @@ export function makeLiveIndex<T>(owner: IDisposableOwnerT<LiveIndex>|null, obsAr
   return setDisposeOwner(owner, new LiveIndex(obsArr, initialIndex));
 }
 
+/**
+ * An Observable that represents an index into an `ObsArray`, clamped to be in the valid range.
+ */
 export class LiveIndex extends Observable<number|null> {
   private _listener: Listener;
   private _isLive: boolean = true;
@@ -306,18 +331,28 @@ export class LiveIndex extends Observable<number|null> {
     this._listener = _obsArray.addListener(this._onArrayChange, this);
   }
 
+  /**
+   * Set the index, clamping it to a valid value.
+   */
   public set(index: number|null) {
     // Clamp to [0, len) range of the observable array.
     const len = this._obsArray.get().length;
     super.set(len === 0 ? null : Math.max(0, Math.min(len - 1, index || 0)));
   }
 
-  // Note that this feature comes from a rather obscure need, and it would be better if something
-  // similar were possible without making it an explicit feature.
+  /**
+   * Turn "liveness" on or off. While set to false, the observable will not be adjusted as the
+   * array changes, except to keep it valid.
+   *
+   * @privateRemarks
+   * Note that this feature comes from a rather obscure need, and it would be better if something
+   * similar were possible without making it an explicit feature.
+   */
   public setLive(value: boolean): void {
     this._isLive = value;
   }
 
+  /** @override */
   public dispose() {
     this._listener.dispose();
     super.dispose();

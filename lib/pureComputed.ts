@@ -1,15 +1,3 @@
-/**
- * pureComputed.js implements a variant of computed() suitable for use with a pure read function
- * (free of side-effects). A pureComputed is only subscribed to its dependencies when something is
- * subscribed to it. At other times, it is not subscribed to anything, and calls to `get()` will
- * recompute its value each time by calling its read() function.
- *
- * Its syntax and usage are otherwise exactly as for a computed.
- *
- * In addition to being cheaper when unused, a pureComputed() also avoids leaking memory when
- * unused (since it's not registered with dependencies), so it is not necessary to dispose it.
- */
-
 import {DepItem} from './_computed_queue';
 import {IKnockoutReadObservable} from './kowrap';
 import {BaseObservable, Observable} from './observable';
@@ -26,6 +14,17 @@ function _useFunc<T>(obs: BaseObservable<T>|IKnockoutReadObservable<T>): T {
 // Constant empty array, which we use to avoid allocating new read-only empty arrays.
 const emptyArray: ReadonlyArray<any> = [];
 
+/**
+ * `PureComputed` is a variant of `Computed` suitable for use with a pure read function
+ * (free of side-effects). A `PureComputed` is only subscribed to its dependencies when something is
+ * subscribed to it. At other times, it is not subscribed to anything, and calls to `get()` will
+ * recompute its value each time by calling its `read()` function.
+ *
+ * Its syntax and usage are otherwise exactly as for a `Computed`.
+ *
+ * In addition to being cheaper when unused, a `PureComputed` also avoids leaking memory when
+ * unused (since it's not registered with dependencies), so it is not necessary to dispose it.
+ */
 export class PureComputed<T> extends Observable<T> {
   private _callback: (use: UseCB, ...args: any[]) => T;
   private _write: (value: T) => void;
@@ -33,9 +32,7 @@ export class PureComputed<T> extends Observable<T> {
   private readonly _dependencies: ReadonlyArray<ISubscribableObs>;
   private _inCall: boolean;
 
-  /**
-   * Internal constructor for a PureComputed. You should use pureComputed() function instead.
-   */
+  // Internal constructor for a PureComputed. You should use pureComputed() function instead.
   constructor(callback: (use: UseCB, ...args: any[]) => T, dependencies: ReadonlyArray<ISubscribable>) {
     // At initialization we force an undefined value even though it's not of type T: it's not
     // actually used as get() is overridden.
@@ -48,11 +45,13 @@ export class PureComputed<T> extends Observable<T> {
     this.setListenerChangeCB(this._onListenerChange, this);
   }
 
+  /** @internal */
   public _getDepItem(): DepItem {
     this._activate();
     return this._sub!._getDepItem();
   }
 
+  /** @override */
   public get(): T {
     if (!this._sub && !this._inCall) {
       // _inCall member prevents infinite recursion.
@@ -74,7 +73,7 @@ export class PureComputed<T> extends Observable<T> {
   /**
    * "Sets" the value of the pure computed by calling the write() callback if one was provided in
    * the constructor. Throws an error if there was no such callback (not a "writable" computed).
-   * @param {Object} value: The value to pass to the write() callback.
+   * @param value - The value to pass to the write() callback.
    */
   public set(value: T): void { this._write(value); }
 
@@ -121,9 +120,7 @@ export class PureComputed<T> extends Observable<T> {
 }
 
 /**
- * This is the type-checking interface for pureComputed(), which allows TypeScript to do helpful
- * type-checking when using it. We can only support a fixed number of argumnets (explicit
- * dependencies), but 5 should almost always be enough.
+ * Creates and returns a new PureComputed. The interface is identical to that of a Computed.
  */
 export function pureComputed<T>(cb: (use: UseCB) => T): PureComputed<T>;
 
@@ -147,9 +144,6 @@ export function pureComputed<A, B, C, D, E, T>(
     a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>, e: Observable<E>,
     cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): PureComputed<T>;
 
-/**
- * Creates and returns a new PureComputed. The interface is identical to that of a Computed.
- */
 export function pureComputed(...args: any[]): PureComputed<any> {
   const readCb = args.pop();
   // The cast helps ensure that Observable is compatible with ISubscribable abstraction that we use.

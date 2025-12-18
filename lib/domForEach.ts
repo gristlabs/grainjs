@@ -18,13 +18,17 @@ import {G} from './browserGlobals';
  * If the created nodes are removed from their parent externally, forEach() will cope with it, but
  * will consider these elements as no longer owned, and will not run domDispose() on them.
  *
- * Note that itemCreateFunc() does not receive an index: an index would only be correct at the
- * time the item is created, and would not reflect further changes to the array.
+ * Note that itemCreateFunc() is called with an index as the second argument, but that index is
+ * only accurate at the time of the call, and will stop reflecting the true index if more items
+ * are inserted or removed before it.
  *
  * If you'd like to map the DOM node back to its source item, use dom.data() and dom.getData() in
  * itemCreateFunc().
  */
-export function forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T) => Node|null): DomContents {
+export function forEach<T>(
+  obsArray: MaybeObsArray<T>,
+  itemCreateFunc: (item: T, index: number) => Node|null
+): DomContents {
   const markerPre = G.document.createComment('a');
   const markerPost = G.document.createComment('b');
   return [markerPre, markerPost, (elem: Node) => {

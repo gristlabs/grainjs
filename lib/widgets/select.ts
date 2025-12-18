@@ -24,7 +24,7 @@ function getOptionValue<T>(option: IOption<T>): T {
 /**
  * Creates a select dropdown widget. The observable `obs` reflects the value of the selected
  * option, and `optionArray` is an array (regular or observable) of option values and labels.
- * These may be either strings, or {label, value, disabled} objects.
+ * These may be either strings, or `{label, value, disabled}` objects.
  *
  * The type of value may be any type at all; it is opaque to this widget.
  *
@@ -32,6 +32,7 @@ function getOptionValue<T>(option: IOption<T>): T {
  * label that the select box will show, blank by default.
  *
  * Usage:
+ * ```
  *    const fruit = observable("apple");
  *    select(fruit, ["apple", "banana", "mango"]);
  *
@@ -42,6 +43,7 @@ function getOptionValue<T>(option: IOption<T>): T {
  *      {value: 21, label: "Eve"},
  *    ]);
  *    select(employee, employees, {defLabel: "Select employee:"});
+ * ```
  */
 export function select<T>(obs: Observable<T>, optionArray: MaybeObsArray<IOption<T>>,
                           options: {defLabel?: string} = {}) {

@@ -12,9 +12,9 @@ import {G} from './browserGlobals';
 const _dataMap: WeakMap<Node, {[key: string]: any}> = new WeakMap();
 
 /**
- * Sets multiple attributes of a DOM element. The `attrs()` variant takes no `elem` argument.
+ * Sets multiple attributes of a DOM element.
  * Null and undefined values are omitted, and booleans are either omitted or set to empty string.
- * @param {Object} attrsObj: Object mapping attribute names to attribute values.
+ * @param attrsObj - Object mapping attribute names to attribute values.
  */
 export function attrsElem(elem: Element, attrsObj: IAttrObj): void {
   for (const key of Object.keys(attrsObj)) {
@@ -24,17 +24,21 @@ export function attrsElem(elem: Element, attrsObj: IAttrObj): void {
     }
   }
 }
+
+/**
+ * Sets multiple attributes of a DOM element. Null and undefined values are omitted, and booleans
+ * are either omitted or set to empty string.
+ */
 export function attrs(attrsObj: IAttrObj): DomElementMethod {
   return (elem) => attrsElem(elem, attrsObj);
 }
 
 /**
  * Sets an attribute of a DOM element to the given value. Removes the attribute when the value is
- * null or undefined. The `attr()` variant takes no `elem` argument, and `attrValue` may be an
- * observable or function.
- * @param {Element} elem: The element to update.
- * @param {String} attrName: The name of the attribute to bind, e.g. 'href'.
- * @param {String|null|undefined} attrValue: The string value, or null or undefined to remove the attribute.
+ * null or undefined.
+ * @param elem - The element to update.
+ * @param attrName - The name of the attribute to bind, e.g. 'href'.
+ * @param attrValue - The string value, or null or undefined to remove the attribute.
  */
 export function attrElem(elem: Element, attrName: string, attrValue: string|null|undefined): void {
   if (attrValue === null || attrValue === undefined) {
@@ -43,6 +47,16 @@ export function attrElem(elem: Element, attrName: string, attrValue: string|null
     elem.setAttribute(attrName, attrValue);
   }
 }
+
+/**
+ * Sets an attribute of a DOM element to the given value. Removes the attribute when the value is
+ * null or undefined.
+ *
+ * @example
+ * ```ts
+ * dom('a', dom.attr('href', urlObs))
+ * ```
+ */
 export function attr(attrName: string, attrValueObs: BindableValue<string|null|undefined>): DomElementMethod {
   return (elem) => _subscribe(elem, attrValueObs, (val) => attrElem(elem, attrName, val));
 }
@@ -50,27 +64,34 @@ export function attr(attrName: string, attrValueObs: BindableValue<string|null|u
 /**
  * Sets or removes a boolean attribute of a DOM element. According to the spec, empty string is a
  * valid true value for the attribute, and the false value is indicated by the attribute's absence.
- * The `boolAttr()` variant takes no `elem`, and `boolValue` may be an observable or function.
- * @param {Element} elem: The element to update.
- * @param {String} attrName: The name of the attribute to bind, e.g. 'checked'.
- * @param {Boolean} boolValue: Boolean value whether to set or unset the attribute.
+ * @param elem - The element to update.
+ * @param attrName - The name of the attribute to bind, e.g. 'checked'.
+ * @param boolValue - Boolean value whether to set or unset the attribute.
  */
 export function boolAttrElem(elem: Element, attrName: string, boolValue: boolean): void {
   attrElem(elem, attrName, boolValue ? '' : null);
 }
+/**
+ * Dom-method that sets or removes a boolean attribute of a DOM element.
+ * @param attrName - The name of the attribute to bind, e.g. 'checked'.
+ * @param boolValueObs - Value, observable, or function for a whether to set or unset the attribute.
+ */
 export function boolAttr(attrName: string, boolValueObs: BindableValue<boolean>): DomElementMethod {
   return (elem) => _subscribe(elem, boolValueObs, (val) => boolAttrElem(elem, attrName, val));
 }
 
 /**
- * Adds a text node to the element. The `text()` variant takes no `elem`, and `value` may be an
- * observable or function.
- * @param {Element} elem: The element to update.
- * @param {String} value: The text value to add.
+ * Adds a text node to the element.
+ * @param elem - The element to update.
+ * @param value - The text value to add.
  */
 export function textElem(elem: Node, value: string): void {
   elem.appendChild(G.document.createTextNode(value));
 }
+
+/**
+ * Sets text content of a DOM element to a value that may be an observable or a function.
+ */
 export function text(valueObs: BindableValue<string>): DomMethod {
   return (elem) => {
     const textNode = G.document.createTextNode('');
@@ -80,15 +101,21 @@ export function text(valueObs: BindableValue<string>): DomMethod {
 }
 
 /**
- * Sets a style property of a DOM element to the given value. The `style()` variant takes no
- * `elem`, and `value` may be an observable or function.
- * @param {Element} elem: The element to update.
- * @param {String} property: The name of the style property to update, e.g. 'fontWeight'.
- * @param {String} value: The value for the property.
+ * Sets a style property of a DOM element to the given value.
+ * @param elem - The element to update.
+ * @param property - The name of the style property to update, e.g. 'fontWeight'.
+ * @param value - The value for the property.
  */
 export function styleElem(elem: Element, property: string, value: string): void {
   (elem as any).style[property] = value;
 }
+
+/**
+ * Sets a style property of a DOM element to the given value, which may be an observable or a
+ * function.
+ * @param property - The name of the style property to update, e.g. 'fontWeight'.
+ * @param value - The value for the property.
+ */
 export function style(property: string, valueObs: BindableValue<string>): DomElementMethod {
   return (elem) =>
     _subscribe(elem, valueObs, (val) => styleElem(elem, property, val));
@@ -96,14 +123,20 @@ export function style(property: string, valueObs: BindableValue<string>): DomEle
 
 /**
  * Sets the property of a DOM element to the given value.
- * The `prop()` variant takes no `elem`, and `value` may be an observable or function.
- * @param {Element} elem: The element to update.
- * @param {String} property: The name of the property to update, e.g. 'disabled'.
- * @param {Object} value: The value for the property.
+ * @param elem - The element to update.
+ * @param property - The name of the property to update, e.g. 'disabled'.
+ * @param value - The value for the property.
  */
 export function propElem<T>(elem: Node, property: string, value: T): void {
   (elem as any)[property] = value;
 }
+
+/**
+ * Sets the property of a DOM element to the given value, which may be an observable or a
+ * function.
+ * @param property - The name of the property to update, e.g. 'disabled'.
+ * @param value - The value for the property.
+ */
 export function prop<T>(property: string, valueObs: BindableValue<T>): DomMethod {
   return (elem) => _subscribe(elem, valueObs, (val) => propElem(elem, property, val));
 }
@@ -111,13 +144,17 @@ export function prop<T>(property: string, valueObs: BindableValue<T>): DomMethod
 /**
  * Shows or hides the element depending on a boolean value. Note that the element must be visible
  * initially (i.e. unsetting style.display should show it).
- * The `show()` variant takes no `elem`, and `boolValue` may be an observable or function.
- * @param {Element} elem: The element to update.
- * @param {Boolean} boolValue: True to show the element, false to hide it.
+ * @param elem - The element to update.
+ * @param boolValue - True to show the element, false to hide it.
  */
 export function showElem(elem: HTMLElement, boolValue: boolean): void {
   elem.style.display = boolValue ? '' : 'none';
 }
+
+/**
+ * Shows or hides the element depending on a boolean value, which may be an observable or a function.
+ * Note that the element must be visible by default (i.e. unsetting `style.display` should show it).
+ */
 export function show(boolValueObs: BindableValue<boolean>): DomElementMethod {
   return (elem) =>
     _subscribe(elem, boolValueObs, (val) => showElem(elem, val));
@@ -125,13 +162,18 @@ export function show(boolValueObs: BindableValue<boolean>): DomElementMethod {
 
 /**
  * The opposite of show, hiding the element when boolValue is true.
- * The `hide()` variant takes no `elem`, and `boolValue` may be an observable or function.
- * @param {Element} elem: The element to update.
- * @param {Boolean} boolValue: True to hide the element, false to show it.
+ * @param elem - The element to update.
+ * @param boolValue - True to hide the element, false to show it.
  */
 export function hideElem(elem: HTMLElement, boolValue: boolean): void {
   elem.style.display = boolValue ? 'none' : '';
 }
+
+/**
+ * The opposite of show, hiding the element when boolValue is true. `boolValueObs` may be an
+ * observable or a function.
+ * Note that the element must be visible by default (i.e. unsetting `style.display` should show it).
+ */
 export function hide(boolValueObs: BindableValue<boolean>): DomElementMethod {
   return (elem) =>
     _subscribe(elem, boolValueObs, (val) => hideElem(elem, val));
@@ -148,12 +190,13 @@ export function clsElem(elem: Element, className: string, boolValue: boolean = t
  * Sets or toggles a css class className. If className is an observable, it will be replaced when
  * the observable changes. If a plain string, then an optional second boolean observable may be
  * given, which will toggle it.
- *
- *    dom.cls('foo')                                // Sets className 'foo'
- *    dom.cls('foo', isFoo);                        // Toggles 'foo' className according to observable.
- *    dom.cls('foo', (use) => use(isFoo));          // Toggles 'foo' className according to observable.
- *    dom.cls(fooClass);                            // Sets className to the value of fooClass observable
- *    dom.cls((use) => `prefix-${use(fooClass)}`);  // Sets className to prefix- plus fooClass observable.
+ * ```ts
+ * dom.cls('foo')                                // Sets className 'foo'
+ * dom.cls('foo', isFoo);                        // Toggles 'foo' className according to observable.
+ * dom.cls('foo', (use) => use(isFoo));          // Toggles 'foo' className according to observable.
+ * dom.cls(fooClass);                            // Sets className to the value of fooClass observable
+ * dom.cls((use) => `prefix-${use(fooClass)}`);  // Sets className to prefix- plus fooClass observable.
+ * ```
  */
 export function cls(className: string, boolValue?: BindableValue<boolean>): DomElementMethod;
 export function cls(className: BindableValue<string>): DomElementMethod;
@@ -193,11 +236,10 @@ function _clsDynamicPrefix(prefix: string, className: BindableValue<string>): Do
 }
 
 /**
- * Associate arbitrary data with a DOM element. The `data()` variant takes no `elem`, and `value`
- * may be an observable or function.
- * @param {Element} elem: The element with which to associate data.
- * @param {String} key: Key to identify this piece of data among others attached to elem.
- * @param {Object} value: Arbitrary value to associate with elem.
+ * Associate arbitrary data with a DOM element.
+ * @param elem - The element with which to associate data.
+ * @param key - Key to identify this piece of data among others attached to elem.
+ * @param value - Arbitrary value to associate with elem.
  */
 export function dataElem(elem: Node, key: string, value: any): void {
   const obj = _dataMap.get(elem);
@@ -208,9 +250,19 @@ export function dataElem(elem: Node, key: string, value: any): void {
     _dataMap.set(elem, {[key]: value});
   }
 }
+
+/**
+ * Associate arbitrary data with a DOM element: `value` may be an observable or a function.
+ * @param key - Key to identify this piece of data among others attached to elem.
+ * @param value - Arbitrary value to associate with elem.
+ */
 export function data(key: string, valueObs: BindableValue<any>): DomMethod {
   return (elem) => _subscribe(elem, valueObs, (val) => dataElem(elem, key, val));
 }
+
+/**
+ * Retrieve data associated with a DOM element using `data()` or `dataElem()`.
+ */
 export function getData(elem: Node, key: string) {
   const obj = _dataMap.get(elem);
   return obj && obj[key];
@@ -219,7 +271,7 @@ export function getData(elem: Node, key: string) {
 /**
  * A very simple setup to identify DOM elements for testing purposes. Here's the recommended
  * usage.
- *
+ * ```ts
  *   // In the component to be tested.
  *   import {noTestId, TestId} from 'grainjs';
  *
@@ -228,17 +280,20 @@ export function getData(elem: Node, key: string) {
  *       dom(..., testId("another-name"), ...),
  *     );
  *   }
+ * ```
  *
  * In the fixture code using this component:
- *
+ * ```ts
  *   import {makeTestId} from 'grainjs';
  *
  *   dom(..., myComponent(myArgs, makeTestId('test-mycomp-'), ...)
+ * ```
  *
  * In the webdriver test code:
- *
+ * ```ts
  *   driver.find('.test-my-comp-some-name')
  *   driver.find('.test-my-comp-another-name')
+ * ```
  *
  * When myComponent() is created with testId argument omitted, the testId() calls are no-ops. When
  * makeTestId('test-foo-') is passed in, testId() calls simply add a css class with that prefix.

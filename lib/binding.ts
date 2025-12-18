@@ -10,6 +10,13 @@ import {IKnockoutReadObservable, InferKoType} from './kowrap';
 import {BaseObservable} from './observable';
 import {subscribe, UseCBOwner} from './subscribe';
 
+/**
+ * Any of the value types that DOM methods know how to subscribe to: a plain value (like a
+ * string); an Observable (including a Computed); a knockout observable; a function.
+ *
+ * If a function, it's used to create a `Computed`, and will be called with a context function
+ * `use`, allowing it to depend on other observable values (see documentation for `Computed`).
+ */
 export type BindableValue<T> = BaseObservable<T> | ComputedCallback<T> | T | IKnockoutReadObservable<T>;
 
 export type ComputedCallback<T> = (use: UseCBOwner, ...args: any[]) => T;
@@ -64,8 +71,8 @@ export function subscribeBindable<T>(
 }
 
 /**
- * Subscribes a callback to valueObs (which may be a value, observable, or function) using
- * subscribe(), and disposes the subscription with the passed-in element.
+ * Subscribes a callback to `valueObs` (which may be a value, observable, or function) using
+ * `subscribeBindable()`, and ties the disposal of this subscription to the passed-in element.
  */
 export function subscribeElem<T>(elem: Node, valueObs: BindableValue<T>,
                                  callback: (newVal: T, oldVal?: T) => void): void {

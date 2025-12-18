@@ -1,12 +1,9 @@
 # Disposables
 
-- [Class Disposable](#class-disposable)
-- [Taking Ownership](#taking-ownership)
-- [Holders](#holders)
-- [Further Notes](#further-notes)
+There is a subtle but important issue with building long-lived frontend applications, which is
+that objects need to be disposed. The need for this permeates the design of GrainJS.
 
-There is a subtle issue with building long-lived front-end applications, which is that objects
-need to be disposed. The need for this permeates the design of GrainJS.
+## Background
 
 In C++, classes can have constructors and destructors, with deterministic rules for when
 destructors are called to clean up an object state. Destructors aren’t a feature of most languages
@@ -14,7 +11,8 @@ with automatic memory management (like Javascript), because there is no need to 
 when an object is no longer used; the garbage-collector takes care of that. But memory is not the
 only resource that’s acquired in the constructor and that may need to be released. In fact, in
 C++, the pairing of constructors and destructors is so useful for managing resources that there is
-a named pattern for this: RAII (https://en.cppreference.com/w/cpp/language/raii).
+a named pattern for this: RAII
+([Resource Acquisition is Initialization](https://en.cppreference.com/w/cpp/language/raii)).
 
 Imagine this situation. You have some component that listens to window resizing and updates
 something about the DOM (perhaps redraws a chart). Let’s say the component’s state lives in a
@@ -23,7 +21,7 @@ class `MyChart`, and we add a listener to the resize event in its constructor:
 ```typescript
 class MyChart {
   constructor() {
-    window.addListener('resize', () => this._updateChartSize());
+    window.addEventListener('resize', () => this._updateChartSize());
   }
   ...
 }
@@ -44,7 +42,7 @@ accumulate, and are unacceptable.
 
 What we should do is remove the listener when we no longer need our object. In GrainJS, we call this
 “disposing” the object. In addition to removing the chart from the page, we “dispose” the object,
-i.e. run any needed clean-up. In this case, we need to run `window.removeListener('resize', ...)`.
+i.e. run any needed clean-up. In this case, we need to run `window.removeEventListener('resize', ...)`.
 If we remember to do that, then the callback is no longer registered, no longer triggered by
 window resizing, and no longer keeping references to our object or the associated DOM, so that all
 that memory may get garbage-collected.
@@ -56,10 +54,10 @@ purpose similar to a C++ destructor. At a basic level, the example above could b
 class MyChart {
   private _onResize = () => this._updateChartSize();
   constructor() {
-    window.addListener('resize', this._onResize);
+    window.addEventListener('resize', this._onResize);
   }
   public dispose() {
-    window.removeListener('resize', this._onResize);
+    window.removeEventListener('resize', this._onResize);
   }
   ...
 }
@@ -119,15 +117,15 @@ For example, we can simplify our `MyChart` class above. The `dispose()` method i
 class MyChart extends Disposable {
   constructor() {
     const onResize = () => this._updateChartSize();
-    window.addListener('resize', onResize);
-    this.onDispose(() => window.removeListener('resize', onResize));
+    window.addEventListener('resize', onResize);
+    this.onDispose(() => window.removeEventListener('resize', onResize));
   }
   ...
 }
 ```
 
 Various GrainJS tools are designed to work nicely with disposal. So using GrainJS event handling
-methods, it’s shorter:
+methods makes this simpler:
 
 ```typescript
 class MyChart extends Disposable {
@@ -147,12 +145,18 @@ is the following:
 class MyDashboard extends Disposable {
   private _chart: MyChart;
   constructor() {
+    super();
     this._chart = MyChart.create(this);  // Create MyChart, owned by this.
   }
 }
 ```
 
-This is roughly equivalent to `this.autoDispose(new MyChart())`, but is better for two reasons:
+This is roughly equivalent to `this.autoDispose(new MyChart())`, but note the change in
+perspective. What this says is: "Create `MyChart`, with `this` as its owner." We know that
+`MyChart` needs to be disposed, so someone must have that responsibility. That someone is the
+"owner", and we specify the owner when we create the object.
+
+Here are two more concrete reasons why `MyChart.create(this)` is better:
 
 1. If `MyChart` constructor throws an exception, any disposals registered in that constructor before
    the exception will be honored. (Otherwise, some resources will leak in this case.)
@@ -167,7 +171,7 @@ the first argument. The owner is another `Disposable` which has the responsibili
 the newly created object.
 
 In other words, the newly created object’s lifetime is tied to the lifetime of its owner. When
-the owner is disposed, it will disposed its owned objects.
+the owner is disposed, it will dispose its owned objects.
 
 The owner can be set to `null`, e.g. `MyChart.create(null)`, which makes it similar to `new
 MyChart()`, with the notable difference that the `create()` method will clean up resources created
@@ -178,13 +182,31 @@ In short, when creating an instance of `Disposable`:
 1. Always prefer using `SomeClass.create()` method.
 2. Always prefer passing in the owner as the first argument to `create`.
 
-Because the owned objects aren’t cleaned up until their owner is disposed, this pattern should be
-used in the constructor. It may also make sense in some initialization method that’s called once.
+Elsewhere in this documentation, you've probably seen code like: `Observable.create(null, 17)`.
+That's because an `Observable` is also disposable. The `null` in those examples is your clue that
+no owner is specified. In a real application, the first argument should be the owner of the
+newly-created observable.
+
+When creating a disposable object in the constructor of another disposable object, `this` is
+typically exactly the right owner. It could look like so:
+
+```ts
+class MyDashboard extends Disposable {
+  public isActive = Observable.create(this, false);
+  public chart = MyChart.create(this);
+  ...
+}
+```
+
+(If using JavaScript rather than TypeScript, you'd omit the `public` keyword.)
+
+Because the owned objects aren’t cleaned up until their owner is disposed, this pattern is mainly
+suitable in the constructor. It may also make sense in an initialization method that’s called once.
 It does not make sense to call `SomeClass.create(this)` or `this.autoDispose(...)` in a method
 that gets called multiple times. On each call, some resource gets created (like `SomeClass` or a
 subscription), and they will accumulate until this object itself is disposed. In most cases like
 this, you’d want each call to create and take ownership of the new resource, and clean up the
-previous one. For this, read on about Holders.
+previous one. For that, read on about Holders.
 
 As the recommended pattern, the static `create` method is available and recommended to create
 observables and computed observables:
@@ -192,11 +214,13 @@ observables and computed observables:
 - `Observable.create(owner, value)`.
 
 Disposing computed observables is important -- if not disposed, they continue to be subscribed to
-their dependencies. Disposing plain observables isn't strictly necessary, but still recommended,
+their dependencies. Disposing plain observables isn't strictly necessary, but still highly recommended,
 partly because disposing them is _sometimes_ important (e.g. when the contained value needs to be
 disposed, as described in [Disposable Values](more-observables.md#disposable-values)), and partly
-because it's easier to create things in the same consistent way than have to remember which
-objects are OK to treat differently.
+because an observable keeps references to its subscribers. If it's time to dispose an observable,
+but it still has subscribers, then you have a bug; if you don't dispose it, then you have both a bug
+and a memory leak. Also, it's easier to create things in the same consistent way than have to
+remember which objects are OK to treat differently.
 
 ## Holders
 
@@ -205,10 +229,10 @@ If you need to replace an owned object, or release an object from disposal, or d
 ```typescript
 this._holder = Holder.create(this);
 Bar.create(this._holder, 1);  // creates new Bar(1)
-Bar.create(this._holder, 2);  // creates new Bar(2) and disposes previous object
-this._holder.get();           // returns the contained object
-this._holder.clear();         // disposes the contained object; .get() will now return null
-this._holder.release();       // releases and returns the contained object; .get() will now return null
+Bar.create(this._holder, 2);  // creates new Bar(2); disposes previous object
+this._holder.get();     // returns the contained object
+this._holder.clear();   // disposes the contained object; .get() is now null
+this._holder.release(); // releases and returns the object; .get() is now null
 ```
 
 If you need a container for multiple objects and dispose them all together, use a MultiHolder:
@@ -220,9 +244,56 @@ Bar.create(this._mholder, 2);  // create new Bar(2)
 this._mholder.dispose();       // disposes both objects
 ```
 
+## Disposing DOM
+
+Sometimes, when you create DOM, you'll want to run some cleanup when that DOM element is removed
+from the page. For this, you may use `dom.onDispose()` and `dom.autoDispose()` functions.
+
+For example:
+
+```typescript
+function buildLink(isBigObs: Observable<boolean>) {
+  const isSmallObs = Computed.create(null, use => !use(isBigObs));
+  return dom('a',
+    dom.autoDispose(isSmallObs),
+    dom.onDispose(() => console.log("Good bye, link!")),
+    dom.cls('small-link', isSmallObs),
+    ...
+  );
+}
+```
+
+This function builds and returns a DOM element. When this element is _disposed_, it will log the
+`"Good bye, link!"` message, and will run `isSmallObs.dispose()`, which is important to avoid a
+leak -- what else would have the responsibility to dispose `isSmallObs`?
+
+Note that if you forget to do this, the leak is real. Since `isSmallObs` is
+subscribed to changes in `isBigObs`, there are references going in both directions (`isBigObs`
+needs to know whom to inform of changes). If you don't dispose `isSmallObs`, it will live in
+memory as long as `isBigObs` does.
+
+(For cases like this, use `dom.cls('small-link', use => !use(isBigObs))` instead.
+Then you don't need `isSmallObs`, and disposal is taken care of. Another good alternative
+is [DOM components](dom-components).)
+
+When we say that a DOM element is _disposed_, that's a special step that needs to be run on DOM
+elements. Directly, this step could be invoked as:
+
+```typescript
+dom.domDispose(node);
+```
+
+which would run disposers associated with `node` or with any of its descendants. Descendants are
+processed first. The `domDispose` function is automatically called by GrainJS methods such as
+`dom.maybe()`, `dom.domComputed()`, or `dom.forEach()` which create and remove DOM elements. It is also called
+automatically if some function argument to `dom()` function throws an exception during element
+creation. This way any disposers associated with the unfinished element get called.
+
+
+
 ## Further Notes
 
-**Checking isDisposed.**
+### Checking `isDisposed`
 Once an object is disposed, some code may still have a reference to it. Using a disposed object is
 usually a bad idea — the fact that it’s disposed says loud and clear that this object should no
 longer be used. You can check if an object has already been disposed:
@@ -231,13 +302,16 @@ longer be used. You can check if an object has already been disposed:
 foo.isDisposed()
 ```
 
-**Exceptions while disposing.**
+### Errors while disposing
 If creating your own class with a `dispose()` method, do NOT throw exceptions from `dispose()`.
 These cannot be handled properly in all cases, in particular when the disposal is called while
 processing another exception. (You can find explanations of this online in the context of C++ and
 destructors, but the same reasons apply here.)
 
-**Generics and Disposables.**
+What to do if you need to do some exception-prone cleanup? Catch the exceptions and handle them;
+at the time disposal happens, there is no better place to do that than in your cleanup code.
+
+### Generics and Disposables
 You can make a TypeScript parametrized (generic) class inherit from `Disposable`, but it’s tricky
 to use its `.create()` method. For example:
 
@@ -256,8 +330,7 @@ class Bar<T> extends Disposable {
   public static ctor<U>(): IDisposableCtor<Bar<U>, [U, boolean]> { return this; }
   constructor(a: T, b: boolean) { ... }
 }
-Bar.ctor<T>().create(...) // <-- works, creates Bar<T>, and does type-checking!
+Bar.ctor<T>().create(...)  // Works! Creates Bar<T>, and does type-checking!
 ```
 
 (Perhaps this can become easier as TypeScript adds features.)
-

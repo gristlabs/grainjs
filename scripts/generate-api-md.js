@@ -8,7 +8,7 @@ const {DeclarationReference} = require('@microsoft/tsdoc');
 
 const apiJsonPath = "temp/grainjs.api.json";
 const outPath = "docs/api/index.md";
-const sourceBaseUrl = "https://github.com/gristlabs/grainjs/blob/master/";
+const sourceBaseUrl = "https://github.com/gristlabs/grainjs/blob/main/";
 
 const groupings = [{
   name: "DOM reference",

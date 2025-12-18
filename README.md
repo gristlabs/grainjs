@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/grainjs.svg)](https://badge.fury.io/js/grainjs)
 [![Build status](https://github.com/gristlabs/grainjs/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/gristlabs/grainjs/actions/workflows/build-and-test.yml)
-[![codecov](https://codecov.io/gh/gristlabs/grainjs/branch/master/graph/badge.svg?token=1OIMMBLI6N)](https://codecov.io/gh/gristlabs/grainjs)
+[![codecov](https://codecov.io/gh/gristlabs/grainjs/branch/main/graph/badge.svg?token=1OIMMBLI6N)](https://codecov.io/gh/gristlabs/grainjs)
 
 GrainJS is a JavaScript / TypeScript library for building dynamic web applications.
 
@@ -35,4 +35,4 @@ at [Examples](https://gristlabs.github.io/grainjs/examples.html).
 
 ## License
 
-GrainJS is licensed under [Apache-2.0 license](https://github.com/gristlabs/grainjs/blob/master/LICENSE).
+GrainJS is licensed under [Apache-2.0 license](https://github.com/gristlabs/grainjs/blob/main/LICENSE).

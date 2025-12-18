@@ -20,7 +20,7 @@ listen to it, and update something about DOM when that observable changes.
 dom<Tag extends TagName>(tagString: Tag, ...args: IDomArgs<TagElem<Tag>>): TagElem<Tag>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dom.ts" target="_blank">Defined in dom.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dom.ts" target="_blank">Defined in dom.ts</a></div>
 
 `dom()` provides a way to build a DOM tree easily.
 
@@ -72,7 +72,7 @@ Here's an example equivalent to the one above, using dom methods `dom.cls`, `dom
 attr(attrName: string, attrValueObs: BindableValue<string | null | undefined>): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets an attribute of a DOM element to the given value. Removes the attribute when the value is null or undefined.
 
@@ -90,7 +90,7 @@ dom('a', dom.attr('href', urlObs))
 attrElem(elem: Element, attrName: string, attrValue: string | null | undefined): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets an attribute of a DOM element to the given value. Removes the attribute when the value is null or undefined.
 
@@ -106,7 +106,7 @@ Sets an attribute of a DOM element to the given value. Removes the attribute whe
 attrs(attrsObj: IAttrObj): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets multiple attributes of a DOM element. Null and undefined values are omitted, and booleans are either omitted or set to empty string.
 
@@ -115,7 +115,7 @@ Sets multiple attributes of a DOM element. Null and undefined values are omitted
 attrsElem(elem: Element, attrsObj: IAttrObj): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets multiple attributes of a DOM element. Null and undefined values are omitted, and booleans are either omitted or set to empty string.
 
@@ -129,7 +129,7 @@ Sets multiple attributes of a DOM element. Null and undefined values are omitted
 boolAttr(attrName: string, boolValueObs: BindableValue<boolean>): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Dom-method that sets or removes a boolean attribute of a DOM element.
 
@@ -144,7 +144,7 @@ Dom-method that sets or removes a boolean attribute of a DOM element.
 boolAttrElem(elem: Element, attrName: string, boolValue: boolean): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets or removes a boolean attribute of a DOM element. According to the spec, empty string is a valid true value for the attribute, and the false value is indicated by the attribute's absence.
 
@@ -161,7 +161,7 @@ cls(className: string, boolValue?: BindableValue<boolean>): DomElementMethod;
 cls(className: BindableValue<string>): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets or toggles a css class className. If className is an observable, it will be replaced when the observable changes. If a plain string, then an optional second boolean observable may be given, which will toggle it.
 ```ts
@@ -178,7 +178,7 @@ dom.cls((use) => `prefix-${use(fooClass)}`);  // Sets className to prefix- plus 
 clsElem(elem: Element, className: string, boolValue?: boolean): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets or toggles the given css class className.
 
@@ -188,7 +188,7 @@ clsPrefix(prefix: string, className: string, boolValue?: BindableValue<boolean>)
 clsPrefix(prefix: string, className: BindableValue<string>): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Just like cls() but prepends a prefix to className, including when it is an observable.
 
@@ -197,7 +197,7 @@ Just like cls() but prepends a prefix to className, including when it is an obse
 create<Fn extends IDomCreator<any[]>>(fn: Fn, ...args: DomCreatorArgs<Fn>): DomContents;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
 
 UI components that can be inserted into `dom()`.
 
@@ -256,7 +256,7 @@ The returned DOM may includes Nodes, strings, and `domComputed()` values, as wel
 data(key: string, valueObs: BindableValue<any>): DomMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Associate arbitrary data with a DOM element: `value` may be an observable or a function.
 
@@ -271,7 +271,7 @@ Associate arbitrary data with a DOM element: `value` may be an observable or a f
 dataElem(elem: Node, key: string, value: any): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Associate arbitrary data with a DOM element.
 
@@ -288,7 +288,7 @@ domComputed(valueObs: BindableValue<Exclude<DomArg, DomMethod>>): DomComputed;
 domComputed<T>(valueObs: BindableValue<T>, contentFunc: (val: T) => DomContents): DomComputed;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
 
 Appends dynamic DOM content to an element. The value may be an observable or function (from which a computed is created), whose value will be passed to `contentFunc` which should return DOM content. If the contentFunc is omitted, it defaults to identity, i.e. it's OK for the observable or function to return DOM directly.
 
@@ -331,7 +331,7 @@ In this case, the latter is preferred as the clearly simpler one.
 domComputedOwned<T>(valueObs: BindableValue<T>, contentFunc: (owner: MultiHolder, val: T) => DomContents): DomComputed;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
 
 Like domComputed(), but the callback gets an additional first argument, owner, which may be used to take ownership of objects created by the callback. These will be disposed before each new call to the callback, and when the containing DOM is disposed.
 
@@ -342,7 +342,7 @@ Like domComputed(), but the callback gets an additional first argument, owner, w
 find(selector: string): Element | null;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 Find the first element matching a selector; just an abbreviation for document.querySelector().
 
@@ -351,7 +351,7 @@ Find the first element matching a selector; just an abbreviation for document.qu
 findAll(selector: string): NodeListOf<Element>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 Find all elements matching a selector; just an abbreviation for document.querySelectorAll().
 
@@ -360,7 +360,7 @@ Find all elements matching a selector; just an abbreviation for document.querySe
 forEach<T>(obsArray: MaybeObsArray<T>, itemCreateFunc: (item: T, index: number) => Node | null): DomContents;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domForEach.ts" target="_blank">Defined in domForEach.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domForEach.ts" target="_blank">Defined in domForEach.ts</a></div>
 
 Creates DOM elements for each element of an observable array. As the array is changed, children are added or removed. This works for any array-valued observable, and for obsArray() and computedArray() it works more efficiently for simple changes.
 
@@ -377,7 +377,7 @@ If you'd like to map the DOM node back to its source item, use dom.data() and do
 frag(...args: IDomArgs<DocumentFragment>): DocumentFragment;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 Creates a `DocumentFragment`, processing arguments in the same way as the `dom()` function.
 
@@ -412,7 +412,7 @@ dom('div', 'Hello', world2);
 getData(elem: Node, key: string): any;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Retrieve data associated with a DOM element using `data()` or `dataElem()`.
 
@@ -421,7 +421,7 @@ Retrieve data associated with a DOM element using `data()` or `dataElem()`.
 hide(boolValueObs: BindableValue<boolean>): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 The opposite of show, hiding the element when boolValue is true. `boolValueObs` may be an observable or a function. Note that the element must be visible by default (i.e. unsetting `style.display` should show it).
 
@@ -430,7 +430,7 @@ The opposite of show, hiding the element when boolValue is true. `boolValueObs` 
 hideElem(elem: HTMLElement, boolValue: boolean): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 The opposite of show, hiding the element when boolValue is true.
 
@@ -445,7 +445,7 @@ The opposite of show, hiding the element when boolValue is true.
 maybe<T>(boolValueObs: BindableValue<T>, contentFunc: (val: NonNullable<T>) => DomContents): DomComputed;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
 
 Conditionally appends DOM to an element. The value may be an observable or function (from which a computed is created), whose value -- if truthy -- will be passed to `contentFunc` which should return DOM content. If the value is falsy, DOM content is removed.
 
@@ -473,7 +473,7 @@ The latter is preferred for being simpler.
 maybeOwned<T>(boolValueObs: BindableValue<T>, contentFunc: (owner: MultiHolder, val: NonNullable<T>) => DomContents): DomComputed;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
 
 Like maybe(), but the callback gets an additional first argument, owner, which may be used to take ownership of objects created by the callback. These will be disposed before each new call to the callback, and when the condition becomes false or the containing DOM gets disposed.
 ```ts
@@ -488,7 +488,7 @@ on<E extends EventName | string, T extends EventTarget>(eventType: E, callback: 
 }): DomMethod<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 Listen to a DOM event. It is typically used as an argument to the `dom()` function:
 ```ts
@@ -515,7 +515,7 @@ onElem<E extends EventName | string, T extends EventTarget>(elem: T, eventType: 
 }): IDisposable;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 Listen to a DOM event, returning the listener object.
 ```ts
@@ -556,7 +556,7 @@ const lis = domevent.onElem(elem, 'mouseup', e => { lis.dispose(); other_work();
 onKeyDown<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 Add listeners to `"keydown"` events. See [`onKeyElem`](#onKeyElem) for details.
 
@@ -565,7 +565,7 @@ Add listeners to `"keydown"` events. See [`onKeyElem`](#onKeyElem) for details.
 onKeyElem<T extends HTMLElement>(elem: T, evType: KeyEventType, keyHandlers: IKeyHandlers<T>): IDisposable;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 Listen to key events (typically 'keydown' or 'keypress'), with specified per-key callbacks. Key names are listed at https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
 
@@ -590,7 +590,7 @@ For example:
 onKeyPress<T extends HTMLElement>(keyHandlers: IKeyHandlers<T>): DomMethod<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 Add listeners to `"keypress"` events. See [`onKeyElem`](#onKeyElem) for details.
 
@@ -601,7 +601,7 @@ onMatch(selector: string, eventType: string, callback: EventCB, { useCapture }?:
 }): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 Listen to a DOM event on descendants of the given element matching the given selector.
 
@@ -627,7 +627,7 @@ onMatchElem(elem: EventTarget, selector: string, eventType: string, callback: Ev
 }): IDisposable;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 Listen to a DOM event on descendants of the given elem matching the given selector.
 ```ts
@@ -654,7 +654,7 @@ const let lis = domevent.onMatchElem(elem, '.selector', 'click', (event, el) => 
 prop<T>(property: string, valueObs: BindableValue<T>): DomMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets the property of a DOM element to the given value, which may be an observable or a function.
 
@@ -669,7 +669,7 @@ Sets the property of a DOM element to the given value, which may be an observabl
 propElem<T>(elem: Node, property: string, value: T): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets the property of a DOM element to the given value.
 
@@ -685,7 +685,7 @@ Sets the property of a DOM element to the given value.
 replaceContent(nodeBefore: Node, nodeAfter: Node, content: DomContents): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
 
 Replaces the content between nodeBefore and nodeAfter, which should be two siblings within the same parent node. New content may be anything allowed as an argument to dom(), including null to insert nothing. Runs disposers, if any, on all removed content.
 
@@ -694,7 +694,7 @@ Replaces the content between nodeBefore and nodeAfter, which should be two sibli
 show(boolValueObs: BindableValue<boolean>): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Shows or hides the element depending on a boolean value, which may be an observable or a function. Note that the element must be visible by default (i.e. unsetting `style.display` should show it).
 
@@ -703,7 +703,7 @@ Shows or hides the element depending on a boolean value, which may be an observa
 showElem(elem: HTMLElement, boolValue: boolean): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Shows or hides the element depending on a boolean value. Note that the element must be visible initially (i.e. unsetting style.display should show it).
 
@@ -718,7 +718,7 @@ Shows or hides the element depending on a boolean value. Note that the element m
 style(property: string, valueObs: BindableValue<string>): DomElementMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets a style property of a DOM element to the given value, which may be an observable or a function.
 
@@ -733,7 +733,7 @@ Sets a style property of a DOM element to the given value, which may be an obser
 styleElem(elem: Element, property: string, value: string): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets a style property of a DOM element to the given value.
 
@@ -749,7 +749,7 @@ Sets a style property of a DOM element to the given value.
 svg(tagString: string, ...args: IDomArgs<SVGElement>): SVGElement;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 svg('tag#id.class1.class2', ...args) Same as dom(...), but creates an SVG element.
 
@@ -758,7 +758,7 @@ svg('tag#id.class1.class2', ...args) Same as dom(...), but creates an SVG elemen
 text(valueObs: BindableValue<string>): DomMethod;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Sets text content of a DOM element to a value that may be an observable or a function.
 
@@ -767,7 +767,7 @@ Sets text content of a DOM element to a value that may be an observable or a fun
 textElem(elem: Node, value: string): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 Adds a text node to the element.
 
@@ -782,7 +782,7 @@ Adds a text node to the element.
 update<T extends Node, Args extends IDomArgs<T>>(elem: T, ...args: Args): T;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 Update an element with any number of arguments, as documented in dom().
 
@@ -793,7 +793,7 @@ interface IAttrObj {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 Object mapping attribute names to attribute values. When applied to a DOM element, null and undefined values are omitted, and booleans are either omitted or set to empty string.
 
@@ -802,7 +802,7 @@ Object mapping attribute names to attribute values. When applied to a DOM elemen
 keyframes(styles: string): string;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/styled.ts" target="_blank">Defined in styled.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/styled.ts" target="_blank">Defined in styled.ts</a></div>
 
 Animations with `@keyframes` may be created with a unique name by using the keyframes() helper:
 ```ts
@@ -824,7 +824,7 @@ This function returns simply a string with the generated name. Note that keyfram
 makeTestId(prefix: string): TestId;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 See documentation for TestId above.
 
@@ -833,7 +833,7 @@ See documentation for TestId above.
 noTestId: TestId
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 See documentation for TestId above.
 
@@ -843,7 +843,7 @@ styled<Tag extends TagName>(tag: Tag, styles: string): DomCreateFunc<TagElem<Tag
 styled<Args extends any[], R extends Element>(creator: (...args: Args) => R, styles: string): typeof creator & IClsName;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/styled.ts" target="_blank">Defined in styled.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/styled.ts" target="_blank">Defined in styled.ts</a></div>
 
 In-code styling for DOM components, inspired by Reacts Styled Components.
 
@@ -909,7 +909,7 @@ creates a button with both the `myButton` style above, and the style specified u
 type TestId = (name: string) => DomElementMethod | null;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domMethods.ts" target="_blank">Defined in domMethods.ts</a></div>
 
 A very simple setup to identify DOM elements for testing purposes. Here's the recommended usage.
 ```ts
@@ -947,7 +947,7 @@ See [Disposables](/dispose) for background.
 abstract class Disposable implements IDisposable, IDisposableOwner
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Base class for disposable objects that can own other objects.
 
@@ -1022,7 +1022,7 @@ Bar.ctor<T>().create(...)   // <-- works, creates Bar<T>, and does type-checking
 static create<T extends new (...args: any[]) => any>(this: T, owner: IDisposableOwnerT<InstanceType<T>> | null, ...args: ConstructorParameters<T>): InstanceType<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Create Disposable instances using `Class.create(owner, ...)` rather than `new Class(...)`.
 
@@ -1035,7 +1035,7 @@ Owner may be `null` if you intend to ensure disposal some other way.
 autoDispose<T extends IDisposable>(obj: T): T;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Take ownership of `obj`, and dispose it when `this.dispose()` is called.
 
@@ -1044,7 +1044,7 @@ Take ownership of `obj`, and dispose it when `this.dispose()` is called.
 dispose(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Clean up `this` by disposing all owned objects, and calling `onDispose()` callbacks, in reverse order to that in which they were added.
 
@@ -1053,7 +1053,7 @@ Clean up `this` by disposing all owned objects, and calling `onDispose()` callba
 isDisposed(): boolean;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Returns whether this object has already been disposed.
 
@@ -1062,7 +1062,7 @@ Returns whether this object has already been disposed.
 onDispose<T>(callback: (this: T) => void, context?: T): IDisposable;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Call the given callback when `this.dispose()` is called.
 
@@ -1071,7 +1071,7 @@ Call the given callback when `this.dispose()` is called.
 wipeOnDispose(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Wipe out this object when it is disposed, i.e. set all its properties to null. It is recommended to call this early in the constructor.
 
@@ -1090,7 +1090,7 @@ The recommendation is to use it for complex, longer-lived objects, but to skip f
 autoDispose(disposable: IDisposable | null): ((elem: Node) => void) | undefined;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
 
 Make the given element own the disposable, and call its dispose method when `domDispose()` is called on the element or any of its parents.
 
@@ -1104,7 +1104,7 @@ Make the given element own the disposable, and call its dispose method when `dom
 autoDisposeElem(elem: Node, disposable: IDisposable | null): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
 
 Make the given element own the disposable, and call its dispose method when `domDispose()` is called on the element or any of its parents.
 
@@ -1119,7 +1119,7 @@ Make the given element own the disposable, and call its dispose method when `dom
 domDispose(node: Node): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
 
 Run disposers associated with any descendant of elem or with elem itself. Disposers get associated with elements using dom.onDispose(). Descendants are processed first.
 
@@ -1135,7 +1135,7 @@ It is automatically called if one of the function arguments to dom() throws an e
 onDispose(disposerFunc: INodeFunc): (elem: Node) => void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
 
 Associate a disposer function with a DOM element. It will be called when the element is disposed using `domDispose()` on it or any of its parents. If called multiple times, all disposer functions will be called in reverse order.
 
@@ -1149,7 +1149,7 @@ Associate a disposer function with a DOM element. It will be called when the ele
 onDisposeElem(elem: Node, disposerFunc: INodeFunc): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
 
 Associate a disposer function with a DOM element. It will be called when the element is disposed using `domDispose()` on it or any of its parents. If called multiple times, all disposer functions will be called in reverse order.
 
@@ -1166,7 +1166,7 @@ Note that it is not necessary usually to dispose event listeners attached to an 
 domDisposeHooks: IDomDisposeHooks
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
 
 Support for extending dom disposal. This is very low-level, and needs utmost care. Any disposers set should take care of calling the original versions of the disposers.
 
@@ -1175,7 +1175,7 @@ Support for extending dom disposal. This is very low-level, and needs utmost car
 class Holder<T extends IDisposable> implements IDisposable, IDisposableOwner
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Holder keeps a single disposable object. If given responsibility for another object using `holder.autoDispose()` or `Foo.create(holder, ...)`, it automatically disposes the currently held object. It also disposes it when the holder itself is disposed.
 
@@ -1199,7 +1199,7 @@ this._holder.release();           // releases contained object
 static create<T extends IDisposable>(owner: IDisposableOwnerT<Holder<T>> | null): Holder<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 `Holder.create(owner)` creates a new `Holder`.
 
@@ -1208,7 +1208,7 @@ static create<T extends IDisposable>(owner: IDisposableOwnerT<Holder<T>> | null)
 autoDispose(obj: T): T;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Take ownership of a new object, disposing the previously held one.
 
@@ -1217,7 +1217,7 @@ Take ownership of a new object, disposing the previously held one.
 clear(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Disposes the held object and empties the holder.
 
@@ -1226,7 +1226,7 @@ Disposes the held object and empties the holder.
 dispose(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 When the holder is disposed, it disposes the held object if any.
 
@@ -1235,7 +1235,7 @@ When the holder is disposed, it disposes the held object if any.
 get(): T | null;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Returns the held object, or null if the Holder is empty.
 
@@ -1244,7 +1244,7 @@ Returns the held object, or null if the Holder is empty.
 isEmpty(): boolean;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Returns whether the Holder is empty.
 
@@ -1253,7 +1253,7 @@ Returns whether the Holder is empty.
 release(): IDisposable | null;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Releases the held object without disposing it, emptying the holder.
 
@@ -1264,7 +1264,7 @@ interface IDisposable {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Anything with a .dispose() method is a disposable object, and implements the IDisposable interface.
 
@@ -1276,7 +1276,7 @@ interface IDisposableCtor<Derived, CtorArgs extends any[]> {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 The static portion of class Disposable.
 
@@ -1287,7 +1287,7 @@ interface IDisposableOwner {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Type that can own an object of any disposable type.
 
@@ -1298,7 +1298,7 @@ interface IDisposableOwnerT<T extends IDisposable> {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Anything with `.autoDispose()` can be the owner of a disposable object. This is a type-specific class that can only own a disposable object of type T.
 
@@ -1307,7 +1307,7 @@ Anything with `.autoDispose()` can be the owner of a disposable object. This is 
 class MultiHolder extends Disposable
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 `MultiHolder` keeps multiple disposable objects. It disposes all held object when the holder itself is disposed. It's actually nothing more than the `Disposable` base class itself, just exposed with a clearer name that describes its purpose.
 
@@ -1326,7 +1326,7 @@ this._mholder.dispose();          // disposes both objects
 setDisposeOwner<T extends IDisposable>(owner: IDisposableOwnerT<T> | null, obj: T): T;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/dispose.ts" target="_blank">Defined in dispose.ts</a></div>
 
 Sets owner of obj (i.e. calls owner.autoDispose(obj)) unless owner is null. Returns obj.
 
@@ -1339,7 +1339,7 @@ See [Observables](/basics#observables) for background.
 class BaseObservable<T>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Base class for several variants of observable values.
 
@@ -1348,7 +1348,7 @@ Base class for several variants of observable values.
 addListener(callback: (val: T, prev: T) => void, optContext?: object): Listener;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Adds a callback to listen to changes in the observable.
 
@@ -1369,7 +1369,7 @@ Adds a callback to listen to changes in the observable.
 dispose(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Disposes the observable.
 
@@ -1378,7 +1378,7 @@ Disposes the observable.
 get(): T;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Returns the value of the observable. It is fast and does not create a subscription. (It is similar to knockout's peek()).
 
@@ -1393,7 +1393,7 @@ Returns the value of the observable. It is fast and does not create a subscripti
 hasListeners(): boolean;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Returns whether this observable has any listeners.
 
@@ -1402,7 +1402,7 @@ Returns whether this observable has any listeners.
 isDisposed(): boolean;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Returns whether this observable is disposed.
 
@@ -1411,7 +1411,7 @@ Returns whether this observable is disposed.
 set(value: T): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Sets the value of the observable. If the value differs from the previously set one, then listeners to this observable will get called with (newValue, oldValue) as arguments.
 
@@ -1425,7 +1425,7 @@ Sets the value of the observable. If the value differs from the previously set o
 setAndTrigger(value: T): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Sets the value of the observable AND calls listeners even if the value is unchanged.
 
@@ -1434,7 +1434,7 @@ Sets the value of the observable AND calls listeners even if the value is unchan
 setListenerChangeCB(changeCB: (hasListeners: boolean) => void, optContext?: any): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Sets a single callback to be called when a listener is added or removed. It overwrites any previously-set such callback.
 
@@ -1448,7 +1448,7 @@ Sets a single callback to be called when a listener is added or removed. It over
 type BindableValue<T> = BaseObservable<T> | ComputedCallback<T> | T | IKnockoutReadObservable<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
 
 Any of the value types that DOM methods know how to subscribe to: a plain value (like a string); an Observable (including a Computed); a knockout observable; a function.
 
@@ -1459,7 +1459,7 @@ If a function, it's used to create a `Computed`, and will be called with a conte
 class Computed<T> extends Observable<T>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
 
 `Computed` implements a computed observable, whose value depends on other observables and gets recalculated automatically when they change.
 
@@ -1502,7 +1502,7 @@ static create<T, A, B, C, D>(owner: Owner<T>, a: Obs<A>, b: Obs<B>, c: Obs<C>, d
 static create<T, A, B, C, D, E>(owner: Owner<T>, a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>, cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
 
 Creates a new Computed, owned by the given owner.
 
@@ -1524,7 +1524,7 @@ Creates a new Computed, owned by the given owner.
 dispose(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
 
 Disposes the computed, unsubscribing it from all observables it depends on.
 
@@ -1533,7 +1533,7 @@ Disposes the computed, unsubscribing it from all observables it depends on.
 onWrite(writeFunc: (value: T) => void): Computed<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
 
 Set callback to call when this.set(value) is called, to make it a writable computed. If not set, attempting to write to this computed will throw an exception.
 
@@ -1542,7 +1542,7 @@ Set callback to call when this.set(value) is called, to make it a writable compu
 set(value: T): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
 
 "Sets" the value of the computed by calling the write() callback if one was provided in the constructor. Throws an error if there was no such callback (not a "writable" computed).
 
@@ -1561,7 +1561,7 @@ computed<T, A, B, C, D>(a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, cb: (use: Us
 computed<T, A, B, C, D, E>(a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>, cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): Computed<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/computed.ts" target="_blank">Defined in computed.ts</a></div>
 
 Creates a new Computed.
 
@@ -1582,7 +1582,7 @@ Creates a new Computed.
 class ComputedArray<T, U> extends ObsArray<U>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 See [`computedArray()`](#computedArray) for documentation.
 
@@ -1591,7 +1591,7 @@ See [`computedArray()`](#computedArray) for documentation.
 computedArray<T, U>(obsArr: BaseObservable<T[]> | Observable<BaseObservable<T[]>>, mapper: (item: T, index: number, arr: ComputedArray<T, U>) => U): ObsArray<U>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Returns an `ObsArray` that maps all elements of the passed-in `ObsArray` through a mapper function. Also accepts an observable (e.g. a computed) whose value is an `ObsArray`.
 ```ts
@@ -1632,7 +1632,7 @@ interface IObsArraySplice<T> {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Info about a modification to ObsArray contents. It is included as a third argument to change listeners when available. When not available, listeners should assume that the array changed completely.
 
@@ -1641,7 +1641,7 @@ Info about a modification to ObsArray contents. It is included as a third argume
 class LiveIndex extends Observable<number | null>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 An Observable that represents an index into an `ObsArray`, clamped to be in the valid range.
 
@@ -1650,7 +1650,7 @@ An Observable that represents an index into an `ObsArray`, clamped to be in the 
 set(index: number | null): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Set the index, clamping it to a valid value.
 
@@ -1659,7 +1659,7 @@ Set the index, clamping it to a valid value.
 setLive(value: boolean): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Turn "liveness" on or off. While set to false, the observable will not be adjusted as the array changes, except to keep it valid.
 
@@ -1668,7 +1668,7 @@ Turn "liveness" on or off. While set to false, the observable will not be adjust
 makeLiveIndex<T>(owner: IDisposableOwnerT<LiveIndex> | null, obsArr: ObsArray<T>, initialIndex?: number): LiveIndex;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Returns a new observable representing an index into this array. It can be read and written, and its value is clamped to be a valid index. The index is only null if the array is empty.
 
@@ -1681,7 +1681,7 @@ The returned observable has an additional .setLive(bool) method. While set to fa
 type MaybeObsArray<T> = BaseObservable<T[]> | T[];
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Either an observable or a plain array of T. This is useful for functions like dom.forEach() which are convenient to have available for both.
 
@@ -1690,7 +1690,7 @@ Either an observable or a plain array of T. This is useful for functions like do
 class MutableObsArray<T> extends ObsArray<T>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 `MutableObsArray<T>` adds array-like mutation methods which emit events with splice info, to allow more efficient processing of such changes. It is created with `obsArray<T>()`.
 
@@ -1699,7 +1699,7 @@ class MutableObsArray<T> extends ObsArray<T>
 pop(): T | undefined;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Removes and returns the last element (like `Array#pop`).
 
@@ -1708,7 +1708,7 @@ Removes and returns the last element (like `Array#pop`).
 push(...args: T[]): number;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Appends elements to the end and returns the new length (like `Array#push`).
 
@@ -1717,7 +1717,7 @@ Appends elements to the end and returns the new length (like `Array#push`).
 shift(): T | undefined;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Removes and returns the first element (like `Array#shift`).
 
@@ -1726,7 +1726,7 @@ Removes and returns the first element (like `Array#shift`).
 splice(start: number, deleteCount?: number, ...newValues: T[]): T[];
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Removes and/or inserts elements at a given index and returns the removed elements (like `Array#splice`).
 
@@ -1735,7 +1735,7 @@ Removes and/or inserts elements at a given index and returns the removed element
 unshift(...args: T[]): number;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Prepends elements to the start and returns the new length (like `Array#unshift`).
 
@@ -1744,7 +1744,7 @@ Prepends elements to the start and returns the new length (like `Array#unshift`)
 class ObsArray<T> extends BaseObservable<T[]>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 `ObsArray<T>` is essentially an array-valued observable. It extends a plain Observable to allow for more efficient observation of array changes. It also may be used as an owner for disposable array elements.
 
@@ -1766,7 +1766,7 @@ addListener(callback: ISpliceListener<T, void>): Listener;
 addListener<C>(callback: ISpliceListener<T, C>, context: C): Listener;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Adds a callback to listen to changes in the observable. In case of `ObsArray`, the listener gets additional information.
 
@@ -1775,7 +1775,7 @@ Adds a callback to listen to changes in the observable. In case of `ObsArray`, t
 autoDispose(value: T & IDisposable): T & IDisposable;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Take ownership of an item added to this array. This should _only_ be used for array elements, not any unrelated items.
 
@@ -1784,7 +1784,7 @@ Take ownership of an item added to this array. This should _only_ be used for ar
 obsArray<T>(value?: T[]): MutableObsArray<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 Creates a new MutableObsArray with an optional initial value, defaulting to the empty array. It is essentially the same as `observable<T[]>`, but with array-like mutation methods.
 
@@ -1793,7 +1793,7 @@ Creates a new MutableObsArray with an optional initial value, defaulting to the 
 class Observable<T> extends BaseObservable<T> implements IDisposableOwnerT<T & IDisposable>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 An Observable holds a value and allows subscribing to changes.
 
@@ -1802,7 +1802,7 @@ An Observable holds a value and allows subscribing to changes.
 static create<T>(owner: IDisposableOwnerT<Observable<T>> | null, value: T): Observable<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Creates a new Observable with the given initial value, and owned by owner.
 
@@ -1811,7 +1811,7 @@ Creates a new Observable with the given initial value, and owned by owner.
 autoDispose(value: T & IDisposable): T & IDisposable;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 The use an observable for a disposable object, use it a DisposableOwner:
 
@@ -1824,7 +1824,7 @@ Either of these usages will set the observable to the newly created value. The o
 observable<T>(value: T): Observable<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Creates a new Observable with the initial value of optValue if given or undefined if omitted.
 
@@ -1844,7 +1844,7 @@ Creates a new Observable with the initial value of optValue if given or undefine
 obsHolder<T>(value: T & IDisposable): Observable<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/observable.ts" target="_blank">Defined in observable.ts</a></div>
 
 Creates a new Observable with an initial disposable value owned by this observable, e.g.
 ```
@@ -1864,7 +1864,7 @@ To allow nulls, use `observable<D|null>(null)`; then the obsHolder() constructor
 class PureComputed<T> extends Observable<T>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
 
 `PureComputed` is a variant of `Computed` suitable for use with a pure read function (free of side-effects). A `PureComputed` is only subscribed to its dependencies when something is subscribed to it. At other times, it is not subscribed to anything, and calls to `get()` will recompute its value each time by calling its `read()` function.
 
@@ -1877,7 +1877,7 @@ In addition to being cheaper when unused, a `PureComputed` also avoids leaking m
 dispose(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
 
 Disposes the pureComputed, unsubscribing it from all observables it depends on.
 
@@ -1886,7 +1886,7 @@ Disposes the pureComputed, unsubscribing it from all observables it depends on.
 onWrite(writeFunc: (value: T) => void): PureComputed<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
 
 Set callback to call when this.set(value) is called, to make it a writable computed. If not set, attempting to write to this computed will throw an exception.
 
@@ -1895,7 +1895,7 @@ Set callback to call when this.set(value) is called, to make it a writable compu
 set(value: T): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
 
 "Sets" the value of the pure computed by calling the write() callback if one was provided in the constructor. Throws an error if there was no such callback (not a "writable" computed).
 
@@ -1914,7 +1914,7 @@ pureComputed<A, B, C, D, T>(a: Observable<A>, b: Observable<B>, c: Observable<C>
 pureComputed<A, B, C, D, E, T>(a: Observable<A>, b: Observable<B>, c: Observable<C>, d: Observable<D>, e: Observable<E>, cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => T): PureComputed<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/pureComputed.ts" target="_blank">Defined in pureComputed.ts</a></div>
 
 Creates and returns a new PureComputed. The interface is identical to that of a Computed.
 
@@ -1928,7 +1928,7 @@ subscribe<A, B, C, D>(a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, cb: (use: UseC
 subscribe<A, B, C, D, E>(a: Obs<A>, b: Obs<B>, c: Obs<C>, d: Obs<D>, e: Obs<E>, cb: (use: UseCB, a: A, b: B, c: C, d: D, e: E) => void): Subscription;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
 
 Creates a new Subscription.
 
@@ -1950,7 +1950,7 @@ subscribeBindable<KObs extends IKnockoutReadObservable<any>>(valueObs: KObs, cal
 subscribeBindable<T>(valueObs: BindableValue<T>, callback: (val: T) => void): IDisposable | null;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
 
 Subscribes a callback to valueObs, which may be one a plain value, an observable, a knockout observable, or a function. If a function, it's used to create a computed() and will be called with a context function `use`, allowing it to depend on other observable values (see documentation for `computed`).
 
@@ -1963,7 +1963,7 @@ Returns an object which should be disposed to remove the created subscriptions, 
 subscribeElem<T>(elem: Node, valueObs: BindableValue<T>, callback: (newVal: T, oldVal?: T) => void): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
 
 Subscribes a callback to `valueObs` (which may be a value, observable, or function) using `subscribeBindable()`, and ties the disposal of this subscription to the passed-in element.
 
@@ -1972,7 +1972,7 @@ Subscribes a callback to `valueObs` (which may be a value, observable, or functi
 class Subscription
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
 
 `Subscription` allows subscribing to several observables at once. It's the foundation for a `Computed`, but may also be used directly.
 
@@ -2000,7 +2000,7 @@ subscribe(...deps, ((use, ...depValues) => READ_CALLBACK));
 dispose(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
 
 Disposes the computed, unsubscribing it from all observables it depends on.
 
@@ -2010,7 +2010,7 @@ Disposes the computed, unsubscribing it from all observables it depends on.
 bindB<R>(func: (...args: any[]) => R, b: any[]): () => R;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/util.ts" target="_blank">Defined in util.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/util.ts" target="_blank">Defined in util.ts</a></div>
 
 Returns f such that f() calls func(...boundArgs), i.e. optimizes `() => func(...boundArgs)`. It is faster on node6 by 57-92%.
 
@@ -2019,7 +2019,7 @@ Returns f such that f() calls func(...boundArgs), i.e. optimizes `() => func(...
 bindBU<R>(func: (...args: any[]) => R, b: any[]): (arg: any) => R;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/util.ts" target="_blank">Defined in util.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/util.ts" target="_blank">Defined in util.ts</a></div>
 
 Returns f such that f(unboundArg) calls func(...boundArgs, unboundArg). I.e. optimizes `(arg) => func(...boundArgs, arg)`. It is faster on node6 by 0-92%.
 
@@ -2028,7 +2028,7 @@ Returns f such that f(unboundArg) calls func(...boundArgs, unboundArg). I.e. opt
 bindUB<U, R>(func: (arg: U, ...args: any[]) => R, b: any[]): (arg: U) => R;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/util.ts" target="_blank">Defined in util.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/util.ts" target="_blank">Defined in util.ts</a></div>
 
 Returns f such that f(unboundArg) calls func(unboundArg, ...boundArgs). I.e. optimizes `(arg) => func(arg, ...boundArgs)`. It is faster on node6 by 0-92%.
 
@@ -2037,7 +2037,7 @@ Returns f such that f(unboundArg) calls func(unboundArg, ...boundArgs). I.e. opt
 bundleChanges<T>(func: () => T): T;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/_computed_queue.ts" target="_blank">Defined in _computed_queue.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/_computed_queue.ts" target="_blank">Defined in _computed_queue.ts</a></div>
 
 Defer recomputations of all computed observables and subscriptions until func() returns. This is useful to avoid unnecessary recomputation if you are making several changes to observables together. This function is exposed as `observable.bundleChanges()`.
 
@@ -2048,7 +2048,7 @@ Note that this intentionally does not wait for promises to be resolved, since th
 type ChangeCB = (hasListeners: boolean) => void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 A callback that listens to _changes_ in the Emitter listeners. This is mainly used for internal purposes.
 
@@ -2057,7 +2057,7 @@ A callback that listens to _changes_ in the Emitter listeners. This is mainly us
 class Emitter extends LLink
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 An `Emitter` emits events to a list of listeners. Listeners are simply functions to call, and "emitting an event" just calls those functions.
 
@@ -2094,7 +2094,7 @@ emitter.emit("hello", "world");
 addListener<T>(callback: ListenerCB<T>, optContext?: T): Listener;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 Adds a listening callback to the list of functions to call on emit().
 
@@ -2115,7 +2115,7 @@ Adds a listening callback to the list of functions to call on emit().
 dispose(): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 Disposes the Emitter. It breaks references between the emitter and all the items, allowing for better garbage collection. It effectively disposes all current listeners.
 
@@ -2124,7 +2124,7 @@ Disposes the Emitter. It breaks references between the emitter and all the items
 emit(...args: any[]): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 Calls all listener callbacks, passing all arguments to each of them.
 
@@ -2133,7 +2133,7 @@ Calls all listener callbacks, passing all arguments to each of them.
 hasListeners(): boolean;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 Returns whether this Emitter has any listeners.
 
@@ -2142,7 +2142,7 @@ Returns whether this Emitter has any listeners.
 setChangeCB(changeCB: ChangeCB, optContext?: any): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 Sets the single callback that would get called when a listener is added or removed.
 
@@ -2156,7 +2156,7 @@ Sets the single callback that would get called when a listener is added or remov
 fromKo<KObs extends IKnockoutObservable<any>>(koObs: KObs): Observable<InferKoType<KObs>>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
 
 Returns a Grain.js observable which mirrors a Knockout observable.
 
@@ -2167,7 +2167,7 @@ Do not dispose this wrapper, as it is shared by all code using koObs, and its li
 input(obs: Observable<string>, options: IInputOptions, ...args: IDomArgs<HTMLInputElement>): HTMLInputElement;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/input.ts" target="_blank">Defined in input.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/input.ts" target="_blank">Defined in input.ts</a></div>
 
 Creates a input element tied to the given observable. The required options argument allows controlling the behavior, see IInputOptions for details.
 
@@ -2188,7 +2188,7 @@ Example usage:
 class KoWrapObs<T> extends Observable<T>
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
 
 An Observable that wraps a Knockout observable, created via `fromKo()`. It keeps minimal overhead when unused by only subscribing to the wrapped observable while it itself has subscriptions.
 
@@ -2199,7 +2199,7 @@ This way, when unused, the only reference is from the wrapper to the wrapped obj
 class Listener extends LLink
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 The `Listener` object wraps a callback added to an Emitter, allowing for O(1) removal when the listener is disposed. It implements `IDisposable`.
 
@@ -2210,7 +2210,7 @@ select<T>(obs: Observable<T>, optionArray: MaybeObsArray<IOption<T>>, options?: 
 }): HTMLSelectElement;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/select.ts" target="_blank">Defined in select.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/select.ts" target="_blank">Defined in select.ts</a></div>
 
 Creates a select dropdown widget. The observable `obs` reflects the value of the selected option, and `optionArray` is an array (regular or observable) of option values and labels. These may be either strings, or `{label, value, disabled}` objects.
 
@@ -2238,7 +2238,7 @@ Usage:
 setupKoDisposal(ko: IKnockoutModule): void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
 
 Set up integration between grainjs and knockout disposal. Knockout does cleanup using ko.removeNode / ko.cleanNode (it also takes care of JQuery cleanup if needed). GrainJS does cleanup using dom.domDispose(). By default these don't know about each other.
 
@@ -2253,7 +2253,7 @@ Note: grainjs disposes text nodes too, but nothing relies on it. When disposal i
 toKo<T>(knockout: IKnockoutModule, grainObs: Observable<T>): IKnockoutObservable<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
 
 Returns a Knockout observable which mirrors a Grain.js observable.
 
@@ -2263,91 +2263,91 @@ Returns a Knockout observable which mirrors a Grain.js observable.
 type ComputedCallback<T> = (use: UseCBOwner, ...args: any[]) => T;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/binding.ts" target="_blank">Defined in binding.ts</a></div>
 
 ### DomArg {#DomArg .hidden-heading}
 ```ts refs=Node=mdn#Node|Node=mdn#Node|IDomArgs=grainjs!IDomArgs:interface|DomMethod=grainjs!DomMethod:type|Element=mdn#Element|IAttrObj=grainjs!IAttrObj:interface
 type DomArg<T = Node> = Node | string | void | null | undefined | IDomArgs<T> | DomMethod<T> | (T extends Element ? IAttrObj : never);
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 ### DomComponentReturn {#DomComponentReturn .hidden-heading}
 ```ts refs=DomContents=grainjs!DomContents:type|IDomComponent=grainjs!IDomComponent:interface
 type DomComponentReturn = DomContents | IDomComponent;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
 
 ### DomComputed {#DomComputed .hidden-heading}
 ```ts refs=Node=mdn#Node|Node=mdn#Node|DomMethod=grainjs!DomMethod:type
 type DomComputed = [Node, Node, DomMethod];
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
 
 ### DomContents {#DomContents .hidden-heading}
 ```ts refs=Node=mdn#Node|DomComputed=grainjs!DomComputed:type|IDomContentsArray=grainjs!IDomContentsArray:interface
 type DomContents = Node | string | DomComputed | void | null | undefined | IDomContentsArray;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
 
 ### DomCreateFunc {#DomCreateFunc .hidden-heading}
 ```ts refs=IDomArgs=grainjs!IDomArgs:interface|IDomArgs=grainjs!IDomArgs:interface
 type DomCreateFunc<R, Args extends IDomArgs<R> = IDomArgs<R>> = (...args: Args) => R;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/styled.ts" target="_blank">Defined in styled.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/styled.ts" target="_blank">Defined in styled.ts</a></div>
 
 ### DomCreatorArgs {#DomCreatorArgs .hidden-heading}
 ```ts refs=MultiHolder=grainjs!MultiHolder:class
 type DomCreatorArgs<T> = T extends (owner: MultiHolder, ...args: infer P) => any ? P : (T extends new (...args: infer P) => any ? P : never);
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
 
 ### DomElementArg {#DomElementArg .hidden-heading}
 ```ts refs=DomArg=grainjs!DomArg:type|HTMLElement=mdn#HTMLElement
 type DomElementArg = DomArg<HTMLElement>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 ### DomElementMethod {#DomElementMethod .hidden-heading}
 ```ts refs=DomMethod=grainjs!DomMethod:type|HTMLElement=mdn#HTMLElement
 type DomElementMethod = DomMethod<HTMLElement>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 ### DomMethod {#DomMethod .hidden-heading}
 ```ts refs=Node=mdn#Node|DomArg=grainjs!DomArg:type
 type DomMethod<T = Node> = (elem: T) => DomArg<T> | void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 ### EventCB {#EventCB .hidden-heading}
 ```ts refs=Event=mdn#Event|Event=mdn#Event|EventTarget=mdn#EventTarget|EventTarget=mdn#EventTarget
 type EventCB<E extends Event = Event, T extends EventTarget = EventTarget> = (this: void, event: E, elem: T) => void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 ### EventName {#EventName .hidden-heading}
 ```ts refs=
 type EventName = keyof HTMLElementEventMap;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 ### EventType {#EventType .hidden-heading}
 ```ts refs=EventName=grainjs!EventName:type|EventName=grainjs!EventName:type|Event=mdn#Event
 type EventType<E extends EventName | string> = E extends EventName ? HTMLElementEventMap[E] : Event;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 ### IClsName {#IClsName .hidden-heading}
 ```ts refs=cls=grainjs!cls:function
@@ -2357,14 +2357,14 @@ interface IClsName {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/styled.ts" target="_blank">Defined in styled.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/styled.ts" target="_blank">Defined in styled.ts</a></div>
 
 ### IDomArgs {#IDomArgs .hidden-heading}
 ```ts refs=Node=mdn#Node|DomArg=grainjs!DomArg:type
 interface IDomArgs<T = Node> extends Array<DomArg<T>> {}
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 ### IDomComponent {#IDomComponent .hidden-heading}
 ```ts refs=DomContents=grainjs!DomContents:type
@@ -2373,14 +2373,14 @@ interface IDomComponent {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
 
 ### IDomContentsArray {#IDomContentsArray .hidden-heading}
 ```ts refs=DomContents=grainjs!DomContents:type
 interface IDomContentsArray extends Array<DomContents> {}
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComputed.ts" target="_blank">Defined in domComputed.ts</a></div>
 
 ### IDomCreateClass {#IDomCreateClass .hidden-heading}
 ```ts refs=DomComponentReturn=grainjs!DomComponentReturn:type|IDomCreateFunc=grainjs!IDomCreateFunc:type
@@ -2390,21 +2390,21 @@ interface IDomCreateClass<Args extends any[]> {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
 
 ### IDomCreateFunc {#IDomCreateFunc .hidden-heading}
 ```ts refs=MultiHolder=grainjs!MultiHolder:class|DomComponentReturn=grainjs!DomComponentReturn:type
 type IDomCreateFunc<Args extends any[]> = (owner: MultiHolder, ...args: Args) => DomComponentReturn;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
 
 ### IDomCreator {#IDomCreator .hidden-heading}
 ```ts refs=IDomCreateFunc=grainjs!IDomCreateFunc:type|IDomCreateClass=grainjs!IDomCreateClass:interface
 type IDomCreator<Args extends any[]> = IDomCreateFunc<Args> | IDomCreateClass<Args>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domComponent.ts" target="_blank">Defined in domComponent.ts</a></div>
 
 ### IDomDisposeHooks {#IDomDisposeHooks .hidden-heading}
 ```ts refs=Node=mdn#Node|Node=mdn#Node
@@ -2414,7 +2414,7 @@ interface IDomDisposeHooks {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
 
 ### IInputOptions {#IInputOptions .hidden-heading}
 ```ts refs=Observable=grainjs!Observable:class
@@ -2424,7 +2424,7 @@ interface IInputOptions {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/input.ts" target="_blank">Defined in input.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/input.ts" target="_blank">Defined in input.ts</a></div>
 
 ### IKeyHandlers {#IKeyHandlers .hidden-heading}
 ```ts refs=HTMLElement=mdn#HTMLElement|HTMLElement=mdn#HTMLElement|KeyboardEvent=!KeyboardEvent:interface
@@ -2433,7 +2433,7 @@ interface IKeyHandlers<T extends HTMLElement = HTMLElement> {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 ### IKnockoutModule {#IKnockoutModule .hidden-heading}
 ```ts refs=Node=mdn#Node|IKnockoutObservable=grainjs!IKnockoutObservable:interface
@@ -2443,7 +2443,7 @@ interface IKnockoutModule {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
 
 ### IKnockoutObservable {#IKnockoutObservable .hidden-heading}
 ```ts refs=IKnockoutReadObservable=grainjs!IKnockoutReadObservable:interface
@@ -2452,7 +2452,7 @@ interface IKnockoutObservable<T> extends IKnockoutReadObservable<T> {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
 
 ### IKnockoutReadObservable {#IKnockoutReadObservable .hidden-heading}
 ```ts refs=
@@ -2464,7 +2464,7 @@ interface IKnockoutReadObservable<T> {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
 
 ### InferKoType {#InferKoType .hidden-heading}
 ```ts refs=IKnockoutReadObservable=grainjs!IKnockoutReadObservable:interface
@@ -2473,7 +2473,7 @@ type InferKoType<KObs extends IKnockoutReadObservable<any>> = KObs extends {
 } ? T : never;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/kowrap.ts" target="_blank">Defined in kowrap.ts</a></div>
 
 ### InferUseType {#InferUseType .hidden-heading}
 ```ts refs=Obs=grainjs!BaseObservable:class|IKnockoutReadObservable=grainjs!IKnockoutReadObservable:interface|Obs=grainjs!BaseObservable:class
@@ -2482,21 +2482,21 @@ type InferUseType<TObs extends Obs<any> | IKnockoutReadObservable<any>> = TObs e
 } ? U : never;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
 
 ### INodeFunc {#INodeFunc .hidden-heading}
 ```ts refs=Node=mdn#Node
 type INodeFunc = (node: Node) => void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domDispose.ts" target="_blank">Defined in domDispose.ts</a></div>
 
 ### IOption {#IOption .hidden-heading}
 ```ts refs=IOptionFull=grainjs!IOptionFull:interface
 type IOption<T> = (T & string) | IOptionFull<T>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/select.ts" target="_blank">Defined in select.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/select.ts" target="_blank">Defined in select.ts</a></div>
 
 ### IOptionFull {#IOptionFull .hidden-heading}
 ```ts refs=
@@ -2507,21 +2507,21 @@ interface IOptionFull<T> {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/select.ts" target="_blank">Defined in select.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/select.ts" target="_blank">Defined in select.ts</a></div>
 
 ### ISpliceListener {#ISpliceListener .hidden-heading}
 ```ts refs=IObsArraySplice=grainjs!IObsArraySplice:interface
 type ISpliceListener<T, C> = (this: C, val: T[], prev: T[], change?: IObsArraySplice<T>) => void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/obsArray.ts" target="_blank">Defined in obsArray.ts</a></div>
 
 ### ISubscribable {#ISubscribable .hidden-heading}
 ```ts refs=ISubscribableObs=grainjs!ISubscribableObs:interface|IKnockoutReadObservable=grainjs!IKnockoutReadObservable:interface
 type ISubscribable = ISubscribableObs | IKnockoutReadObservable<any>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
 
 ### ISubscribableObs {#ISubscribableObs .hidden-heading}
 ```ts refs=Listener=grainjs!Listener:class
@@ -2531,42 +2531,42 @@ interface ISubscribableObs {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
 
 ### KeyEventType {#KeyEventType .hidden-heading}
 ```ts refs=
 type KeyEventType = 'keypress' | 'keyup' | 'keydown';
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domevent.ts" target="_blank">Defined in domevent.ts</a></div>
 
 ### ListenerCB {#ListenerCB .hidden-heading}
 ```ts refs=
 type ListenerCB<T> = (this: T, ...args: any[]) => void;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/emit.ts" target="_blank">Defined in emit.ts</a></div>
 
 ### TagElem {#TagElem .hidden-heading}
 ```ts refs=TagName=grainjs!TagName:type|HTMLElement=mdn#HTMLElement
 type TagElem<T extends TagName> = T extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[T] : HTMLElement;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 ### TagName {#TagName .hidden-heading}
 ```ts refs=
 type TagName = keyof HTMLElementTagNameMap | string;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/domImpl.ts" target="_blank">Defined in domImpl.ts</a></div>
 
 ### UseCB {#UseCB .hidden-heading}
 ```ts refs=Obs=grainjs!BaseObservable:class|IKnockoutReadObservable=grainjs!IKnockoutReadObservable:interface|InferUseType=grainjs!InferUseType:type
 type UseCB = <TObs extends Obs<any> | IKnockoutReadObservable<any>>(obs: TObs) => InferUseType<TObs>;
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
 
 ### UseCBOwner {#UseCBOwner .hidden-heading}
 ```ts refs=UseCB=grainjs!UseCB:type|IDisposableOwner=grainjs!IDisposableOwner:interface
@@ -2575,4 +2575,4 @@ interface UseCBOwner extends UseCB {
 }
 ```
 
-<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/master/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>
+<div class="source-link"><a href="https://github.com/gristlabs/grainjs/blob/main/lib/subscribe.ts" target="_blank">Defined in subscribe.ts</a></div>

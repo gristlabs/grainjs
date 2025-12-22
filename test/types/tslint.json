@@ -1,7 +1,0 @@
-{
-  "extends": "dtslint/dtslint.json",
-  "rules": {
-    "member-access": [true, "check-accessor"],
-    "no-useless-files": false
-  }
-}

@@ -1,7 +1,8 @@
 /**
- * Test types using dtslint. See README in this directory.
+ * Test types using tsd. See README in this directory.
  */
-import { Computed, Holder, Observable } from '../../index';
+import {expectType, expectError} from 'tsd';
+import { Computed, Holder, Observable, UseCBOwner } from '../../index';
 
 function foo(s: string, n: number): string { return ''; }
 
@@ -17,23 +18,24 @@ const c2: Computed<string> = Computed.create(holder, o1, o2, (use, _o1, _o2) =>
 [c1, c2];     // Silence unused-variable errors.
 
 // Swap arguments to foo() to ensure types are known and checked.
-Computed.create(holder, o1, o2, (use, _o1, _o2) =>
-  foo(_o1, _o2) +         // $ExpectError
-  foo(use(o1), use(o2))   // $ExpectError
-);
+Computed.create(holder, o1, o2, (use, _o1, _o2) => {
+  expectError(foo(_o1, _o2));
+  expectError(foo(use(o1), use(o2)));
+});
 
 // Type of observable is determined by return type of callback.
-const notNumber: Computed<number> = Computed.create(holder, (use) => "a" + use(o1));  // $ExpectError
+expectType<Computed<string>>(Computed.create(holder, (use) => "a" + use(o1)));
+expectError(Computed.create<number>(holder, (use) => "a" + use(o1)));
 
 // Should support up to 5 static dependencies. We are not using generics here only because
 // var-args can't be used when they are not the last argument.
 Computed.create(holder, o1, o2, o1, o2, o1, (use, _o1, _o2, _o1b, _o2b, _o1c) => {
-  _o1;        // $ExpectType number
-  _o2;        // $ExpectType string
-  _o1b;       // $ExpectType number
-  _o2b;       // $ExpectType string
-  _o1c;       // $ExpectType number
-  use(o1);    // $ExpectType number
-  use(o2);    // $ExpectType string
-  use;        // $ExpectType UseCBOwner
+  expectType<number>(_o1);
+  expectType<string>(_o2);
+  expectType<number>(_o1b);
+  expectType<string>(_o2b);
+  expectType<number>(_o1c);
+  expectType<number>(use(o1));
+  expectType<string>(use(o2));
+  expectType<UseCBOwner>(use);
 });

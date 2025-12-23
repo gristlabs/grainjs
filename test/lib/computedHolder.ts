@@ -61,7 +61,6 @@ describe('computedHolder', function() {
 
   it('should work with nulls', function() {
     let f: Foo|null;
-    let g: Foo|null;
     const obs = observable("");
     const comp = computed(obs, (use, val) => val ? Foo.create(use.owner, val) : null);
     f = comp.get();
@@ -70,7 +69,7 @@ describe('computedHolder', function() {
     sinon.assert.notCalled(fooDispose);
 
     obs.set("b");     // This should trigger a re-evaluation of comp.
-    g = comp.get();
+    const g = comp.get();
     assertResetSingleCall(fooConstruct, g, "b");
     sinon.assert.notCalled(fooDispose);
 

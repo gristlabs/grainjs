@@ -1,6 +1,7 @@
 /**
- * Test types using dtslint. See README in this directory.
+ * Test types using tsd. See README in this directory.
  */
+import { expectType, expectError } from 'tsd';
 import { Disposable, IDisposable, IDisposableCtor, IDisposableOwnerT } from '../../lib/dispose';
 
 class MyFoo extends Disposable {
@@ -25,22 +26,19 @@ MyFoo.create(null, 1, "hello");
 
 // Test that invalid args are rejected with informative errors.
 // TODO Haven't found a way to verify that e.g. last arg is boolean|undefined.
-MyFoo.create(null, 1, "hello", 2);        // $ExpectError
-MyFoo.create(null, "test", 1);            // $ExpectError
-MyFoo.create(null, 1);                    // $ExpectError
-MyFoo.create(null);                       // $ExpectError
+expectError(MyFoo.create(null, 1, "hello", 2));
+expectError(MyFoo.create(null, "test", 1));
+expectError(MyFoo.create(null, 1));
+expectError(MyFoo.create(null));
 
 // Test that the return type is correct.
-// $ExpectType MyFoo
-MyFoo.create(null, 1, "hello", true);
+expectType<MyFoo>(MyFoo.create(null, 1, "hello", true));
 
 // Test that correct Owner type is accepted.
-// $ExpectType MyFoo
-MyFoo.create(new Owner<MyFoo>(), 1, "hello", true);
+expectType<MyFoo>(MyFoo.create(new Owner<MyFoo>(), 1, "hello", true));
 
 // Test that incorrect Owner type is rejected.
-// $ExpectError
-MyFoo.create(new Owner<OtherFoo>(), 1, "hello", true);
+expectError(MyFoo.create(new Owner<OtherFoo>(), 1, "hello", true));
 
 // ----------------------------------------
 // Test using a parametrized class with Disposable.
@@ -56,8 +54,8 @@ MyBar.ctor<string>().create(null, "test", true);
 MyBar.ctor<string>().create(null, "test");
 
 // Check that type-checking rejects incorrect arguments.
-MyBar.ctor<number>().create(null, 17, false, "x");  // $ExpectError
-MyBar.ctor<string>().create(null);                  // $ExpectError
-MyBar.ctor<number>().create(null, "test", false);   // $ExpectError
-MyBar.ctor<number>().create(null, 17, "test");      // $ExpectError
-MyBar.ctor<string>().create(null, 17, false);       // $ExpectError
+expectError(MyBar.ctor<number>().create(null, 17, false, "x"));
+expectError(MyBar.ctor<string>().create(null));
+expectError(MyBar.ctor<number>().create(null, "test", false));
+expectError(MyBar.ctor<number>().create(null, 17, "test"));
+expectError(MyBar.ctor<string>().create(null, 17, false));

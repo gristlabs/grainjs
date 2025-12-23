@@ -24,7 +24,7 @@ describe('styles', function() {
 
     // Check that styles got applies.
     const style = G.window.getComputedStyle(elem);
-    assert.equal(style.color, 'red');
+    assert.equal(style.color, 'rgb(255, 0, 0)');
     assert.equal(style.fontSize, '27px');
 
     // Check that we have a single class set, and that styles are not set directly.
@@ -58,23 +58,28 @@ describe('styles', function() {
 
     highlight.set(true);
     assert.include(elem.className, '-highlight');
-    assert.equal(G.window.getComputedStyle(elem).border, '2px solid blue');
+    const styles = G.window.getComputedStyle(elem);
+    for (const side of ["top", "right", "bottom", "left"]) {
+      assert.equal(styles.getPropertyValue(`border-${side}-width`), '2px');
+      assert.equal(styles.getPropertyValue(`border-${side}-style`), 'solid');
+      assert.equal(styles.getPropertyValue(`border-${side}-color`), 'rgb(0, 0, 255)');
+    }
 
     // Check that colorClass observable switches class and computed style.
     assert.include(elem.className, '-blue');
     assert.notInclude(elem.className, '-green');
-    assert.equal(G.window.getComputedStyle(elem).color, 'blue');
+    assert.equal(G.window.getComputedStyle(elem).color, 'rgb(0, 0, 255)');
 
     colorClass.set('green');
     assert.notInclude(elem.className, '-blue');
     assert.include(elem.className, '-green');
-    assert.equal(G.window.getComputedStyle(elem).color, 'green');
+    assert.equal(G.window.getComputedStyle(elem).color, 'rgb(0, 128, 0)');
 
     colorClass.set('unknown');
     assert.notInclude(elem.className, '-blue');
     assert.notInclude(elem.className, '-green');
     assert.include(elem.className, '-unknown');
-    assert.equal(G.window.getComputedStyle(elem).color, 'red');  // From main element.
+    assert.equal(G.window.getComputedStyle(elem).color, 'rgb(255, 0, 0)');  // From main element.
   });
 
   it('should support keyframes', () => {
@@ -134,9 +139,9 @@ describe('styles', function() {
 
     // Check that styles got applies.
     const style = G.window.getComputedStyle(elem);
-    assert.equal(style.color, 'green');
+    assert.equal(style.color, 'rgb(0, 128, 0)');
     assert.equal(style.fontSize, '27px');
-    assert.equal(style.backgroundColor, 'yellow');
+    assert.equal(style.backgroundColor, 'rgb(255, 255, 0)');
 
     // Check that we have two classes set, and that styles are not set directly.
     assert.lengthOf(elem.classList, 2);
@@ -184,7 +189,7 @@ describe('styles', function() {
     const sspan = module1.styled('span', `color: red`);
     const elemSpan = sspan('Hello');
     assert.lengthOf(G.document.head!.querySelectorAll('style'), 1);
-    assert.equal(G.window.getComputedStyle(elemSpan).color, 'red');
+    assert.equal(G.window.getComputedStyle(elemSpan).color, 'rgb(255, 0, 0)');
 
     const selectorSet1 = getSelectorsInPage();
 
@@ -196,8 +201,8 @@ describe('styles', function() {
     const sdiv = module2.styled('span', `color: blue`);
     const elemDiv = sdiv('World');
     assert.lengthOf(G.document.head!.querySelectorAll('style'), 2);
-    assert.equal(G.window.getComputedStyle(elemDiv).color, 'blue');
-    assert.equal(G.window.getComputedStyle(elemSpan).color, 'red');
+    assert.equal(G.window.getComputedStyle(elemDiv).color, 'rgb(0, 0, 255)');
+    assert.equal(G.window.getComputedStyle(elemSpan).color, 'rgb(255, 0, 0)');
 
     // And check that a new style actually got added.
     const selectorSet2 = getSelectorsInPage();

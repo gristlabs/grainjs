@@ -1,7 +1,8 @@
 /**
- * Test types using dtslint. See README in this directory.
+ * Test types using tsd. See README in this directory.
  */
-import { Disposable, dom, IDisposableOwner } from '../../index';
+import { expectType, expectError } from 'tsd';
+import { Disposable, dom, DomContents, IDisposableOwner } from '../../index';
 
 class MyComp extends Disposable {
   constructor(public a: number, public b: string, public c?: boolean) { super(); }
@@ -13,21 +14,21 @@ function myFunc(owner: IDisposableOwner, a: number, b: string, c?: boolean) {
 }
 
 // Test that valid args are accepted.
-dom.create(MyComp, 1, "hello", true);     // $ExpectType DomContents
-dom.create(MyComp, 1, "hello");           // $ExpectType DomContents
-dom.create(myFunc, 1, "hello", true);     // $ExpectType DomContents
-dom.create(myFunc, 1, "hello");           // $ExpectType DomContents
+expectType<DomContents>(dom.create(MyComp, 1, "hello", true));
+expectType<DomContents>(dom.create(MyComp, 1, "hello"));
+expectType<DomContents>(dom.create(myFunc, 1, "hello", true));
+expectType<DomContents>(dom.create(myFunc, 1, "hello"));
 
 // Test that invalid args are rejected with informative errors.
-dom.create(MyComp, 1, "hello", 2);        // $ExpectError
-dom.create(MyComp, "test", 1);            // $ExpectError
-dom.create(MyComp, 1);                    // $ExpectError
-dom.create(MyComp);                       // $ExpectError
-dom.create(myFunc, 1, "hello", 2);        // $ExpectError
-dom.create(myFunc, "test", 1);            // $ExpectError
-dom.create(myFunc, 1);                    // $ExpectError
-dom.create(myFunc);                       // $ExpectError
+expectError(dom.create(MyComp, 1, "hello", 2));
+expectError(dom.create(MyComp, "test", 1));
+expectError(dom.create(MyComp, 1));
+expectError(dom.create(MyComp));
+expectError(dom.create(myFunc, 1, "hello", 2));
+expectError(dom.create(myFunc, "test", 1));
+expectError(dom.create(myFunc, 1));
+expectError(dom.create(myFunc));
 
 // This one doesn't return DomContents
 function myNonFunc(owner: IDisposableOwner, a: number, b: string, c?: boolean) { return 1; }
-dom.create(myNonFunc, 1, "hello", true);  // $ExpectError
+expectError(dom.create(myNonFunc, 1, "hello", true));

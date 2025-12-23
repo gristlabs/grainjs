@@ -19,11 +19,11 @@ $BINDIR/eslint index.ts lib test/{browser,lib,tools} || true
   && $BINDIR/esbuild dist/cjs/index.js --bundle --platform=browser \
      --format=iife --global-name=grainjs \
      --outfile=dist/grain-full.debug.js \
-     --sourcemap \
+     --target=es2017 --sourcemap \
   && $BINDIR/esbuild dist/cjs/index.js --bundle --platform=browser \
      --format=iife --global-name=grainjs \
      --outfile=dist/grain-full.min.js \
-     --sourcemap --minify \
+     --target=es2017 --sourcemap --minify \
 ) &
 
 wait

@@ -12,18 +12,17 @@ export class WebpackServer implements IMochaServer {
   public async start() {
     const config = require('../fixtures/webpack.config.js');
     console.log("Starting webpack-dev-serve");
-    this._server = new WebpackDevServer(webpack(config), {
+    this._server = new WebpackDevServer({
       ...config.devServer,
-      noInfo: true,
       open: false,
-    });
-    const port = this._port = config.devServer.port;
-    await new Promise((resolve, reject) => this._server.listen(port, 'localhost', resolve).on('error', reject));
+    }, webpack(config));
+    this._port = config.devServer.port;
+    await new Promise((resolve, reject) => this._server.startCallback(resolve));
   }
 
   public async stop() {
     console.log("Stopping webpack-dev-serve");
-    this._server.close();
+    this._server.stop();
   }
 
   public getHost(): string {

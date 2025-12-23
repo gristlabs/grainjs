@@ -46,17 +46,20 @@ module.exports = {
     ]
   },
   devServer: {
-    contentBase: path.resolve(__dirname),
+    static: {
+      directory: path.resolve(__dirname),
+    },
     port: process.env.PORT || 9200,
     open: process.env.OPEN_BROWSER || 'Google Chrome',
 
     // Serve a trivial little index page with a directory, and a template for each project.
-    before: (app, server) => {
+    setupMiddlewares: (middlewares, devServer) => {
       // app is an express app; we get a chance to add custom endpoints to it.
-      app.get('/', (req, res) =>
+      devServer.app.get('/', (req, res) =>
         res.send(Object.keys(entries).map((e) => `<a href="${e}">${e}</a><br>\n`).join('')));
-      app.get(Object.keys(entries).map((e) => `/${e}`), (req, res) =>
+      devServer.app.get(Object.keys(entries).map((e) => `/${e}`), (req, res) =>
         res.send(htmlTemplate.replace('<NAME>', path.basename(req.url))));
+      return middlewares;
     },
   }
 };

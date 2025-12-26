@@ -1,6 +1,6 @@
 # GrainJS: a light typescript web framework
 
-[![npm version](https://badge.fury.io/js/grainjs.svg)](https://badge.fury.io/js/grainjs)
+[![NPM Version](https://img.shields.io/npm/v/grainjs)](https://www.npmjs.com/package/grainjs)
 [![Build status](https://github.com/gristlabs/grainjs/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/gristlabs/grainjs/actions/workflows/build-and-test.yml)
 [![codecov](https://codecov.io/gh/gristlabs/grainjs/branch/main/graph/badge.svg?token=1OIMMBLI6N)](https://codecov.io/gh/gristlabs/grainjs)
 

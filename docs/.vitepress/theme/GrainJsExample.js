@@ -36,7 +36,7 @@ export function prepareExample(elem, heightRem) {
       cssIframe({sandbox: iframeSandbox.join(' '), style: `height: ${heightRem}rem`},
         dom.prop('srcdoc', use => `
 <!DOCTYPE html><html style="color-scheme: ${use(colorSchemeObs)}"><body>
-  <script src='https://cdn.jsdelivr.net/npm/grainjs@1.0.2/dist/grain-full.min.js'></script>
+  <script src='https://cdn.jsdelivr.net/npm/grainjs@1/dist/grain-full.min.js'></script>
   <script>
   ${code}
   </script>

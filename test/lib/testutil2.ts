@@ -34,7 +34,8 @@ export function useJsDomWindow(html?: string) {
   before(function() {
     const dom = new JSDOM(html || "<!doctype html><html><body>" +
       "<div id='a'></div>" +
-      "</body></html>", {
+      "</body></html>",
+      {
         url: "http://localhost",
       });
     pushGlobals(dom.window);
@@ -79,7 +80,7 @@ function _capture(messages: string[], methodName: string, format: any, ...args: 
     format = format.replace(/%s|%d/g, () => args[i++]);
   }
   let message = methodName + ': ' + format;
-  for ( ; i < args.length; i++) {
+  for (; i < args.length; i++) {
     message += ' ' + args[i];
   }
   messages.push(message);

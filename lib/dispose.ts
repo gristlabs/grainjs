@@ -138,7 +138,6 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
         // This calls dispose on the partially-constructed object
         holder.clear();
       } catch (e2) {
-        // tslint:disable-next-line:no-console
         console.error("Error disposing partially constructed %s:", this.name, e2);
       }
       throw e;
@@ -207,7 +206,6 @@ export abstract class Disposable implements IDisposable, IDisposableOwner {
   public dispose(): void {
     const disposalList = this._disposalList;
     if (!disposalList) {
-        // tslint:disable-next-line:no-console
       console.error("Error disposing %s which is already disposed", _describe(this));
     } else {
       this._disposalList = null!;
@@ -379,7 +377,6 @@ class DisposeListener extends LLink implements IDisposable {
       try {
         lis.callback.call(lis.context);
       } catch (e) {
-        // tslint:disable-next-line:no-console
         console.error("While disposing %s, error disposing %s: %s", _describe(owner), _describe(this), e);
       }
       begin = lis._next!;

@@ -1,6 +1,7 @@
 "use strict";
 
 /* global describe, before, it */
+/* eslint-disable @stylistic/max-statements-per-line, @stylistic/comma-spacing */
 
 const {observable, bundleChanges} = require('../../lib/observable');
 const {computed} = require('../../lib/computed');
@@ -285,7 +286,7 @@ function testComputed(computed) {
     _.range(4).forEach(i => {
       // computeds returning value of the form ":A0", "(A0):A1", etc.
       arrComp[i] = computed(arrSpy[i] = sinon.spy(use =>
-        (i > 0 ? "(" + use(arrComp[i-1]) + "):" : ':') + use(aComp) + use(arrObs[i])));
+        (i > 0 ? "(" + use(arrComp[i - 1]) + "):" : ':') + use(aComp) + use(arrObs[i])));
     });
     let totObs = [
       computed(totSpy[0] = sinon.spy(use => _.minBy(arrComp.map(c => use(c)), 'length'))),
@@ -355,9 +356,9 @@ function testComputed(computed) {
   });
 
 
-  //----------------------------------------------------------------------
+  // ----------------------------------------------------------------------
   // Timing tests.
-  //----------------------------------------------------------------------
+  // ----------------------------------------------------------------------
 
   [2, 20].forEach(depCount => {
     describe(`Timing computed with ${depCount} dependencies`, function() {

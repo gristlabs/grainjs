@@ -22,7 +22,7 @@ export type InferUseType<TObs extends Obs<any>|IKnockoutReadObservable<any>> =
 // The generic type for the use() function that callbacks get.
 export type UseCB = <TObs extends Obs<any>|IKnockoutReadObservable<any>>(obs: TObs) => InferUseType<TObs>;
 
-export interface UseCBOwner extends UseCB {    // tslint:disable-line:interface-name
+export interface UseCBOwner extends UseCB {
   owner: IDisposableOwner;
 }
 

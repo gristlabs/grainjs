@@ -1,6 +1,7 @@
 "use strict";
 
 /* global describe, before, it */
+/* eslint-disable @stylistic/max-statements-per-line */
 
 const emit = require('../../lib/emit');
 const { assertResetSingleCall } = require('./testutil2');
@@ -150,8 +151,8 @@ describe('emitter.Emitter', function() {
     assertResetSingleCall(spyChange, undefined, true);
     assert.strictEqual(emitter.hasListeners(), true);
 
-    emitter.emit(1,2,3);
-    assertResetSingleCall(spy1, undefined, 1,2,3);
+    emitter.emit(1, 2, 3);
+    assertResetSingleCall(spy1, undefined, 1, 2, 3);
     sinon.assert.notCalled(spy2);
 
     assert.strictEqual(emitter.hasListeners(), true);

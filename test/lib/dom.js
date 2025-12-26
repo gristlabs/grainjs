@@ -306,7 +306,7 @@ describe('dom', function() {
     });
 
     it('should support associating data with DOM', function() {
-      let val = {1:2};
+      let val = {1: 2};
       let obs1 = observable('bar');
       let obs2 = observable(val);
       let elem = dom('div',
@@ -319,7 +319,7 @@ describe('dom', function() {
       assert.strictEqual(dom.getData(elem, 'obs1'), 'foo');
       assert.strictEqual(dom.getData(elem, 'obs2'), val);
 
-      val = {3:4};
+      val = {3: 4};
       obs2.set(val);
       assert.strictEqual(dom.getData(elem, 'obs1'), 'foo');
       assert.strictEqual(dom.getData(elem, 'obs2'), val);
@@ -737,8 +737,8 @@ describe('dom', function() {
     it('should work for non-observable values', function() {
       // This examples shows how to use dom.domComputed() for plain values, but recommeds against it.
       // This example ALSO tests that the dom.domComputed() callback may return an array.
-      let listValue = [1,2,3];
-      let listObs = observable([1,2,3]);
+      let listValue = [1, 2, 3];
+      let listObs = observable([1, 2, 3]);
       let elem1 = dom('div', dom.domComputed(listObs,    list => list.map(x => dom('div', x))));
       let elem2 = dom('div', dom.domComputed(listValue,  list => list.map(x => dom('div', x))));
       let elem3 = dom('div', listValue.map(x => dom('div', x)));

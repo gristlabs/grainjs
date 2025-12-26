@@ -1,6 +1,7 @@
 "use strict";
 
 /* global describe, it */
+/* eslint-disable @stylistic/max-statements-per-line */
 
 const binding = require('../../lib/binding');
 const {computed} = require('../../lib/computed');

@@ -26,7 +26,7 @@ export class PriorityQueue<T> {
     let curIdx = this._items.length;
     while (curIdx > 0) {
       // While we have a parent that is not prior to us, bubble up the "hole" at items.length.
-      const parIdx = (curIdx - 1) >> 1;   // tslint:disable-line:no-bitwise
+      const parIdx = (curIdx - 1) >> 1;
       const parItem = items[parIdx];
       if (isPrior(parItem, item)) {
         break;

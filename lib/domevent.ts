@@ -101,7 +101,6 @@ export function onElem<E extends EventName|string, T extends EventTarget>(
  */
 export function on<E extends EventName|string, T extends EventTarget>(
   eventType: E, callback: EventCB<EventType<E>, T>, {useCapture = false} = {}): DomMethod<T> {
-  // tslint:disable-next-line:no-unused-expression
   return (elem) => { new DomEventListener(elem, eventType, callback, useCapture); };
 }
 
@@ -148,7 +147,6 @@ export function onMatchElem(elem: EventTarget, selector: string, eventType: stri
  */
 export function onMatch(selector: string, eventType: string, callback: EventCB,
                         {useCapture = false} = {}): DomElementMethod {
-  // tslint:disable-next-line:no-unused-expression
   return (elem) => { new DomEventMatchListener(elem, eventType, callback, useCapture, selector); };
 }
 

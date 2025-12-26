@@ -37,7 +37,7 @@ describe('util', function() {
   };
 
   ["bindB", "bindUB", "bindBU"].forEach(method => {
-    [0,4,9].forEach(argCount => {
+    [0, 4, 9].forEach(argCount => {
       describe(`Timing ${method} with ${argCount} args`, function() {
         let boundFuncPlain, boundFuncOpt, seenArgCount;
         let boundArgs;

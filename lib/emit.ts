@@ -1,4 +1,4 @@
-function _noop() { /* noop */}
+function _noop() { /* noop */ }
 
 export type ListenerCB<T> = (this: T, ...args: any[]) => void;
 

@@ -40,7 +40,7 @@ function timeit(desc, func, optMsec, options) {
     this.slow(msec);
     let start = Date.now();
     let delta = 0;
-    for (var n = 1; n < 1<<30; n = n * 2) {
+    for (var n = 1; n < (1 << 30); n = n * 2) {
       for (let i = 0; i < n; i++) {
         func();
       }

@@ -64,7 +64,6 @@
     "owner": "gristlabs",
     "repo": "grainjs"
   },
-  "dependencies": {},
   "devDependencies": {
     "@microsoft/api-extractor": "^7.55.1",
     "@types/chai": "^4.2.18",
@@ -77,6 +76,7 @@
     "@types/sinon": "^21.0.0",
     "chai": "^6.2.1",
     "chai-as-promised": "^8.0.2",
+    "esbuild": "^0.27.2",
     "eslint": "^9.39.2",
     "fastpriorityqueue": "^0.7.5",
     "jsdom": "27.3.0",
@@ -98,5 +98,8 @@
     "vitepress": "^1.6.4",
     "webpack": "^5.104.0",
     "webpack-dev-server": "^5.2.2"
+  },
+  "overrides": {
+    "esbuild": "^0.27.2"
   }
 }

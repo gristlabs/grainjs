@@ -20,11 +20,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: yarn
+          cache: npm
 
-      - run: yarn install
-      - run: yarn run build
-      - run: SELENIUM_BROWSER=chrome yarn test
+      - run: npm ci
+      - run: npm run build
+      - run: SELENIUM_BROWSER=chrome npm test
 
       - uses: codecov/codecov-action@v5
         with:

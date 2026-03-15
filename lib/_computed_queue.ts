@@ -27,6 +27,7 @@ export class DepItem {
     return a._priority < b._priority || (a._priority === b._priority && a._creation < b._creation);
   }
 
+  private readonly _isComputed: boolean = false;
   private _priority: number = 0;
   private _enqueued: boolean = false;
   private _callback: () => void;
@@ -38,7 +39,8 @@ export class DepItem {
   /**
    * Callback should call depItem.useDep(dep) for each DepInput it depends on.
    */
-  constructor(callback: () => void, optContext?: object) {
+  constructor(callback: () => void, optContext?: object, isComputed = false) {
+    this._isComputed = isComputed;
     this._callback = callback;
     this._context = optContext;
   }
@@ -48,6 +50,7 @@ export class DepItem {
    * item such as a plain observable, which does not itself depend on anything else).
    */
   public useDep(depItem: DepItem|null): void {
+    if (depItem && !depItem._isComputed) { throw new Error("Non-computed used as dependency"); }
     const p = depItem ? depItem._priority : 0;
     if (p >= this._priority) {
       this._priority = p + 1;
@@ -68,13 +71,18 @@ export class DepItem {
   public enqueue(): void {
     if (!this._enqueued) {
       this._enqueued = true;
-      queue.push(this);
+      if (this._isComputed) {
+        computedQueue.push(this);
+      } else {
+        otherQueue.push(this);
+      }
     }
   }
 }
 
 // The main compute queue.
-const queue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
+const computedQueue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
+const otherQueue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
 
 // Counter for creation order, used to create a stable ordering of DepItems at same priority.
 let _nextCreationNum = 0;
@@ -100,25 +108,34 @@ export function _getPriority(obs: any): number {
  * there should be no need to ever call this by users of the library.
  */
 export function compute(): void {
-  if (bundleDepth === 0 && queue.size > 0) {
-    // Prevent nested compute() calls, which are unnecessary and can cause deep recursion stack.
-    bundleDepth++;
-    try {
-      // We reuse _seen array to minimize allocations, but always leave it empty.
-      do {
-        const item = queue.pop()!;
-        _seen.push(item);
-        item.recompute();
-      } while (queue.size > 0);
-    } finally {
-      // We delay the unsetting of _enqueued flag to here, to protect against infinite loops when
-      // a change to a computed causes it to get enqueued again.
-      for (const item of _seen) {
-        item._enqueued = false;
-      }
-      _seen.length = 0;
-      bundleDepth--;
+  if (bundleDepth === 0) {
+    if (computedQueue.size > 0) {
+      // Prevent nested compute() calls, which are unnecessary and can cause deep recursion stack.
+      withBundleDepthIncrement(() => processQueue(computedQueue));
     }
+    if (otherQueue.size > 0) {
+      processQueue(otherQueue);
+    }
+  }
+}
+
+// Calls recompute for all items in the queue, preventing loops -- attempts to enqueue again during
+// computation will be ignored! Assumes the passsed-in queue is non-empty.
+function processQueue(queue: PriorityQueue<DepItem>) {
+  try {
+    // We reuse _seen array to minimize allocations, but always leave it empty.
+    do {
+      const item = queue.pop()!;
+      _seen.push(item);
+      item.recompute();
+    } while (queue.size > 0);
+  } finally {
+    // We delay the unsetting of _enqueued flag to here, to protect against infinite loops when
+    // a change to a computed causes it to get enqueued again.
+    for (const item of _seen) {
+      item._enqueued = false;
+    }
+    _seen.length = 0;
   }
 }
 
@@ -132,10 +149,17 @@ export function compute(): void {
  */
 export function bundleChanges<T>(func: () => T): T {
   try {
+    return withBundleDepthIncrement(func);
+  } finally {
+    compute();
+  }
+}
+
+function withBundleDepthIncrement<T>(func: () => T): T {
+  try {
     bundleDepth++;
     return func();
   } finally {
     bundleDepth--;
-    compute();
   }
 }

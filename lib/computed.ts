@@ -97,7 +97,7 @@ export class Computed<T> extends Observable<T> {
     super(undefined as any);
     this._callback = callback;
     this._write = _noWrite;
-    this._sub = new Subscription(this._read.bind(this), dependencies, this);
+    this._sub = new Subscription(this._read.bind(this), dependencies, this, true);
   }
 
   /**

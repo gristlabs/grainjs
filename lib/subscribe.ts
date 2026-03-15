@@ -69,8 +69,11 @@ export class Subscription {
   // Internal constructor for a Subscription. You should use subscribe() function instead.
   // The last owner argument is used by computed() to make itself available as the .owner property
   // of the 'use' function that gets passed to the callback.
-  constructor(callback: (use: UseCB, ...args: any[]) => void, dependencies: ReadonlyArray<ISubscribable>, owner?: any) {
-    this._depItem = new DepItem(this._evaluate, this);
+  constructor(
+    callback: (use: UseCB, ...args: any[]) => void, dependencies: ReadonlyArray<ISubscribable>,
+    owner?: any, isComputed = false,
+  ) {
+    this._depItem = new DepItem(this._evaluate, this, isComputed);
     this._dependencies = dependencies.length > 0 ? dependencies : emptyArray;
     this._depListeners = dependencies.length > 0 ? dependencies.map((obs) => this._subscribeTo(obs)) : emptyArray;
     this._dynDeps = new Map();   // Maps dependent observable to its Listener object.

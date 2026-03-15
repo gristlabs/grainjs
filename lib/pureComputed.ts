@@ -101,7 +101,7 @@ export class PureComputed<T> extends Observable<T> {
 
   private _activate(): void {
     if (!this._sub) {
-      this._sub = new Subscription(this._read.bind(this), this._dependencies);
+      this._sub = new Subscription(this._read.bind(this), this._dependencies, this, true);
     }
   }
 

@@ -3,8 +3,8 @@
  * a plain value, or a function from which it builds a computed.
  */
 
-import {computed} from './computed';
-import {IDisposable} from './dispose';
+import {Computed} from './computed';
+import {IDisposable, MultiHolder} from './dispose';
 import {autoDisposeElem} from './domDispose';
 import {IKnockoutReadObservable, InferKoType} from './kowrap';
 import {BaseObservable} from './observable';
@@ -53,10 +53,11 @@ export function subscribeBindable<T>(
     //    let sub = subscribe(use => callback(valueObs(use)));
     // The difference is that when valueObs() evaluates to unchanged value, callback would be
     // called in the version above, but not in the version below.
-    const comp = computed(valueObs as ComputedCallback<T>);
-    comp.addListener((val) => callback(val));
-    callback(comp.get());
-    return comp;      // Disposing this will dispose its one listener.
+    // TODO Try doing with only a subscription
+    const owner = MultiHolder.create(null);
+    const comp = Computed.create(owner, valueObs as ComputedCallback<T>);
+    owner.autoDispose(subscribe(comp, (use, val) => callback(val)));
+    return owner;
   }
 
   // An observable.

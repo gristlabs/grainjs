@@ -87,10 +87,6 @@ const otherQueue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
 // Counter for creation order, used to create a stable ordering of DepItems at same priority.
 let _nextCreationNum = 0;
 
-// Array to keep track of items recomputed during this call to compute(). It could be a local
-// variable in compute(), but is made global to minimize allocations.
-const _seen: any[] = [];
-
 // Counter used for bundling multiple calls to compute() into one.
 let bundleDepth = 0;
 
@@ -122,8 +118,9 @@ export function compute(): void {
 // Calls recompute for all items in the queue, preventing loops -- attempts to enqueue again during
 // computation will be ignored! Assumes the passsed-in queue is non-empty.
 function processQueue(queue: PriorityQueue<DepItem>) {
+  // Array to keep track of items recomputed during this call to compute().
+  const _seen: DepItem[] = [];
   try {
-    // We reuse _seen array to minimize allocations, but always leave it empty.
     do {
       const item = queue.pop()!;
       _seen.push(item);
@@ -133,9 +130,8 @@ function processQueue(queue: PriorityQueue<DepItem>) {
     // We delay the unsetting of _enqueued flag to here, to protect against infinite loops when
     // a change to a computed causes it to get enqueued again.
     for (const item of _seen) {
-      item._enqueued = false;
+      (item as any)._enqueued = false;
     }
-    _seen.length = 0;
   }
 }
 

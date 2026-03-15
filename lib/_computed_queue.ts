@@ -74,7 +74,7 @@ export class DepItem {
       if (this._isComputed) {
         computedQueue.push(this);
       } else {
-        otherQueue.push(this);
+        otherSubQueue.push(this);
       }
     }
   }
@@ -82,13 +82,14 @@ export class DepItem {
 
 // The main compute queue.
 const computedQueue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
-const otherQueue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
+const otherSubQueue = new PriorityQueue<DepItem>(DepItem.isPrioritySmaller);
 
 // Counter for creation order, used to create a stable ordering of DepItems at same priority.
 let _nextCreationNum = 0;
 
-// Counter used for bundling multiple calls to compute() into one.
+// Counters used for bundling multiple calls to compute() into one.
 let bundleDepth = 0;
+let otherSubBundleDepth = 0;
 
 /**
  * Exposed for unittests. Returns the internal priority value of an observable.
@@ -107,10 +108,20 @@ export function compute(): void {
   if (bundleDepth === 0) {
     if (computedQueue.size > 0) {
       // Prevent nested compute() calls, which are unnecessary and can cause deep recursion stack.
-      withBundleDepthIncrement(() => processQueue(computedQueue));
+      bundleDepth++;
+      try {
+        processQueue(computedQueue);
+      } finally {
+        bundleDepth--;
+      }
     }
-    if (otherQueue.size > 0) {
-      processQueue(otherQueue);
+    if (otherSubBundleDepth === 0 && otherSubQueue.size > 0) {
+      otherSubBundleDepth++;
+      try {
+        processQueue(otherSubQueue);
+      } finally {
+        otherSubBundleDepth--;
+      }
     }
   }
 }
@@ -145,17 +156,10 @@ function processQueue(queue: PriorityQueue<DepItem>) {
  */
 export function bundleChanges<T>(func: () => T): T {
   try {
-    return withBundleDepthIncrement(func);
-  } finally {
-    compute();
-  }
-}
-
-function withBundleDepthIncrement<T>(func: () => T): T {
-  try {
     bundleDepth++;
     return func();
   } finally {
     bundleDepth--;
+    compute();
   }
 }

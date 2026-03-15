@@ -3,12 +3,11 @@
  * a plain value, or a function from which it builds a computed.
  */
 
-import {Computed} from './computed';
-import {IDisposable, MultiHolder} from './dispose';
+import {IDisposable} from './dispose';
 import {autoDisposeElem} from './domDispose';
 import {IKnockoutReadObservable, InferKoType} from './kowrap';
 import {BaseObservable} from './observable';
-import {subscribe, UseCBOwner} from './subscribe';
+import {subscribe, UseCB} from './subscribe';
 
 /**
  * Any of the value types that DOM methods know how to subscribe to: a plain value (like a
@@ -19,7 +18,7 @@ import {subscribe, UseCBOwner} from './subscribe';
  */
 export type BindableValue<T> = BaseObservable<T> | ComputedCallback<T> | T | IKnockoutReadObservable<T>;
 
-export type ComputedCallback<T> = (use: UseCBOwner, ...args: any[]) => T;
+export type ComputedCallback<T> = (use: UseCB, ...args: any[]) => T;
 
 /**
  * Subscribes a callback to valueObs, which may be one a plain value, an observable, a knockout
@@ -49,15 +48,20 @@ export function subscribeBindable<T>(
       return sub;
     }
 
-    // Function from which to make a computed. Note that this is also reasonable:
+    // Function from which to make a computed. This is similar to creating a computed and
+    // subscribing to it, but with a single subsciption. This difference from this naive approach:
     //    let sub = subscribe(use => callback(valueObs(use)));
-    // The difference is that when valueObs() evaluates to unchanged value, callback would be
-    // called in the version above, but not in the version below.
-    // TODO Try doing with only a subscription
-    const owner = MultiHolder.create(null);
-    const comp = Computed.create(owner, valueObs as ComputedCallback<T>);
-    owner.autoDispose(subscribe(comp, (use, val) => callback(val)));
-    return owner;
+    // is that when valueObs() evaluates to unchanged value, we don't want the callback called, to
+    // match behavior of regular computeds.
+    const cb = valueObs as ComputedCallback<T>;
+    let _lastValue: unknown = undefined;
+    return subscribe(use => {
+      const value = cb(use);
+      if (value !== _lastValue) {
+        _lastValue = value;
+        callback(value);
+      }
+    });
   }
 
   // An observable.

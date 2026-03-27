@@ -276,8 +276,8 @@ describe('domComponent', function() {
 
     assert.equal(spies1.describeReset(), '-[world1FOO] +[Hola!1baz] R[Hola!1baz]');
     assert.equal(spies2.describeReset(), '-[world2FOO] +[Hola!2baz] R[Hola!2baz]');
-    assert.equal(spies3.describeReset(), '-[world3FOO] +[Hola!3baz,Hola!3foo,Hola!3FOO] R[Hola!3baz]');
-    assert.equal(spies4.describeReset(), '-[world4FOO] +[Hola!4baz] R[Hola!4baz]');
+    assert.equal(spies3.describeReset(), '-[world3FOO] +[Hola!3foo,Hola!3FOO,Hola!3baz] R[Hola!3baz]');
+    assert.equal(spies4.describeReset(), '-[world4FOO] +[Hola!4FOO,Hola!4baz] R[Hola!4baz]');
 
     obsInner.set('xxx');
     assert.equal(elem.outerHTML, '<div><!--a-->' +

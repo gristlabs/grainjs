@@ -3,7 +3,7 @@
  */
 import { expectType } from 'tsd';
 import { BindableValue, Computed, fromKo, Observable, subscribe, subscribeBindable } from '../../index';
-import { IKnockoutObservable, toKo, UseCBOwner } from '../../index';
+import { IKnockoutObservable, toKo, UseCB } from '../../index';
 import * as ko from 'knockout';
 
 const kObs = ko.observable("foo");
@@ -34,8 +34,8 @@ const bindable: BindableValue<string> = kObs;
 subscribeBindable(bindable, (val) => expectType<string>(val));
 subscribeBindable(gObs, (val) => expectType<string>(val));
 subscribeBindable((use) => {
-  expectType<UseCBOwner>(use);
+  expectType<UseCB>(use);
   return "foo";
 }, (val) => {
-  expectType<string>(val)
+  expectType<string>(val);
 });

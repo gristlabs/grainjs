@@ -1,6 +1,8 @@
 import {dom} from '../../lib/dom';
-import {Disposable} from '../../lib/dispose';
-import {observable} from '../../lib/observable';
+import {Disposable, MultiHolder} from '../../lib/dispose';
+import {Computed} from '../../lib/computed';
+import {Observable, observable} from '../../lib/observable';
+// import {compute} from '../../lib/_computed_queue';
 import {assertResetSingleCall, useJsDomWindow} from './testutil2';
 
 import {assert} from 'chai';
@@ -110,5 +112,37 @@ describe("domComputed", function() {
     assertResetSingleCall(fooDispose, f3);
     sinon.assert.notCalled(fooConstruct);
     assert.equal(f3.isDisposed(), true);
+  });
+
+  it("should defer callback until the end of the compute loop", function() {
+    const owner = MultiHolder.create(null);
+    try {
+      class Foo extends Disposable {
+        public obs = Observable.create(this, "hello");
+        public comp = Computed.create(this, use => use(this.obs) + "-" + this.label);
+        constructor(public label: string) {
+          super();
+          assert.equal(this.comp.get(), "hello-" + this.label);
+          this.obs.set("world");
+          assert.equal(this.comp.get(), "world-" + this.label);
+        }
+        public buildDom() {
+          return this.comp.get();
+        }
+      }
+      const show = Observable.create(owner, false);
+      const elem = dom('div', 'Hello',
+        dom.maybe(show, () => dom.create(Foo, "direct")),
+        dom.maybe(use => use(show), () => dom.create(Foo, "indirect")),
+      );
+      show.set(true);
+      assert.equal(elem.innerHTML, `\
+Hello\
+<!--a--><!--a-->world-direct<!--b--><!--b-->\
+<!--a--><!--a-->world-indirect<!--b--><!--b-->\
+`);
+    } finally {
+      owner.dispose();
+    }
   });
 });

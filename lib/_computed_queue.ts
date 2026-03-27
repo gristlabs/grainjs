@@ -39,7 +39,7 @@ export class DepItem {
   /**
    * Callback should call depItem.useDep(dep) for each DepInput it depends on.
    */
-  constructor(callback: () => void, optContext?: object, isComputed = false) {
+  constructor(callback: () => void, optContext: object | undefined, isComputed: boolean) {
     this._isComputed = isComputed;
     this._callback = callback;
     this._context = optContext;
